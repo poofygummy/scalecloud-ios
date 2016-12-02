@@ -1,0 +1,6 @@
+ScaleCloudGo/prebuilt/* filter=lfs diff=lfs merge=lfs -text
+ScaleCloudKit/prebuilt/* filter=lfs diff=lfs merge=lfs -text
+ScaleCloudSign/prebuilt/* filter=lfs diff=lfs merge=lfs -text
+ScaleCloudGo/prebuilt/** !text !filter !merge !diff
+ScaleCloudKit/prebuilt/** !text !filter !merge !diff
+ScaleCloudSign/prebuilt/** !text !filter !merge !diff
