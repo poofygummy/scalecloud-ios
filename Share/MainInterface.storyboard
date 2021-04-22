@@ -169,6 +169,7 @@
                     <connections>
                         <outlet property="cancelButton" destination="qHj-AF-EN7" id="ArV-Vj-BiO"/>
                         <outlet property="collectionView" destination="0HI-k1-SD0" id="xme-mG-bnz"/>
+                        <outlet property="commandView" destination="FaV-kz-PEs" id="s91-n4-PKE"/>
                         <outlet property="commandViewHeightConstraint" destination="50u-lA-AUo" id="ygm-ah-cHw"/>
                         <outlet property="createFolderButton" destination="USb-OF-Gaq" id="mHT-mC-VL1"/>
                         <outlet property="createFolderLabel" destination="WHW-J5-8gq" id="N93-Bs-sc9"/>
