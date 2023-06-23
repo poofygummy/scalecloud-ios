@@ -1,4 +1,4 @@
-name: Build main target
+name: Build additional targets
 
 on:
   push:
@@ -19,7 +19,6 @@ jobs:
     env:
       PROJECT: Nextcloud.xcodeproj
       DESTINATION: platform=iOS Simulator,name=iPhone 14
-      SCHEME: Nextcloud
     steps:
     - name: Set env var
       run: echo "DEVELOPER_DIR=$(xcode-select --print-path)" >> $GITHUB_ENV
@@ -42,30 +41,28 @@ jobs:
       run: carthage bootstrap --use-xcframeworks --platform iOS
     - name: Download GoogleService-Info.plist
       run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
-    - name: Install docker
+    - name: Build iOS Share
       run: |
-        brew install docker
-        colima start
-    - name: Create docker test server and export enviroment variables
+        xcodebuild build -project $PROJECT -scheme "$SCHEME" -destination "$DESTINATION"
+      env:
+          SCHEME: Share
+    - name: Build iOS File Extension
       run: |
-        source ./create-docker-test-server.sh
-        if [ ! -f ".env-vars" ]; then
-            touch .env-vars
-            echo "export TEST_SERVER_URL=$TEST_SERVER_URL" >> .env-vars
-            echo "export TEST_USER=$TEST_USER" >> .env-vars
-            echo "export TEST_APP_PASSWORD=$TEST_APP_PASSWORD" >> .env-vars
-        fi
-    - name: Build & Test Nextcloud iOS
+        xcodebuild build -project $PROJECT -scheme "$SCHEME" -destination "$DESTINATION"
+      env:
+          SCHEME: File Provider Extension
+    - name: Build iOS Notification Extension
       run: |
-        set -o pipefail && xcodebuild test -project $PROJECT \
-        -scheme "$SCHEME" \
-        -destination "$DESTINATION" \
-        -enableCodeCoverage YES \
-        -test-iterations 3 \
-        -retry-tests-on-failure \
-        | xcpretty
-    - name: Upload coverage to codecov
+        xcodebuild build -project $PROJECT -scheme "$SCHEME" -destination "$DESTINATION"
+      env:
+          SCHEME: Notification Service Extension
+    - name: Build iOS Widget
       run: |
-        bundle exec slather
-        bash <(curl -s https://codecov.io/bash) -f ./cobertura.xml -X coveragepy -X gcov -X xcode -t ${{ secrets.CODECOV_TOKEN }}
-
+        xcodebuild build -project $PROJECT -scheme "$SCHEME" -destination "$DESTINATION"
+      env:
+          SCHEME: Widget
+    - name: Build iOS Widget Dashboard IntentHandler
+      run: |
+        xcodebuild build -project $PROJECT -scheme "$SCHEME" -destination "$DESTINATION"
+      env:
+          SCHEME: WidgetDashboardIntentHandler
