@@ -399,23 +399,32 @@ class NCCollectionViewCommon: UIViewController, NCAccountSettingsModelDelegate, 
         let homeServer = utilityFileSystem.getHomeServer(urlBase: session.urlBase, userId: session.userId)
         let numFoldersLayoutsForView = self.database.getLayoutsForView(keyStore: layoutForView.keyStore)?.count ?? 1
 
-        if serverUrl == homeServer || numFoldersLayoutsForView == 1 || isSearchingMode {
-            setLayout(layoutForView: layoutForView)
+        if serverUrl == homeServer || numFoldersLayoutsForView == 1 {
+            Task {
+                await setLayout(layoutForView: layoutForView)
+                await self.reloadDataSource()
+            }
         } else {
             let alertController = UIAlertController(title: NSLocalizedString("_propagate_layout_", comment: ""), message: nil, preferredStyle: .alert)
 
             alertController.addAction(UIAlertAction(title: NSLocalizedString("_yes_", comment: ""), style: .default, handler: { _ in
-                self.setLayout(layoutForView: layoutForView, withSubFolders: true)
+                Task {
+                    await self.setLayout(layoutForView: layoutForView, withSubFolders: true)
+                    await self.reloadDataSource()
+                }
             }))
             alertController.addAction(UIAlertAction(title: NSLocalizedString("_no_", comment: ""), style: .default, handler: { _ in
-                self.setLayout(layoutForView: layoutForView)
+                Task {
+                    await self.setLayout(layoutForView: layoutForView)
+                    await self.reloadDataSource()
+                }
             }))
 
             self.present(alertController, animated: true)
         }
     }
 
-    private func setLayout(layoutForView: NCDBLayoutForView, withSubFolders: Bool = false) {
+    internal func setLayout(layoutForView: NCDBLayoutForView, withSubFolders: Bool = false) async {
         self.layoutForView = self.database.setLayoutForView(layoutForView: layoutForView, withSubFolders: withSubFolders)
         layoutForView.layout = layoutForView.layout
         self.layoutType = layoutForView.layout
@@ -433,12 +442,7 @@ class NCCollectionViewCommon: UIViewController, NCAccountSettingsModelDelegate, 
             break
         }
 
-        self.collectionView.collectionViewLayout.invalidateLayout()
-
-        Task {
-            await (self.navigationController as? NCMainNavigationController)?.updateMenuOption()
-            await self.reloadDataSource()
-        }
+        collectionView.collectionViewLayout.invalidateLayout()
     }
 
     func getNavigationTitle() -> String {
@@ -536,16 +540,18 @@ class NCCollectionViewCommon: UIViewController, NCAccountSettingsModelDelegate, 
 
         Task {
             await searchOperationHandle.cancel()
-            self.dataSource.removeAll()
+            await reloadDataSource()
 
             // Restore Layout
             if let layoutForViewLayoutStore {
                 let layoutForView = database.getLayoutForView(account: session.account, key: layoutKey, serverUrl: serverUrl)
                 layoutForView.layout = layoutForViewLayoutStore
-                setLayout(layoutForView: layoutForView)
-            } else {
-                await self.reloadDataSource()
+                await setLayout(layoutForView: layoutForView)
             }
+            layoutForViewLayoutStore = nil
+
+            // update Option menu
+            await mainNavigationController?.updateMenuOption()
         }
     }
 
@@ -704,7 +710,7 @@ class NCCollectionViewCommon: UIViewController, NCAccountSettingsModelDelegate, 
             delegate.transferReloadData(serverUrl: self.serverUrl)
         }
 
-        await (self.navigationController as? NCMainNavigationController)?.updateMenuOption()
+        await mainNavigationController?.updateMenuOption()
     }
 
     func getServerData(forced: Bool = false) async { }
