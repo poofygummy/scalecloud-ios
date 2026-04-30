@@ -218,15 +218,21 @@ struct NCMoreView: View {
                 Capsule()
                     .fill(Color(.systemGray5))
 
-                Capsule()
-                    .fill(brandColor)
-                    .frame(width: width * min(progress, warningThreshold))
-
-                if progress > warningThreshold {
+                if model.quotaProgress >= 1 {
                     Capsule()
                         .fill(Color.red)
-                        .frame(width: width * (progress - warningThreshold))
-                        .offset(x: width * warningThreshold)
+                        .frame(width: width)
+                } else {
+                    Capsule()
+                        .fill(brandColor)
+                        .frame(width: width * min(progress, warningThreshold))
+
+                    if progress > warningThreshold {
+                        Capsule()
+                            .fill(Color.red)
+                            .frame(width: width * (progress - warningThreshold))
+                            .offset(x: width * warningThreshold)
+                    }
                 }
             }
         }
@@ -234,7 +240,8 @@ struct NCMoreView: View {
     }
 }
 
-#if DEBUG
+// MARK: - Preview
+
 extension NCMoreModel {
     static var preview: NCMoreModel {
         let model = NCMoreModel(controller: nil)
@@ -308,7 +315,6 @@ extension NCMoreModel {
         return model
     }
 }
-#endif
 
 #Preview {
     NCMoreView(model: .preview)
