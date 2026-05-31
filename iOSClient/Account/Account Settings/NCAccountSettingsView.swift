@@ -220,6 +220,22 @@ struct NCAccountSettingsView: View {
                         }
                     }
                 })
+
+                // ScaleCloud - Watched Download Folders (only for ScaleCloud accounts)
+                if model.isScaleCloudAccount {
+                    Section(header: Text("Watched Download Folders")) {
+                        NavigationLink(destination: ScaleCloudWatchedFoldersView(account: model.tblAccount?.account ?? "")) {
+                            HStack {
+                                Image(systemName: "folder.badge.gear")
+                                Text("Manage Watched Folders")
+                            }
+                        }
+                        Text("Add folders from the Files app that you want automatically scanned for new files when using ScaleCloud.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
                 //
                 // Delete account
                 Section(content: {

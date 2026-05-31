@@ -1,0 +1,106 @@
+## Summary of changes in iOSClient
+
+### Modified files
+- NCLogin.swift
+- NCLogin.storyboard
+- `iOSClient/Account/Account Settings/NCAccountSettingsModel.swift`
+- `iOSClient/Account/Account Settings/NCAccountSettingsView.swift`
+- NCAutoUpload.swift
+- SceneDelegate.swift
+- NCPreferences.swift
+
+### What changed
+
+1. **Tailscale/ScaleCloud login flow**
+   - Added custom login UI fields in `NCLogin.storyboard` for ScaleCloud/Tailscale accounts:
+     - `scUsernameInput`
+     - `scPasswordInput`
+     - `scLoginButton`
+   - Added corresponding outlets and styling in `NCLogin.swift`.
+   - Added logic so when the entered server URL matches the special `toth-adattar` host pattern:
+     - the normal address/login UI is hidden
+     - the Tailscale username/password UI is shown
+     - submit via the new arrow button or Return key triggers `performTailscaleLoginFromUI()`
+   - Added host detection helpers:
+     - `isToCsaCloud(_:)`
+     - `isTailscaleAddress(_:)`
+
+2. **Account settings for ScaleCloud**
+   - Extended `NCAccountSettingsModel` with `isScaleCloudAccount` based on the same `toth-adattar` host logic.
+   - Added a new settings section in `NCAccountSettingsView`:
+     - “Watched Download Folders”
+     - Links to a new ScaleCloud folder management view
+     - Only shown for ScaleCloud accounts
+
+3. **Auto-upload integration**
+   - Updated `NCAutoUpload.swift` to:
+     - detect ScaleCloud accounts
+     - scan additional watched download folders for new files
+     - enqueue downloads via a new helper path
+     - preserve source collection context so Camera vs Screenshots can map to custom remote paths
+   - Added a ScaleCloud-specific remote path mapping for uploads:
+     - screenshots -> `/Képernyőmentések`
+     - camera/other -> `/Saját Fényképek és Videók/`
+
+4. **App launch auto-sync setup**
+   - `SceneDelegate.swift` now:
+     - checks photo library authorization
+     - runs `setupScaleCloudAutoSync()` on launch
+     - auto-configures Tailscale accounts for auto-upload
+     - enforces settings like image/video auto-upload enabled and WWAN upload disabled
+     - sets camera upload folder/filename defaults for ScaleCloud accounts
+     - runs opportunistic check for new files in watched download folders on autoupload
+
+5. **Preference storage**
+   - `NCPreferences.swift` now supports:
+     - storing and retrieving `ScaleCloudWatchedDownloadBookmarks`
+     - generic string-array preference helpers
+   - This supports persistence of security-scoped bookmark data for watched folders.
+
+### New untracked files
+These were created but are not yet committed:
+- `iOSClient/Account/Account Settings/ScaleCloudWatchedFoldersModel.swift`
+- `iOSClient/Account/Account Settings/ScaleCloudWatchedFoldersView.swift`
+- ScaleCloudDownloadsHelper.swift
+
+### Overall intent
+The changes are clearly targeted at adding a ScaleCloud/Tailscale-specific path through:
+- login UI customization
+- account detection
+- auto-upload setup
+- watched downloads handling
+
+----------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Updated the project so NextcloudKit is now configured as a local package dependency instead of the remote SwiftPM branch reference.
+
+What changed
+project.pbxproj
+Replaced the NextcloudKit Swift package reference from:
+XCRemoteSwiftPackageReference
+remote URL https://github.com/nextcloud/NextcloudKit
+branch 7.3.2
+With:
+XCLocalSwiftPackageReference
+local path NextcloudKit
+.gitignore
+Added NextcloudKit to ignore a local custom package checkout/build folder
+README.md
+Added a placeholder note explaining that this folder is reserved for the local/custom NextcloudKit package
+Result
+The Xcode project now points to NextcloudKit as the local package location.
+To complete the setup, place your custom compiled or locally cloned NextcloudKit package at NextcloudKit with a valid Package.swift.

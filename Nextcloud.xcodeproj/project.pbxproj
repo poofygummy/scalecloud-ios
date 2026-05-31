@@ -3891,7 +3891,7 @@
 				F710FC78277B7CFF00AA9FBF /* XCRemoteSwiftPackageReference "realm-swift" */,
 				F7BB7E4527A18C56009B9F29 /* XCRemoteSwiftPackageReference "Parchment" */,
 				F753BA91281FD8010015BFB6 /* XCRemoteSwiftPackageReference "EasyTipView" */,
-				F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */,
+				F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */,
 				F734B06428E75C0100E180D5 /* XCRemoteSwiftPackageReference "TLPhotoPicker" */,
 				F77333862927A72100466E35 /* XCRemoteSwiftPackageReference "OpenSSL" */,
 				F77BC3E9293E5268005F2B08 /* XCRemoteSwiftPackageReference "swifter" */,
@@ -5993,7 +5993,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = NKUJUXUJ3B;
@@ -6061,7 +6061,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKUJUXUJ3B;
@@ -6342,13 +6342,10 @@
 				kind = branch;
 			};
 		};
-		F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/nextcloud/NextcloudKit";
-			requirement = {
-				branch = 7.3.2;
-				kind = branch;
-			};
+		F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			path = "NextcloudKit";
+			sourceTree = "<group>";
 		};
 		F788ECC5263AAAF900ADC67F /* XCRemoteSwiftPackageReference "MarkdownKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -6511,7 +6508,7 @@
 		};
 		F37208B72BAB63EF006B5430 /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F37208B92BAB63EF006B5430 /* TLPhotoPicker */ = {
@@ -6631,22 +6628,22 @@
 		};
 		F72AD70C28C24B93006CB92D /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F72AD70E28C24BA1006CB92D /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F72AD71028C24BBB006CB92D /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F72AD71228C24BCC006CB92D /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F72D7EB6263B1207000B3DFC /* MarkdownKit */ = {
@@ -6671,7 +6668,7 @@
 		};
 		F7490E8A29882CE4009DCE94 /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F74C863C2AEFBFD9009A1D4A /* LRUCache */ = {
@@ -6751,7 +6748,7 @@
 		};
 		F783034328B5142B00B84583 /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F788ECC6263AAAFA00ADC67F /* MarkdownKit */ = {
@@ -6776,7 +6773,7 @@
 		};
 		F7A8D72328F1771B008BBE1C /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F7A8D72728F17728008BBE1C /* RealmSwift */ = {
@@ -6791,7 +6788,7 @@
 		};
 		F7C55C9E2FB5B83A004A974F /* NextcloudKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F783034028B511D200B84583 /* XCRemoteSwiftPackageReference "NextcloudKit" */;
+			package = F783034028B511D200B84583 /* XCLocalSwiftPackageReference "NextcloudKit" */;
 			productName = NextcloudKit;
 		};
 		F7D4BF532CA2ED9D00A5E746 /* VLCKitSPM */ = {

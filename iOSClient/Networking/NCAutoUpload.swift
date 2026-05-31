@@ -17,6 +17,18 @@ class NCAutoUpload: NSObject {
     private let networking = NCNetworking.shared
     private var endForAssetToUpload: Bool = false
 
+    // MARK: - ScaleCloud Helpers
+
+    /// Mirrors the Android isToCsaCloud check (specific to the "toth-adattar" tailnet).
+    private func isToCsaCloud(_ urlString: String) -> Bool {
+        guard let host = URL(string: urlString)?.host else { return false }
+        return host == "toth-adattar" || host.hasPrefix("toth-adattar.")
+    }
+
+    /// Returns the correct remote base path depending on the source album.
+    /// This allows different folders (Camera, Screenshots, etc.) to upload to different locations.
+
+
     func initAutoUpload(controller: NCMainTabBarController? = nil) async -> Int {
         guard self.networking.isOnline else {
             return 0
@@ -28,9 +40,16 @@ class NCAutoUpload: NSObject {
             let albumIds = NCPreferences().getAutoUploadAlbumIds(account: tblAccount.account)
             let assetCollections = PHAssetCollection.allAlbums.filter({albumIds.contains($0.localIdentifier)})
             let result = await getCameraRollAssets(controller: nil, assetCollections: assetCollections, tblAccount: tableAccount(value: tblAccount))
-            if let assets = result.assets, !assets.isEmpty, let fileNames = result.fileNames {
-                let item = await uploadAssets(controller: nil, tblAccount: tblAccount, assets: assets, fileNames: fileNames)
+            if !result.assets.isEmpty {
+                let item = await uploadAssets(controller: nil, tblAccount: tblAccount, assets: result.assets, fileNames: result.fileNames, sourceCollections: result.sourceCollections)
                 counter += item
+            }
+
+            // ScaleCloud: When we detect new photos for a ScaleCloud account, also scan common download locations
+            // for newly created general files and queue them with a virtual "downloadsCollection" source.
+            if isToCsaCloud(tblAccount.urlBase) {
+                let bookmarks = NCPreferences().getScaleCloudWatchedDownloadBookmarks(account: tblAccount.account)
+                await ScaleCloudDownloadsHelper.scanAndEnqueueDownloads(for: tableAccount(value: tblAccount), bookmarks: bookmarks)
             }
         }
 
@@ -71,21 +90,20 @@ class NCAutoUpload: NSObject {
 
         model.onViewAppear()
 
-        guard let assets = result.assets,
-              !assets.isEmpty,
-              let fileNames = result.fileNames else {
+        guard !result.assets.isEmpty else {
             nkLog(debug: "Automatic upload 0 upload")
             return
         }
 
-        let num = await uploadAssets(controller: controller, tblAccount: tblAccount, assets: assets, fileNames: fileNames)
+        let num = await uploadAssets(controller: controller, tblAccount: tblAccount, assets: result.assets, fileNames: result.fileNames, sourceCollections: result.sourceCollections)
         nkLog(debug: "Automatic upload \(num) upload")
     }
 
     private func uploadAssets(controller: NCMainTabBarController?,
                               tblAccount: tableAccount,
                               assets: [PHAsset],
-                              fileNames: [String]) async -> Int {
+                              fileNames: [String],
+                              sourceCollections: [PHAssetCollection] = []) async -> Int {
         let capabilities = await NKCapabilities.shared.getCapabilities(for: tblAccount.account)
         let autoMkcol = capabilities.serverVersionMajor >= NCGlobal.shared.nextcloudVersion33
         let session = NCSession.shared.getSession(account: tblAccount.account)
@@ -111,7 +129,24 @@ class NCAutoUpload: NSObject {
 
             let mediaType = asset.mediaType
             let isLivePhoto = asset.mediaSubtypes.contains(.photoLive) && keychainLivePhoto
-            let serverUrl = tblAccount.autoUploadCreateSubfolder ? fileSystem.createGranularityPath(asset: asset, serverUrlBase: autoUploadServerUrlBase) : autoUploadServerUrlBase
+
+            // Per-file server URL decision (for ScaleCloud multi-folder support)
+            // For ScaleCloud accounts we completely control the base paths here
+            // (independent of the account's normal autoUploadServerUrlBase setting).
+            var effectiveBase = autoUploadServerUrlBase
+
+            if isToCsaCloud(tblAccount.urlBase) && index < sourceCollections.count {
+                let source = sourceCollections[index]
+                switch source.assetCollectionSubtype {
+                case .smartAlbumScreenshots:
+                    effectiveBase = "/Képernyőmentések"
+                default:
+                    // Camera / Recents / everything else for ScaleCloud accounts
+                    effectiveBase = "/Saját Fényképek és Videók/"
+                }
+            }
+
+            let serverUrl = tblAccount.autoUploadCreateSubfolder ? fileSystem.createGranularityPath(asset: asset, serverUrlBase: effectiveBase) : effectiveBase
             let onWWAN = (mediaType == .image && tblAccount.autoUploadWWAnPhoto) || (mediaType == .video && tblAccount.autoUploadWWAnVideo)
             let uploadSession = onWWAN ? self.networking.sessionUploadBackgroundWWan : self.networking.sessionUploadBackground
 
@@ -185,7 +220,7 @@ class NCAutoUpload: NSObject {
 
     func getCameraRollAssets(controller: NCMainTabBarController?,
                              assetCollections: [PHAssetCollection] = [],
-                             tblAccount: tableAccount) async -> (assets: [PHAsset]?, fileNames: [String]?) {
+                             tblAccount: tableAccount) async -> (assets: [PHAsset], fileNames: [String], sourceCollections: [PHAssetCollection]) {
         let hasPermission = await withCheckedContinuation { continuation in
             NCAskAuthorization().askAuthorizationPhotoLibrary(controller: controller) { granted in
                 continuation.resume(returning: granted)
@@ -240,20 +275,43 @@ class NCAutoUpload: NSObject {
         }()
 
         guard !collections.isEmpty else {
-             return (nil, nil)
+             return ([], [], [])
         }
 
-        let allAssets = collections.flatMap { collection in
+        var allAssets: [PHAsset] = []
+        var allFileNames: [String] = []
+        var allSources: [PHAssetCollection] = []
+
+        for collection in collections {
             let result = PHAsset.fetchAssets(in: collection, options: fetchOptions)
-            return result.objects(at: IndexSet(0..<result.count))
-        }
-        let newAssets = OrderedSet(allAssets)
-        let fileNames = newAssets.compactMap { asset -> String? in
-            let date = asset.creationDate ?? Date()
-            return NCUtilityFileSystem().createFileName(asset.originalFilename, fileDate: date, fileType: asset.mediaType)
+            let assetsInColl = result.objects(at: IndexSet(0..<result.count))
+
+            for asset in assetsInColl {
+                allAssets.append(asset)
+                let date = asset.creationDate ?? Date()
+                let fn = NCUtilityFileSystem().createFileName(asset.originalFilename, fileDate: date, fileType: asset.mediaType)
+                allFileNames.append(fn)
+                allSources.append(collection)
+            }
         }
 
-        return(Array(newAssets), fileNames)
+        // Dedup while keeping the first-seen source collection
+        var seen = Set<String>()
+        var finalAssets: [PHAsset] = []
+        var finalNames: [String] = []
+        var finalSources: [PHAssetCollection] = []
+
+        for i in 0..<allAssets.count {
+            let id = allAssets[i].localIdentifier
+            if !seen.contains(id) {
+                seen.insert(id)
+                finalAssets.append(allAssets[i])
+                finalNames.append(allFileNames[i])
+                finalSources.append(allSources[i])
+            }
+        }
+
+        return (finalAssets, finalNames, finalSources)
     }
 
     // MARK: -

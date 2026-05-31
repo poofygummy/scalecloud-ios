@@ -9,6 +9,7 @@ import WidgetKit
 import SwiftUI
 import CoreLocation
 import LucidBanner
+import Photos
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -176,6 +177,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             NCSession.shared.appendSession(account: tblAccount.account, urlBase: tblAccount.urlBase, user: tblAccount.user, userId: tblAccount.userId)
         }
 
+        // ScaleCloud: Automatically configure auto-upload for Camera/Screenshots on Tailscale accounts.
+        // Mirrors Android's initSyncOperations → setupScaleCloudAutoSync (called on every app launch
+        // after permission check, but the function itself is idempotent).
+        if PHPhotoLibrary.authorizationStatus() == .authorized {
+            setupScaleCloudAutoSync()
+        }
+
         // Load Main.storyboard
         if let controller = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController() as? NCMainTabBarController {
             SceneManager.shared.register(scene: scene, withRootViewController: controller)
@@ -305,6 +313,72 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    // MARK: - ScaleCloud Auto Sync Setup (mirrors Android MainApp.setupScaleCloudAutoSync)
+
+    /// Configures auto-upload for Camera/Screenshots on Tailscale accounts.
+    /// Called on every app launch (after photo permission check), but is idempotent.
+    /// Mirrors the structure and intent of the Android implementation in MainApp.java.
+    private func setupScaleCloudAutoSync() {
+        let database = NCManageDatabase.shared
+        let accounts = database.getAllTableAccount()
+
+        var hasScaleCloudAccount = false
+        for tblAccount in accounts {
+            if isTailscaleAddress(tblAccount.urlBase) {
+                hasScaleCloudAccount = true
+                configureAutoUploadForAccount(tblAccount)
+            }
+        }
+
+        // Ensure original filenames are preserved for ScaleCloud auto-uploads
+        // (controlled by the existing user preference "Use original file name")
+        if hasScaleCloudAccount {
+            if !NCPreferences().fileNameOriginal {
+                NCPreferences().fileNameOriginal = true
+                nkLog(info: "ScaleCloud: Enabled 'Use original file name' preference for auto-uploads")
+            }
+        }
+    }
+
+    private func isTailscaleAddress(_ urlString: String) -> Bool {
+        guard let host = URL(string: urlString)?.host else { return false }
+        if host.hasSuffix(".ts.net") { return true }
+        if let ip = IPv4Address(host) {
+            let bytes = ip.rawValue
+            return bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127
+        }
+        return false
+    }
+
+    private func configureAutoUploadForAccount(_ tblAccount: tableAccount) {
+        let cameraRemotePath = "/Saját Fényképek és Videók/"
+
+        Task {
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadImage, value: true, account: tblAccount.account)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadVideo, value: true, account: tblAccount.account)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadWWAnPhoto, value: false, account: tblAccount.account)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadWWAnVideo, value: false, account: tblAccount.account)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadStart, value: true, account: tblAccount.account)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadCreateSubfolder, value: true, account: tblAccount.account)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadSubfolderGranularity, value: 0, account: tblAccount.account) // yearly
+
+            if !cameraRemotePath.isEmpty {
+                let session = NCSession.Session(
+                    account: tblAccount.account,
+                    urlBase: tblAccount.urlBase,
+                    user: tblAccount.user,
+                    userId: tblAccount.userId,
+                    password: ""
+                )
+                await NCManageDatabase.shared.setAccountAutoUploadDirectoryAsync(cameraRemotePath, session: session)
+
+                if tblAccount.autoUploadFileName.isEmpty {
+                    await NCManageDatabase.shared.setAccountAutoUploadFileNameAsync(".")
+                }
+            }
+        }
+    }
+
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         guard let controller = SceneManager.shared.getController(scene: scene),
               let url = URLContexts.first?.url else { return }
@@ -351,15 +425,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     let assistant = NCAssistant(assistantModel: NCAssistantModel(controller: controller, inputModel: inputModel), chatModel: NCAssistantChatModel(controller: controller, inputModel: inputModel), conversationsModel: NCAssistantChatConversationsModel(controller: controller))
                     let hostingController = UIHostingController(rootView: assistant)
                     controller.present(hostingController, animated: true, completion: nil)
-                } else {
-                    try? await Task.sleep(for: .seconds(1))
-                    await showBanner(windowScene: scene as? UIWindowScene,
-                                     title: "_info_",
-                                     subtitle: "_no_assistant_installed_",
-                                     systemImage: "sparkles",
-                                     imageAnimation: .none,
-                                     imageColor: .systemBlue
-                    )
                 }
             }
 

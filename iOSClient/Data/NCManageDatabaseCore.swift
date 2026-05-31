@@ -20,33 +20,28 @@ final class NCManageDatabaseCore {
         self.realmQueue = queue
     }
 
-    //
-    // MANUAL MIGRATIONS (custom logic required)
-    //
     func migrationSchema(_ migration: Migration, _ oldSchemaVersion: UInt64) {
+        //
+        // MANUAL MIGRATIONS (custom logic required)
+        //
+
         if oldSchemaVersion < 390 {
             migration.enumerateObjects(ofType: tableCapabilities.className()) { oldObject, newObject in
-                guard let oldObject,
-                      let newObject,
-                      let oldData = oldObject.value("jsondata", as: Data.self)
-                else {
-                    return
+                if let schema = oldObject?.objectSchema,
+                   schema["jsondata"] != nil,
+                   let oldData = oldObject?["jsondata"] as? Data {
+                    newObject?["capabilities"] = oldData
                 }
-
-                newObject.setValueSafely(oldData, for: "capabilities")
             }
         }
 
         if oldSchemaVersion < 393 {
             migration.enumerateObjects(ofType: tableMetadata.className()) { oldObject, newObject in
-                guard let oldObject,
-                      let newObject,
-                      let oldServerUrlFileName = oldObject.value("serveUrlFileName", as: String.self)
-                else {
-                    return
+                if let schema = oldObject?.objectSchema,
+                   schema["serveUrlFileName"] != nil,
+                   let oldData = oldObject?["serveUrlFileName"] as? String {
+                    newObject?["serverUrlFileName"] = oldData
                 }
-
-                newObject.setValueSafely(oldServerUrlFileName, for: "serverUrlFileName")
             }
         }
 
@@ -54,31 +49,20 @@ final class NCManageDatabaseCore {
             // Fix from version 6.2.5
         } else if oldSchemaVersion < 403 {
             migration.enumerateObjects(ofType: tableAccount.className()) { oldObject, newObject in
-                guard let oldObject,
-                      let newObject
-                else {
-                    return
+                let onlyNew = oldObject?["autoUploadOnlyNew"] as? Bool ?? false
+                if onlyNew {
+                    let oldDate = oldObject?["autoUploadOnlyNewSinceDate"] as? Date
+                    newObject?["autoUploadSinceDate"] = oldDate
+                } else {
+                    newObject?["autoUploadSinceDate"] = nil
                 }
-
-                let onlyNew = oldObject.value("autoUploadOnlyNew", as: Bool.self) ?? false
-
-                guard onlyNew else {
-                    newObject.setValueSafely(nil, for: "autoUploadSinceDate")
-                    return
-                }
-
-                let oldSinceDate = oldObject.value("autoUploadOnlyNewSinceDate", as: Date.self)
-                newObject.setValueSafely(oldSinceDate, for: "autoUploadSinceDate")
             }
         }
 
-        //
-        // AUTOMATIC / DEFENSIVE MIGRATIONS
-        //
-
+        // AUTOMATIC MIGRATIONS (Realm handles these internally)
         if oldSchemaVersion < databaseSchemaVersion {
             migration.enumerateObjects(ofType: tableDirectory.className()) { _, newObject in
-                newObject?.setValueSafely("", for: "etag")
+                newObject?["etag"] = ""
             }
         }
     }
@@ -215,23 +199,4 @@ final class NCManageDatabaseCore {
 class NCKeyValue: Object {
     @Persisted var key: String = ""
     @Persisted var value: String?
-}
-
-private extension MigrationObject {
-    // Returns true when the dynamic Realm object contains the requested property.
-    func hasProperty(_ name: String) -> Bool {
-        objectSchema[name] != nil
-    }
-
-    // Safely reads a typed property from a dynamic Realm object.
-    func value<T>(_ name: String, as type: T.Type = T.self) -> T? {
-        guard hasProperty(name) else { return nil }
-        return self[name] as? T
-    }
-
-    // Safely writes a value only when the destination property exists.
-    func setValueSafely(_ value: Any?, for name: String) {
-        guard hasProperty(name) else { return }
-        self[name] = value
-    }
 }

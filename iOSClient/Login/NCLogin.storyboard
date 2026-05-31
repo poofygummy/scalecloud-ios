@@ -103,6 +103,54 @@
                                     <constraint firstAttribute="height" constant="21" id="boa-1i-a6E"/>
                                 </constraints>
                             </imageView>
+
+                            <!-- ScaleCloud / Tailscale custom login fields. Mirrors Android account_setup.xml exactly:
+                                 sc_username_container + sc_username_input and sc_password_container + sc_password_input
+                                 (with end-icon style login arrow button), initially hidden, toggled by showTailscaleLoginUI
+                                 in NCLogin.swift after isToCsaCloud check (like AuthenticatorActivity.onGetServerInfoFinish).
+                                 These replace the normal address field + helper when the server is a toth-adattar Tailscale host.
+                                 Containers are UIViews (no Material TextInputLayout equivalent); fields styled in code to match baseUrlTextField. -->
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="scU-9xK-2pL">
+                                <rect key="frame" x="50" y="338" width="340" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Username" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sc1-Usr-7mN">
+                                        <rect key="frame" x="0.0" y="0.0" width="340" height="44"/>
+                                        <color key="textColor" red="0.33333333333333331" green="0.33333333333333331" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="next"/>
+                                    </textField>
+                                </subviews>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="scP-4kM-8vQ">
+                                <rect key="frame" x="50" y="394" width="340" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Password" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sc2-Pwd-3rT">
+                                        <rect key="frame" x="0.0" y="0.0" width="340" height="44"/>
+                                        <color key="textColor" red="0.33333333333333331" green="0.33333333333333331" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="done" secureTextEntry="YES"/>
+                                    </textField>
+                                </subviews>
+                            </view>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="scL-5bN-9wX">
+                                <rect key="frame" x="350" y="394" width="40" height="40"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <accessibility key="accessibilityConfiguration" identifier="tailscaleLogin"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="scH-3Lgn-40"/>
+                                    <constraint firstAttribute="width" constant="40" id="scW-4Lgn-40"/>
+                                </constraints>
+                                <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal">
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <imageReference key="image" image="arrow.right" catalog="system" symbolScale="large"/>
+                                </state>
+                                <connections>
+                                    <action selector="performTailscaleLoginFromUI:" destination="yj9-jo-WIn" eventType="touchUpInside" id="scA-ct-1zY"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="8lf-3Y-f5R"/>
                         <color key="backgroundColor" systemColor="tintColor"/>
@@ -128,6 +176,33 @@
                             <constraint firstItem="szn-G7-5sK" firstAttribute="leading" secondItem="8lf-3Y-f5R" secondAttribute="leading" constant="50" id="uQw-dy-Ga4"/>
                             <constraint firstItem="IXM-eK-wKA" firstAttribute="trailing" secondItem="rza-UC-nsA" secondAttribute="trailing" constant="10" id="zD5-gc-sHh"/>
                             <constraint firstItem="8lf-3Y-f5R" firstAttribute="trailing" secondItem="PJH-5i-Tkf" secondAttribute="trailing" constant="60" id="zzV-UD-gRV"/>
+
+                            <!-- Constraints for ScaleCloud tailscale login fields (added to mirror Android account_setup.xml structure and visibility toggling) -->
+                            <!-- scUsernameContainer -->
+                            <constraint firstItem="scU-9xK-2pL" firstAttribute="leading" secondItem="8lf-3Y-f5R" secondAttribute="leading" constant="50" id="scC-01U-ld"/>
+                            <constraint firstItem="scU-9xK-2pL" firstAttribute="trailing" secondItem="8lf-3Y-f5R" secondAttribute="trailing" constant="-50" id="scC-02U-tr"/>
+                            <constraint firstItem="scU-9xK-2pL" firstAttribute="top" secondItem="BpI-xK-1SU" secondAttribute="bottom" constant="30" id="scC-03U-top"/>
+                            <constraint firstItem="scU-9xK-2pL" firstAttribute="height" constant="44" id="scC-04U-ht"/>
+                            <!-- scUsernameInput fills its container -->
+                            <constraint firstItem="sc1-Usr-7mN" firstAttribute="leading" secondItem="scU-9xK-2pL" secondAttribute="leading" constant="0" id="scC-05i-ldU"/>
+                            <constraint firstItem="sc1-Usr-7mN" firstAttribute="trailing" secondItem="scU-9xK-2pL" secondAttribute="trailing" constant="0" id="scC-06i-trU"/>
+                            <constraint firstItem="sc1-Usr-7mN" firstAttribute="top" secondItem="scU-9xK-2pL" secondAttribute="top" constant="0" id="scC-07i-tpU"/>
+                            <constraint firstItem="sc1-Usr-7mN" firstAttribute="bottom" secondItem="scU-9xK-2pL" secondAttribute="bottom" constant="0" id="scC-08i-btU"/>
+                            <!-- scPasswordContainer below username -->
+                            <constraint firstItem="scP-4kM-8vQ" firstAttribute="leading" secondItem="8lf-3Y-f5R" secondAttribute="leading" constant="50" id="scC-09P-ld"/>
+                            <constraint firstItem="scP-4kM-8vQ" firstAttribute="trailing" secondItem="8lf-3Y-f5R" secondAttribute="trailing" constant="-50" id="scC-10P-tr"/>
+                            <constraint firstItem="scP-4kM-8vQ" firstAttribute="top" secondItem="scU-9xK-2pL" secondAttribute="bottom" constant="12" id="scC-11P-topU"/>
+                            <constraint firstItem="scP-4kM-8vQ" firstAttribute="height" constant="44" id="scC-12P-ht"/>
+                            <!-- scPasswordInput fills its container -->
+                            <constraint firstItem="sc2-Pwd-3rT" firstAttribute="leading" secondItem="scP-4kM-8vQ" secondAttribute="leading" constant="0" id="scC-13i-ldP"/>
+                            <constraint firstItem="sc2-Pwd-3rT" firstAttribute="trailing" secondItem="scP-4kM-8vQ" secondAttribute="trailing" constant="0" id="scC-14i-trP"/>
+                            <constraint firstItem="sc2-Pwd-3rT" firstAttribute="top" secondItem="scP-4kM-8vQ" secondAttribute="top" constant="0" id="scC-15i-tpP"/>
+                            <constraint firstItem="sc2-Pwd-3rT" firstAttribute="bottom" secondItem="scP-4kM-8vQ" secondAttribute="bottom" constant="0" id="scC-16i-btP"/>
+                            <!-- scLoginButton (arrow) aligned to right of password container, like normal loginButton to address -->
+                            <constraint firstItem="scL-5bN-9wX" firstAttribute="width" constant="40" id="scC-17L-wd"/>
+                            <constraint firstItem="scL-5bN-9wX" firstAttribute="height" constant="40" id="scC-18L-ht"/>
+                            <constraint firstItem="scL-5bN-9wX" firstAttribute="trailing" secondItem="8lf-3Y-f5R" secondAttribute="trailing" constant="-50" id="scC-19L-tr"/>
+                            <constraint firstItem="scL-5bN-9wX" firstAttribute="centerY" secondItem="scP-4kM-8vQ" secondAttribute="centerY" id="scC-20L-cyP"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="6v9-Gy-jiv"/>
@@ -141,6 +216,12 @@
                         <outlet property="loginAddressDetail" destination="PJH-5i-Tkf" id="wBQ-5P-HD4"/>
                         <outlet property="loginButton" destination="HQd-pF-3cE" id="XOc-dS-QZ8"/>
                         <outlet property="qrCode" destination="6tp-bh-Z9k" id="Tw3-op-BgR"/>
+                        <!-- ScaleCloud tailscale outlets wired from storyboard (exact mirror of Android XML-declared views) -->
+                        <outlet property="scUsernameContainer" destination="scU-9xK-2pL" id="scO-21U-ct"/>
+                        <outlet property="scUsernameInput" destination="sc1-Usr-7mN" id="scO-22i-ct"/>
+                        <outlet property="scPasswordContainer" destination="scP-4kM-8vQ" id="scO-23P-ct"/>
+                        <outlet property="scPasswordInput" destination="sc2-Pwd-3rT" id="scO-24i-ct"/>
+                        <outlet property="scLoginButton" destination="scL-5bN-9wX" id="scO-25L-ct"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dCU-1X-uQw" userLabel="First Responder" sceneMemberID="firstResponder"/>

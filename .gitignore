@@ -42,5 +42,8 @@ Carthage/
 .swiftpm
 Package.resolved
 
+# Local NextcloudKit override for custom builds
+# NextcloudKit/ removed so the custom folder can be tracked
+
 *.generated.swift
 /.env-vars

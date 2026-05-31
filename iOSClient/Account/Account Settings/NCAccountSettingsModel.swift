@@ -96,6 +96,16 @@ class NCAccountSettingsModel: ObservableObject, ViewOnAppearHandling {
     }
 
     /// Func to get the user display name + alias
+    var isScaleCloudAccount: Bool {
+        guard let tblAccount else { return false }
+        return isToCsaCloud(tblAccount.urlBase)
+    }
+
+    private func isToCsaCloud(_ urlString: String) -> Bool {
+        guard let host = URL(string: urlString)?.host else { return false }
+        return host == "toth-adattar" || host.hasPrefix("toth-adattar.")
+    }
+
     func getUserName() -> String {
         guard let tblAccount else { return "" }
         if alias.isEmpty {

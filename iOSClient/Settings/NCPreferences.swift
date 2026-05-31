@@ -576,6 +576,18 @@ final class NCPreferences: NSObject {
         return getBoolPreference(key: "UploadUseAutoUploadSubFolder", account: account, defaultValue: false)
     }
 
+    // MARK: - ScaleCloud Watched Download Folders (security-scoped bookmarks)
+
+    func setScaleCloudWatchedDownloadBookmarks(account: String, bookmarks: [Data]) {
+        let base64Strings = bookmarks.map { $0.base64EncodedString() }
+        setStringArrayPreference(base64Strings, forKey: "ScaleCloudWatchedDownloadBookmarks", account: account)
+    }
+
+    func getScaleCloudWatchedDownloadBookmarks(account: String) -> [Data] {
+        let base64Strings = getStringArrayPreference(key: "ScaleCloudWatchedDownloadBookmarks", account: account, defaultValue: [])
+        return base64Strings.compactMap { Data(base64Encoded: $0) }
+    }
+
     func cleaningWeek() -> Bool {
         let date = Date()
         let year = Calendar.current.component(.yearForWeekOfYear, from: date)
@@ -667,6 +679,24 @@ final class NCPreferences: NSObject {
         }
 
         UserDefaults.standard.set(defaultValue, forKey: userDefaultsKey)
+        return defaultValue
+    }
+
+    // MARK: - Array helpers (for bookmarks etc.)
+
+    private func setStringArrayPreference(_ value: [String], forKey key: String, account: String? = nil) {
+        let suffix = account ?? ""
+        let userDefaultsKey = account != nil ? "Preferences_\(key)_\(suffix)" : "Preferences_\(key)"
+        UserDefaults.standard.set(value, forKey: userDefaultsKey)
+    }
+
+    private func getStringArrayPreference(key: String, account: String? = nil, defaultValue: [String] = []) -> [String] {
+        let suffix = account ?? ""
+        let userDefaultsKey = account != nil ? "Preferences_\(key)_\(suffix)" : "Preferences_\(key)"
+
+        if let value = UserDefaults.standard.array(forKey: userDefaultsKey) as? [String] {
+            return value
+        }
         return defaultValue
     }
 }

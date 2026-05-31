@@ -20,6 +20,11 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
     @IBOutlet weak var certificate: UIButton!
     @IBOutlet weak var enforceServersButton: UIButton!
     @IBOutlet weak var enforceServersDropdownImage: UIImageView!
+    @IBOutlet weak var scUsernameContainer: UIView!
+    @IBOutlet weak var scUsernameInput: UITextField!
+    @IBOutlet weak var scPasswordContainer: UIView!
+    @IBOutlet weak var scPasswordInput: UITextField!
+    @IBOutlet weak var scLoginButton: UIButton!
 
     private let appDelegate = (UIApplication.shared.delegate as? AppDelegate)!
     private var textColor: UIColor = .white
@@ -83,6 +88,35 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
         baseUrlTextField.delegate = self
 
         baseUrlTextField.isEnabled = !NCBrandOptions.shared.disable_request_login_url
+
+        // ScaleCloud tailscale login fields - style to exactly match the normal address field (no programmatic creation).
+        // These are declared in storyboard (like Android account_setup.xml sc_* containers) and toggled in showTailscaleLoginUI.
+        if let scUser = scUsernameInput {
+            scUser.textColor = textColor
+            scUser.tintColor = textColor
+            scUser.layer.cornerRadius = 10
+            scUser.layer.borderWidth = 1
+            scUser.layer.borderColor = textColor.cgColor
+            scUser.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 15, height: 44))
+            scUser.leftViewMode = .always
+            scUser.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 44))
+            scUser.rightViewMode = .always
+            scUser.delegate = self
+            scUser.placeholder = "Username"
+        }
+        if let scPass = scPasswordInput {
+            scPass.textColor = textColor
+            scPass.tintColor = textColor
+            scPass.layer.cornerRadius = 10
+            scPass.layer.borderWidth = 1
+            scPass.layer.borderColor = textColor.cgColor
+            scPass.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 15, height: 44))
+            scPass.leftViewMode = .always
+            scPass.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 44))
+            scPass.rightViewMode = .always
+            scPass.delegate = self
+            scPass.placeholder = "Password"
+        }
 
         // Login button
         loginAddressDetail.textColor = textColor
@@ -253,7 +287,13 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        actionButtonLogin(self)
+        if textField == scPasswordInput && !scPasswordContainer.isHidden {
+            performTailscaleLoginFromUI()
+        } else if textField == scUsernameInput && !scUsernameContainer.isHidden {
+            scPasswordInput.becomeFirstResponder()
+        } else {
+            actionButtonLogin(self)
+        }
         return false
     }
 
@@ -321,6 +361,54 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
         }
     }
 
+    // MARK: - ScaleCloud
+
+    /// Mirrors the Android isToCsaCloud check for this specific deployment.
+    private func isToCsaCloud(_ urlString: String) -> Bool {
+        guard let host = URL(string: urlString)?.host else { return false }
+        return host == "toth-adattar" || host.hasPrefix("toth-adattar.")
+    }
+
+    private func isTailscaleAddress(_ urlString: String) -> Bool {
+        // General Tailscale check (kept for reference / future use)
+        guard let host = URL(string: urlString)?.host else { return false }
+        if host.hasSuffix(".ts.net") { return true }
+        if let ip = IPv4Address(host) {
+            let bytes = ip.rawValue
+            return bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127
+        }
+        return false
+    }
+
+    private func showTailscaleLoginUI() {
+        // Mirror Android: hide the normal server address UI (host frame + helper + scan), show the
+        // ScaleCloud username/password fields instead. The login trigger (arrow) moves to the password field.
+        baseUrlTextField.isHidden = true
+        loginAddressDetail.isHidden = true
+        loginButton.isHidden = true
+        qrCode.isHidden = true
+        certificate.isHidden = true
+
+        scUsernameContainer.isHidden = false
+        scPasswordContainer.isHidden = false
+        scLoginButton.isHidden = false
+    }
+
+    private func performTailscaleLogin(urlBase: String) {
+        guard let user = scUsernameInput.text, !user.isEmpty,
+            let password = scPasswordInput.text, !password.isEmpty else { return }
+        scLoginButton?.isEnabled = false
+        Task {
+            await getAppPassword(urlBase: urlBase, user: user, password: password)
+        }
+    }
+
+    // Convenience wrapper so the storyboard can connect buttons directly
+    // (mirrors the Android performTailscaleLoginFromUI pattern).
+    @IBAction private func performTailscaleLoginFromUI() {
+        performTailscaleLogin(urlBase: baseUrlTextField.text ?? "")
+    }
+
     // MARK: - Login
 
     private func login() {
@@ -346,6 +434,15 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
                 if let host = URL(string: url)?.host {
                     NCNetworking.shared.writeCertificate(host: host)
                 }
+
+                // ScaleCloud / tsnet special case: for specific Tailscale deployments,
+                // show custom username/password fields instead of the normal web login flow.
+                // Mirrors Android AuthenticatorActivity: onGetServerInfoFinish -> isTailscaleAddress -> showTailscaleLoginUI
+                if isToCsaCloud(url) {
+                    showTailscaleLoginUI()
+                    return
+                }
+
                 let loginOptions = NKRequestOptions(customUserAgent: userAgent)
                 NextcloudKit.shared.getLoginFlowV2(serverUrl: url, options: loginOptions) { [self] token, endpoint, login, _, error in
                     // Login Flow V2
