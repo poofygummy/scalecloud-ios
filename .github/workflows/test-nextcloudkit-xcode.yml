@@ -1,0 +1,46 @@
+name: Test Official NextcloudKit on macOS + Xcode (5.9)
+
+on:
+  workflow_dispatch:   # Only manual trigger
+
+jobs:
+  build-xcode:
+    runs-on: macos-14   # Apple Silicon runner with recent Xcode
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout NextcloudKit at the exact version used by the official app (7.3.2)
+        run: |
+          git clone https://github.com/nextcloud/NextcloudKit.git
+          cd NextcloudKit
+          git checkout 7.3.2
+          echo "Checked out NextcloudKit version:"
+          git log --oneline -1
+
+      - name: Show Xcode and Swift versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build NextcloudKit with Xcode
+        run: |
+          cd NextcloudKit
+          # Generate Xcode project for the SPM package (still works for 5.9 era packages)
+          swift package generate-xcodeproj
+          
+          # Build the library scheme
+          xcodebuild \
+            -project NextcloudKit.xcodeproj \
+            -scheme NextcloudKit \
+            -destination 'generic/platform=iOS' \
+            clean build \
+            | tee build.log
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-5.9-build-log
+          path: NextcloudKit/build.log
+          retention-days: 14
