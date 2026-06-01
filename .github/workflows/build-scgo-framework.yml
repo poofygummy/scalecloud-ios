@@ -1,17 +1,23 @@
 name: Build SCGo iOS Framework
 
 on:
-  workflow_dispatch:   # Manual trigger from GitHub UI
+  workflow_dispatch:   # Manual trigger from GitHub UI (recommended)
   push:
     paths:
       - 'SCgo.go'
       - 'go.mod'
       - 'go.sum'
-      - '.github/workflows/build-scgo-framework.yml'
+      # Note: We intentionally do NOT trigger on changes to this workflow file
+      # to avoid accidental double-runs when updating the workflow itself.
 
 jobs:
   build-framework:
     runs-on: macos-14   # Apple Silicon runner (better for modern Go + gomobile)
+
+    # Prevent multiple builds from running at the same time for the same branch
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout
