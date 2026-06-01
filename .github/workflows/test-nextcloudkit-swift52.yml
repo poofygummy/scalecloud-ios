@@ -1,11 +1,7 @@
 name: Test Official NextcloudKit on Swift 5.2
 
 on:
-  workflow_dispatch:   # Manual trigger
-  push:
-    paths:
-      - 'NextcloudKit/**'
-      - '.github/workflows/test-nextcloudkit-swift52.yml'
+  workflow_dispatch:   # Only manual trigger from GitHub UI or gh CLI
 
 jobs:
   build-swift52:
