@@ -1,0 +1,38 @@
+name: Test Official NextcloudKit on Swift 5.2
+
+on:
+  workflow_dispatch:   # Manual trigger
+  push:
+    paths:
+      - 'NextcloudKit/**'
+      - '.github/workflows/test-nextcloudkit-swift52.yml'
+
+jobs:
+  build-swift52:
+    runs-on: ubuntu-24.04
+    container:
+      image: swift:5.2-focal   # Ubuntu 20.04 base + Swift 5.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Swift Version
+        run: swift --version
+
+      - name: Clone official NextcloudKit
+        run: |
+          git clone --depth 1 https://github.com/nextcloud/NextcloudKit.git /tmp/official-nextcloudkit
+          ls -la /tmp/official-nextcloudkit
+
+      - name: Build official NextcloudKit with Swift 5.2
+        run: |
+          cd /tmp/official-nextcloudkit
+          swift build 2>&1 | tee build.log
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift52-build-log
+          path: /tmp/official-nextcloudkit/build.log
+          retention-days: 14
