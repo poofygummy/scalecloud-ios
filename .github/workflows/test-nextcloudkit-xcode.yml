@@ -45,50 +45,50 @@ jobs:
             SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             | tee build.log || true
 
-      - name: Package the built NextcloudKit framework
+      - name: Package the built NextcloudKit framework into an XCFramework and zip
         run: |
-          # Primary location: archive Products path
+          set -e
+          cd NextcloudKit
+
           ARCHIVE_PATH="$PWD/build/NextcloudKit.xcarchive"
-          ARCHIVE_FRAMEWORK="$ARCHIVE_PATH/Products/Library/Frameworks/NextcloudKit.framework"
+          SIM_ARCHIVE_PATH="$PWD/build/NextcloudKit-sim.xcarchive"
 
-          FRAMEWORK_PATH=""
-          if [ -d "$ARCHIVE_FRAMEWORK" ]; then
-            FRAMEWORK_PATH="$ARCHIVE_FRAMEWORK"
-          else
-            # Fallback: look into DerivedData Build/Products
-            DERIVED_DATA="$PWD/build/DerivedData"
-            FRAMEWORK_PATH=$(find "$DERIVED_DATA/Build/Products" -name "NextcloudKit.framework" -type d | head -1 || true)
-          fi
+          # Ensure simulator archive exists (may fail on some runners, continue)
+          xcodebuild archive \
+            -scheme NextcloudKit \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Release \
+            -archivePath "$SIM_ARCHIVE_PATH" \
+            SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES || true
 
-          if [ -n "$FRAMEWORK_PATH" ] && [ -d "$FRAMEWORK_PATH" ]; then
-            mkdir -p ./artifacts
-            cp -R "$FRAMEWORK_PATH" ./artifacts/
-            echo "NextcloudKit.framework copied from: $FRAMEWORK_PATH"
-            ls -la ./artifacts/
-            # Zip the framework for reliable artifact upload
-            cd artifacts
-            zip -r NextcloudKit.framework.zip NextcloudKit.framework
+          DEVICE_FRAMEWORK="$ARCHIVE_PATH/Products/Library/Frameworks/NextcloudKit.framework"
+          SIM_FRAMEWORK="$SIM_ARCHIVE_PATH/Products/Library/Frameworks/NextcloudKit.framework"
+
+          mkdir -p "$PWD/build"
+          mkdir -p ../artifacts
+
+          if [ -d "$DEVICE_FRAMEWORK" ] && [ -d "$SIM_FRAMEWORK" ]; then
+            xcodebuild -create-xcframework \
+              -framework "$DEVICE_FRAMEWORK" \
+              -framework "$SIM_FRAMEWORK" \
+              -output "$PWD/build/NextcloudKit.xcframework"
+            cd build
+            zip -r NextcloudKit.xcframework.zip NextcloudKit.xcframework
+            mv NextcloudKit.xcframework.zip ../artifacts/
             cd -
+            echo "Created XCFramework and zipped to ../artifacts/NextcloudKit.xcframework.zip"
+          elif [ -d "$DEVICE_FRAMEWORK" ]; then
+            # Fallback: package single framework
+            cp -R "$DEVICE_FRAMEWORK" "$PWD/build/"
+            cd build
+            zip -r NextcloudKit.framework.zip NextcloudKit.framework
+            mv NextcloudKit.framework.zip ../artifacts/
+            cd -
+            echo "Packaged device framework to ../artifacts/NextcloudKit.framework.zip"
           else
-            echo "Could not find NextcloudKit.framework in archive or DerivedData"
-            echo "Checked: $ARCHIVE_FRAMEWORK"
-            echo "Searched: $PWD/build/DerivedData/Build/Products"
-            find "$PWD" -name "*NextcloudKit*" -type d | head -40
+            echo "Could not find built frameworks in archive paths"
+            echo "Checked: $DEVICE_FRAMEWORK"
+            echo "Checked: $SIM_FRAMEWORK"
+            find "$PWD" -maxdepth 4 -type d -name "*NextcloudKit*" | head -40
             exit 1
           fi
-
-      - name: Upload NextcloudKit Framework (for download)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: NextcloudKit-Framework
-          path: artifacts/NextcloudKit.framework.zip
-          retention-days: 30
-
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-modified-xcode-5.9-build-log
-          path: NextcloudKit/build.log
-          retention-days: 14
