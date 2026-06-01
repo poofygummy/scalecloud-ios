@@ -31,17 +31,13 @@ jobs:
       - name: Build NextcloudKit with Xcode
         run: |
           cd nextcloudkit-source
-          
-          # Clean any previous generated project to avoid conflicts
-          rm -rf GeneratedXcodeProject
 
-          # Generate Xcode project into a clearly separate directory
-          # (not named after the source dir) to prevent "destinationPath already exists" errors
-          swift package generate-xcodeproj --destination-path ./GeneratedXcodeProject
-          
-          # Build using the generated project in the new location
+          # Modern SPM + xcodebuild (no generate-xcodeproj needed on Xcode 13+)
+          xcodebuild -resolvePackageDependencies \
+            -scheme NextcloudKit \
+            -destination 'generic/platform=iOS'
+
           xcodebuild \
-            -project ./GeneratedXcodeProject/NextcloudKit.xcodeproj \
             -scheme NextcloudKit \
             -destination 'generic/platform=iOS' \
             clean build \
