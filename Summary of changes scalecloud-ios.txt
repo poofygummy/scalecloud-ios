@@ -104,3 +104,56 @@ Added a placeholder note explaining that this folder is reserved for the local/c
 Result
 The Xcode project now points to NextcloudKit as the local package location.
 To complete the setup, place your custom compiled or locally cloned NextcloudKit package at NextcloudKit with a valid Package.swift.
+
+
+
+----------------------------------------------------------
+
+
+
+
+scalecloud-ios/bridge.go (the Go source that becomes the XCFramework via gomobile bind)
+
+• Complete implementation of the two exported functions that Swift calls: StartProxy(hostname, stateDir string) (int, error) and StopProxy() error.
+• OAuth client ID + secret are hardcoded in init() and injected via TS_OAUTH_CLIENT_ID / TS_OAUTH_CLIENT_SECRET environment variables.
+• isTailscaleAddress(host) — exactly the same logic Android uses (.ts.net suffix OR 100.64.0.0/10 CGNAT range).
+• ensureTSNodeActive(hostname, stateDir) protected by nodeMX mutex — lazily creates the single *tsnet.Server (Ephemeral: false, ControlURL set to the official control plane, Logf = Discard).
+• The real engine is inside StartProxy:
+  • Listens on 127.0.0.1:0 (random free port).
+  • Creates a goproxy.ProxyHttpServer.
+  • Replaces its Transport.DialContext with custom logic: if the target host is a Tailscale address → call ensureTSNodeActive + tsNode.Dial(...); otherwise use a normal net.Dialer.
+  • The proxy server is stored in the package-level proxyServer variable.
+• StopProxy takes both proxyMX and nodeMX locks, shuts down the tsnet node (if any) and the http server (graceful shutdown with 5s timeout), and clears all state.
+• Lots of package-level vars + two mutexes (proxyMX, nodeMX) for the same "only one proxy / one tsnet node ever" guarantee that Android has with its static fields.
+
+scalecloud-ios/NextcloudKit/Sources/NextcloudKit/NKSession.swift (the only file modified in the NextcloudKit fork)
+
+• New static state (direct port of Android's OwnCloudClient statics):
+  • proxyClients: [WeakURLSession]
+  • cleanupTimer: Timer?
+  • proxyPort: Int
+  • lock: NSLock
+  • Inner WeakURLSession helper class (so the array doesn't keep sessions alive forever).
+• applyProxySettings() — the central method:
+  • Creates the exact state directory <app support>/tailscale (matching Android's <filesDir>/tailscale).
+  • Calls Scalecloud.startProxy("ios-scalecloud-client", stateDir) (the gomobile-generated binding).
+  • Returns the connectionProxyDictionary (HTTP + HTTPS both pointed at 127.0.0.1 + the port).
+• checkAndCleanup() + registerSession(_:) — the lifecycle system:
+  • Every time an NKSession creates any URLSession, it registers it.
+  • A repeating timer (every 60 s) prunes dead sessions.
+  • When the last one disappears → calls Scalecloud.stopProxy() and resets the port.
+• proxyDictionary is now a stored let on every NKSession instance (populated in init before any sessions are built).
+• In the init of NKSession:
+  • self.proxyDictionary = NKSession.applyProxySettings() is called first (exact analog to the Android OwnCloudClient constructor calling applyProxySettings immediately).
+• Every single one of the many URLSessionConfiguration objects (sessionData, sessionDataNoCache, all the background ones, the lazy *Ext ones, download, upload, WWAN, etc.) gets:
+
+config.connectionProxyDictionary = proxyDictionary   // or self.proxyDictionary
+  Unconditionally — every session goes through the proxy, exactly like Android.
+• registerSession(...) is called on every one of those sessions.
+• All the new code has very explicit comments saying "ScaleCloud: analogous to ... in OwnCloudClient.java" and "mirrors Android".
+
+Other small but related changes in the scalecloud-ios tree that affect the NextcloudKit/ScaleCloud integration
+
+• project.pbxproj was switched from an XCRemoteSwiftPackageReference (the official NextcloudKit 7.3.2 branch) to an XCLocalSwiftPackageReference pointing at the local NextcloudKit/ folder.
+• .gitignore update to ignore local build artifacts of the custom NextcloudKit package.
+• A short note added in the top-level README about the local package.
