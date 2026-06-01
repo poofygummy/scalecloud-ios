@@ -17,12 +17,16 @@ jobs:
       - name: Swift Version
         run: swift --version
 
-      - name: Clone official NextcloudKit
+      - name: Clone and checkout the exact version of NextcloudKit used by the official nextcloud/ios app
         run: |
-          git clone --depth 1 https://github.com/nextcloud/NextcloudKit.git /tmp/official-nextcloudkit
-          ls -la /tmp/official-nextcloudkit
+          # The official iOS app pins NextcloudKit to the 7.3.2 tag/branch
+          git clone https://github.com/nextcloud/NextcloudKit.git /tmp/official-nextcloudkit
+          cd /tmp/official-nextcloudkit
+          git checkout 7.3.2
+          echo "Checked out NextcloudKit version used by the official app:"
+          git log --oneline -1
 
-      - name: Build official NextcloudKit with Swift 5.9
+      - name: Build official NextcloudKit (7.3.2) with Swift 5.9
         run: |
           cd /tmp/official-nextcloudkit
           swift build 2>&1 | tee build.log
