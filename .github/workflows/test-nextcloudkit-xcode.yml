@@ -4,53 +4,6 @@ on:
   workflow_dispatch:   # Only manual trigger
 
 jobs:
-  build-xcode:
-    runs-on: macos-14   # Apple Silicon runner with recent Xcode
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Checkout NextcloudKit at the exact version used by the official app (7.3.2)
-        run: |
-          # Clear any pre-configured credential helpers that can break public clones on macOS runners
-          git config --global credential.helper ""
-          git config --global --unset-all url.https://github.com/.insteadOf || true
-
-          # Clone into a directory with a name that won't collide with generate-xcodeproj defaults
-          git clone https://github.com/nextcloud/NextcloudKit.git nextcloudkit-source
-          cd nextcloudkit-source
-          git checkout 7.3.2
-          echo "Checked out NextcloudKit version:"
-          git log --oneline -1
-
-      - name: Show Xcode and Swift versions
-        run: |
-          xcodebuild -version
-          swift --version
-
-      - name: Build NextcloudKit with Xcode
-        run: |
-          cd nextcloudkit-source
-
-          # Modern SPM + xcodebuild (no generate-xcodeproj needed on Xcode 13+)
-          xcodebuild -resolvePackageDependencies \
-            -scheme NextcloudKit \
-            -destination 'generic/platform=iOS'
-
-          xcodebuild \
-            -scheme NextcloudKit \
-            -destination 'generic/platform=iOS' \
-            clean build \
-            | tee build.log
-
-      - name: Upload build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: xcode-5.9-build-log
-          path: NextcloudKit/build.log
-          retention-days: 14
-
   build-my-modified-xcode:
     runs-on: macos-14
     steps:
@@ -75,8 +28,30 @@ jobs:
             clean build \
             | tee build.log
 
-      - name: Upload build log on failure
-        if: failure()
+      - name: Package the built NextcloudKit framework
+        run: |
+          # Find the built framework in DerivedData
+          FRAMEWORK_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "NextcloudKit.framework" -type d | head -1)
+
+          if [ -d "$FRAMEWORK_PATH" ]; then
+            mkdir -p ./artifacts
+            cp -R "$FRAMEWORK_PATH" ./artifacts/
+            echo "NextcloudKit.framework copied from: $FRAMEWORK_PATH"
+            ls -la ./artifacts/
+          else
+            echo "Could not find NextcloudKit.framework in DerivedData"
+            find ~/Library/Developer/Xcode/DerivedData -name "*NextcloudKit*" -type d | head -10
+            exit 1
+          fi
+
+      - name: Upload NextcloudKit Framework (for download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NextcloudKit-Framework
+          path: artifacts/NextcloudKit.framework
+          retention-days: 30
+
+      - name: Upload build log
         uses: actions/upload-artifact@v4
         with:
           name: my-modified-xcode-5.9-build-log
