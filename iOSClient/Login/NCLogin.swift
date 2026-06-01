@@ -9,6 +9,7 @@ import NextcloudKit
 import SwiftUI
 import SafariServices
 import LucidBanner
+import Network
 
 class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
     @IBOutlet weak var imageBrand: UIImageView!
@@ -365,13 +366,21 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
 
     /// Mirrors the Android isToCsaCloud check for this specific deployment.
     private func isToCsaCloud(_ urlString: String) -> Bool {
-        guard let host = URL(string: urlString)?.host else { return false }
+        var sanitized = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !sanitized.lowercased().hasPrefix("http://") && !sanitized.lowercased().hasPrefix("https://") {
+            sanitized = "https://" + sanitized
+        }
+        guard let host = URL(string: sanitized)?.host else { return false }
         return host == "toth-adattar" || host.hasPrefix("toth-adattar.")
     }
 
     private func isTailscaleAddress(_ urlString: String) -> Bool {
         // General Tailscale check (kept for reference / future use)
-        guard let host = URL(string: urlString)?.host else { return false }
+        var sanitized = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !sanitized.lowercased().hasPrefix("http://") && !sanitized.lowercased().hasPrefix("https://") {
+            sanitized = "https://" + sanitized
+        }
+        guard let host = URL(string: sanitized)?.host else { return false }
         if host.hasSuffix(".ts.net") { return true }
         if let ip = IPv4Address(host) {
             let bytes = ip.rawValue
@@ -397,6 +406,18 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
     private func performTailscaleLogin(urlBase: String) {
         guard let user = scUsernameInput.text, !user.isEmpty,
             let password = scPasswordInput.text, !password.isEmpty else { return }
+        
+        // Handle empty fields
+        if user.isEmpty || password.isEmpty {
+            let alert = UIAlertController(
+                title: NSLocalizedString("_error_", comment: ""),
+                message: NSLocalizedString("_login_url_error_", comment: ""),
+                preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("_ok_", comment: ""), style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
         scLoginButton?.isEnabled = false
         Task {
             await getAppPassword(urlBase: urlBase, user: user, password: password)
@@ -438,7 +459,7 @@ class NCLogin: UIViewController, UITextFieldDelegate, NCLoginQRCodeDelegate {
                 // ScaleCloud / tsnet special case: for specific Tailscale deployments,
                 // show custom username/password fields instead of the normal web login flow.
                 // Mirrors Android AuthenticatorActivity: onGetServerInfoFinish -> isTailscaleAddress -> showTailscaleLoginUI
-                if isToCsaCloud(url) {
+                if isTailscaleAddress(url) {
                     showTailscaleLoginUI()
                     return
                 }

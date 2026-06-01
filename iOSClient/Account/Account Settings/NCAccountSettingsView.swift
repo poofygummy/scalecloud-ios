@@ -223,14 +223,19 @@ struct NCAccountSettingsView: View {
 
                 // ScaleCloud - Watched Download Folders (only for ScaleCloud accounts)
                 if model.isScaleCloudAccount {
-                    Section(header: Text("Watched Download Folders")) {
+                    Section(header: Text(NSLocalizedString("_sc_watched_folders_", comment: ""))) {
                         NavigationLink(destination: ScaleCloudWatchedFoldersView(account: model.tblAccount?.account ?? "")) {
                             HStack {
                                 Image(systemName: "folder.badge.gear")
-                                Text("Manage Watched Folders")
+                                    .font(.icon())
+                                    .foregroundStyle(Color(NCBrandColor.shared.iconImageColor))
+                                    .frame(width: 26)
+                                Text(NSLocalizedString("_sc_manage_watched_folders_", comment: ""))
+                                    .cappedFont(.body, maxDynamicType: .accessibility2)
+                                    .foregroundStyle(Color(NCBrandColor.shared.textColor))
                             }
                         }
-                        Text("Add folders from the Files app that you want automatically scanned for new files when using ScaleCloud.")
+                        Text(NSLocalizedString("_sc_watched_folders_description_", comment: ""))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

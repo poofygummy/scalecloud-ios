@@ -64,6 +64,7 @@ class ScaleCloudWatchedFoldersModel: ObservableObject {
         // Ask NCPreferences for the raw bookmark Data we previously saved for this account.
         let bookmarkDatas = preferences.getScaleCloudWatchedDownloadBookmarks(account: account)
         var resolved: [URL] = []
+        var validDatas: [Data] = []
 
         for data in bookmarkDatas {
             var isStale = false
@@ -76,12 +77,18 @@ class ScaleCloudWatchedFoldersModel: ObservableObject {
                                   relativeTo: nil,
                                   bookmarkDataIsStale: &isStale),
                !isStale {
+                guard url.startAccessingSecurityScopedResource() else { continue }
                 resolved.append(url)
+                validDatas.append(data)
             }
         }
 
         // Update the published property → the UI will refresh.
         watchedFolders = resolved
+        // Update the stored bookmarks if any were stale
+        if validDatas.count != bookmarkDatas.count {
+            preferences.setScaleCloudWatchedDownloadBookmarks(account: account, bookmarks: validDatas)
+        }
     }
 
     /// Called when the user picks a new folder using the document picker.
@@ -131,6 +138,8 @@ class ScaleCloudWatchedFoldersModel: ObservableObject {
 
         for index in offsets.reversed() {
             if index < watchedFolders.count {
+                let url = watchedFolders[index]
+                url.stopAccessingSecurityScopedResource() // Stop accessing the folder if we were watching it
                 watchedFolders.remove(at: index)
                 current.remove(at: index)
             }
@@ -139,42 +148,10 @@ class ScaleCloudWatchedFoldersModel: ObservableObject {
         preferences.setScaleCloudWatchedDownloadBookmarks(account: account, bookmarks: current)
     }
 
-    /// Opens the system folder picker so the user can choose a new folder to watch.
-    /// This is a UIKit component, so we need some glue code (the Coordinator).
-    func presentDocumentPicker(on controller: UIViewController) {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
-        picker.allowsMultipleSelection = false
-        picker.shouldShowFileExtensions = true
-
-        // The document picker needs a delegate to tell us which folder the user picked.
-        let delegate = FolderPickerDelegate { [weak self] url in
-            self?.addFolder(url: url)
-        }
-
-        // Keep the delegate alive as long as the picker exists
-        objc_setAssociatedObject(picker, &AssociatedKeys.delegate, delegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-
-        picker.delegate = delegate
-        controller.present(picker, animated: true)
+    //deinit to stop accessing all security scoped resources when this model is deallocated
+    deinit {
+    for url in watchedFolders {
+        url.stopAccessingSecurityScopedResource()
     }
 }
-
-// Helper struct so we can attach the delegate to the picker using associated objects.
-private struct AssociatedKeys {
-    static var delegate = "FolderPickerDelegate"
-}
-
-/// This is the delegate that receives the folder the user selected in the document picker.
-/// When the user picks a folder, we call the closure that was passed in (which calls model.addFolder).
-private class FolderPickerDelegate: NSObject, UIDocumentPickerDelegate {
-    let onPick: (URL) -> Void
-
-    init(onPick: @escaping (URL) -> Void) {
-        self.onPick = onPick
-    }
-
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let url = urls.first else { return }
-        onPick(url)
-    }
 }

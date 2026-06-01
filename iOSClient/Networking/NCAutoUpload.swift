@@ -227,7 +227,7 @@ class NCAutoUpload: NSObject {
             }
         }
         guard hasPermission else {
-            return (nil, nil)
+            return ([], [], [])
         }
         let autoUploadServerUrlBase = await self.database.getAccountAutoUploadServerUrlBaseAsync(account: tblAccount.account, urlBase: tblAccount.urlBase, userId: tblAccount.userId)
         var mediaPredicates: [NSPredicate] = []

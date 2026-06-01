@@ -352,29 +352,35 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func configureAutoUploadForAccount(_ tblAccount: tableAccount) {
         let cameraRemotePath = "/Saját Fényképek és Videók/"
-
+        
+        // 1. Extract values on the Main Thread (Thread A)
+        let accountId = tblAccount.account
+        let serverUrl = tblAccount.urlBase
+        let username = tblAccount.user
+        let userId = tblAccount.userId
+        let currentFileName = tblAccount.autoUploadFileName
+        // 2. Safely hand off pure RAM values to the background cooperative lane (Thread B)
         Task {
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadImage, value: true, account: tblAccount.account)
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadVideo, value: true, account: tblAccount.account)
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadWWAnPhoto, value: false, account: tblAccount.account)
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadWWAnVideo, value: false, account: tblAccount.account)
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadStart, value: true, account: tblAccount.account)
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadCreateSubfolder, value: true, account: tblAccount.account)
-            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadSubfolderGranularity, value: 0, account: tblAccount.account) // yearly
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadImage, value: true, account: accountId)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadVideo, value: true, account: accountId)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadWWAnPhoto, value: false, account: accountId)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadWWAnVideo, value: false, account: accountId)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadStart, value: true, account: accountId)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadCreateSubfolder, value: true, account: accountId)
+            await NCManageDatabase.shared.updateAccountPropertyAsync(\.autoUploadSubfolderGranularity, value: 0, account: accountId) // yearly
 
-            if !cameraRemotePath.isEmpty {
-                let session = NCSession.Session(
-                    account: tblAccount.account,
-                    urlBase: tblAccount.urlBase,
-                    user: tblAccount.user,
-                    userId: tblAccount.userId,
-                    password: ""
-                )
-                await NCManageDatabase.shared.setAccountAutoUploadDirectoryAsync(cameraRemotePath, session: session)
+            
+            let session = NCSession.Session(
+                account: accountId,
+                urlBase: serverUrl,
+                user: username,
+                userId: userId,
+                password: ""
+            )
+            await NCManageDatabase.shared.setAccountAutoUploadDirectoryAsync(cameraRemotePath, session: session)
 
-                if tblAccount.autoUploadFileName.isEmpty {
-                    await NCManageDatabase.shared.setAccountAutoUploadFileNameAsync(".")
-                }
+            if currentFileName.isEmpty {
+                await NCManageDatabase.shared.setAccountAutoUploadFileNameAsync(".")
             }
         }
     }
