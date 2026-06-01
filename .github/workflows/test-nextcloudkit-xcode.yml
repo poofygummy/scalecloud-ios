@@ -12,6 +12,10 @@ jobs:
 
       - name: Checkout NextcloudKit at the exact version used by the official app (7.3.2)
         run: |
+          # Clear any pre-configured credential helpers that can break public clones on macOS runners
+          git config --global credential.helper ""
+          git config --global --unset-all url.https://github.com/.insteadOf || true
+
           git clone https://github.com/nextcloud/NextcloudKit.git
           cd NextcloudKit
           git checkout 7.3.2
