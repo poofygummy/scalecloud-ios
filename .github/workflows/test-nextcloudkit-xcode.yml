@@ -50,3 +50,35 @@ jobs:
           name: xcode-5.9-build-log
           path: NextcloudKit/build.log
           retention-days: 14
+
+  build-my-modified-xcode:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode and Swift versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build my modified NextcloudKit (local fork) with Xcode
+        run: |
+          cd NextcloudKit
+
+          xcodebuild -resolvePackageDependencies \
+            -scheme NextcloudKit \
+            -destination 'generic/platform=iOS'
+
+          xcodebuild \
+            -scheme NextcloudKit \
+            -destination 'generic/platform=iOS' \
+            clean build \
+            | tee build.log
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-modified-xcode-5.9-build-log
+          path: NextcloudKit/build.log
+          retention-days: 14
