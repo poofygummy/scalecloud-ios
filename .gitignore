@@ -47,3 +47,8 @@ Package.resolved
 
 *.generated.swift
 /.env-vars
+
+# NextcloudKit local binary artifacts (SCGo framework from gomobile)
+NextcloudKit/*.xcframework/
+NextcloudKit/*.xcframework.zip
+NextcloudKit/SCGo*

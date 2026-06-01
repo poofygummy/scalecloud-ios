@@ -30,7 +30,11 @@ let package = Package(
     targets: [
         .target(
             name: "NextcloudKit",
-            dependencies: ["Alamofire", "SwiftyJSON", "SwiftyXMLParser"]),
+            dependencies: ["Alamofire", "SwiftyJSON", "SwiftyXMLParser", "SCGo"]),
+        .binaryTarget(
+            name: "SCGo",
+            path: "SCGo.xcframework"
+        ),
         .testTarget(
             name: "NextcloudKitUnitTests",
             dependencies: ["NextcloudKit", "Mocker"],

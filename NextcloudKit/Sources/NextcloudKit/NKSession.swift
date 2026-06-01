@@ -57,9 +57,9 @@ public struct NKSession: Sendable {
             }
 
             // Call into the Go framework produced by gomobile bind.
-            // The module name comes from the Go package ("scalecloud" → usually "Scalecloud").
+            // The module name comes from the Go package ("SCGo").
             do {
-                proxyPort = try Scalecloud.startProxy("ios-scalecloud-client", stateDir)
+                proxyPort = try SCGo.startProxy("ios-scalecloud-client", stateDir)
             } catch {
                 nkLog(error: "ScaleCloud: startProxy failed: \(error)")
                 proxyPort = 0
@@ -86,7 +86,7 @@ public struct NKSession: Sendable {
         proxyClients.removeAll { $0.value == nil }
         if proxyClients.isEmpty {
             do {
-                try Scalecloud.stopProxy()
+                try SCGo.stopProxy()
             } catch {
                 nkLog(error: "ScaleCloud: stopProxy failed: \(error)")
             }
