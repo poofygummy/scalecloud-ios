@@ -25,22 +25,32 @@ jobs:
 
       - name: Build my modified NextcloudKit (local fork) with Xcode
         run: |
+          set -e
           cd NextcloudKit
 
+          # Resolve SPM dependencies
           xcodebuild -resolvePackageDependencies \
             -scheme NextcloudKit \
             -destination 'generic/platform=iOS'
 
+          # Build into an explicit DerivedData folder so we can reliably find the built framework
+          DERIVED_DATA="$PWD/build/DerivedData"
+          mkdir -p "$DERIVED_DATA"
+
           xcodebuild \
             -scheme NextcloudKit \
             -destination 'generic/platform=iOS' \
+            -configuration Release \
+            -derivedDataPath "$DERIVED_DATA" \
             clean build \
             | tee build.log
 
       - name: Package the built NextcloudKit framework
         run: |
-          # Find the built framework in DerivedData
-          FRAMEWORK_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "NextcloudKit.framework" -type d | head -1)
+          # Find the built framework in the explicit DerivedData we used
+          DERIVED_DATA="$PWD/NextcloudKit/build/DerivedData"
+          # Look in the expected Build/Products locations
+          FRAMEWORK_PATH=$(find "$DERIVED_DATA/Build/Products" -name "NextcloudKit.framework" -type d | head -1)
 
           if [ -d "$FRAMEWORK_PATH" ]; then
             mkdir -p ./artifacts
@@ -53,7 +63,8 @@ jobs:
             cd -
           else
             echo "Could not find NextcloudKit.framework in DerivedData"
-            find ~/Library/Developer/Xcode/DerivedData -name "*NextcloudKit*" -type d | head -10
+            echo "Searched: $DERIVED_DATA/Build/Products"
+            find "$DERIVED_DATA" -name "*NextcloudKit*" -type d | head -20
             exit 1
           fi
 
