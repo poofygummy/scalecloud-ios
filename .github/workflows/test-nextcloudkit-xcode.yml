@@ -1,7 +1,16 @@
-name: Test Official NextcloudKit on macOS + Xcode (5.9)
+name: Build NextcloudKit iOS framework
 
 on:
-  workflow_dispatch:   # Only manual trigger
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [synchronize, opened, reopened, ready_for_review]
+    branches:
+      - main
+      - develop
+  workflow_dispatch: {}
 
 jobs:
   build-my-modified-xcode:
