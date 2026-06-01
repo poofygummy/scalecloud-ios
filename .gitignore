@@ -48,5 +48,7 @@ Package.resolved
 *.generated.swift
 /.env-vars
 
-# Note: SCGo.xcframework is intentionally tracked so NextcloudKit can build
-# out of the box. Consider using Git LFS for large binary frameworks.
+# SCGo framework folder is tracked so NextcloudKit builds work out of the box.
+# We ignore the zip version (user keeps it manually for backup).
+NextcloudKit/SCGo-xcframework.zip
+NextcloudKit/*-xcframework.zip
