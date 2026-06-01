@@ -33,26 +33,34 @@ jobs:
             -scheme NextcloudKit \
             -destination 'generic/platform=iOS'
 
-          # Build into an explicit DerivedData folder so we can reliably find the built framework
-          DERIVED_DATA="$PWD/build/DerivedData"
-          mkdir -p "$DERIVED_DATA"
+          # Create an xcarchive for a deterministic product path
+          ARCHIVE_PATH="$PWD/build/NextcloudKit.xcarchive"
+          mkdir -p "$(dirname "$ARCHIVE_PATH")"
 
-          xcodebuild \
+          xcodebuild archive \
             -scheme NextcloudKit \
             -destination 'generic/platform=iOS' \
             -configuration Release \
-            -derivedDataPath "$DERIVED_DATA" \
-            clean build \
-            | tee build.log
+            -archivePath "$ARCHIVE_PATH" \
+            SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            | tee build.log || true
 
       - name: Package the built NextcloudKit framework
         run: |
-          # Find the built framework in the explicit DerivedData we used
-          DERIVED_DATA="$PWD/NextcloudKit/build/DerivedData"
-          # Look in the expected Build/Products locations
-          FRAMEWORK_PATH=$(find "$DERIVED_DATA/Build/Products" -name "NextcloudKit.framework" -type d | head -1)
+          # Primary location: archive Products path
+          ARCHIVE_PATH="$PWD/build/NextcloudKit.xcarchive"
+          ARCHIVE_FRAMEWORK="$ARCHIVE_PATH/Products/Library/Frameworks/NextcloudKit.framework"
 
-          if [ -d "$FRAMEWORK_PATH" ]; then
+          FRAMEWORK_PATH=""
+          if [ -d "$ARCHIVE_FRAMEWORK" ]; then
+            FRAMEWORK_PATH="$ARCHIVE_FRAMEWORK"
+          else
+            # Fallback: look into DerivedData Build/Products
+            DERIVED_DATA="$PWD/build/DerivedData"
+            FRAMEWORK_PATH=$(find "$DERIVED_DATA/Build/Products" -name "NextcloudKit.framework" -type d | head -1 || true)
+          fi
+
+          if [ -n "$FRAMEWORK_PATH" ] && [ -d "$FRAMEWORK_PATH" ]; then
             mkdir -p ./artifacts
             cp -R "$FRAMEWORK_PATH" ./artifacts/
             echo "NextcloudKit.framework copied from: $FRAMEWORK_PATH"
@@ -62,9 +70,10 @@ jobs:
             zip -r NextcloudKit.framework.zip NextcloudKit.framework
             cd -
           else
-            echo "Could not find NextcloudKit.framework in DerivedData"
-            echo "Searched: $DERIVED_DATA/Build/Products"
-            find "$DERIVED_DATA" -name "*NextcloudKit*" -type d | head -20
+            echo "Could not find NextcloudKit.framework in archive or DerivedData"
+            echo "Checked: $ARCHIVE_FRAMEWORK"
+            echo "Searched: $PWD/build/DerivedData/Build/Products"
+            find "$PWD" -name "*NextcloudKit*" -type d | head -40
             exit 1
           fi
 
