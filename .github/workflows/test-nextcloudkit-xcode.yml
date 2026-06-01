@@ -47,6 +47,10 @@ jobs:
             cp -R "$FRAMEWORK_PATH" ./artifacts/
             echo "NextcloudKit.framework copied from: $FRAMEWORK_PATH"
             ls -la ./artifacts/
+            # Zip the framework for reliable artifact upload
+            cd artifacts
+            zip -r NextcloudKit.framework.zip NextcloudKit.framework
+            cd -
           else
             echo "Could not find NextcloudKit.framework in DerivedData"
             find ~/Library/Developer/Xcode/DerivedData -name "*NextcloudKit*" -type d | head -10
@@ -54,13 +58,15 @@ jobs:
           fi
 
       - name: Upload NextcloudKit Framework (for download)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: NextcloudKit-Framework
-          path: artifacts/NextcloudKit.framework
+          path: artifacts/NextcloudKit.framework.zip
           retention-days: 30
 
       - name: Upload build log
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: my-modified-xcode-5.9-build-log
