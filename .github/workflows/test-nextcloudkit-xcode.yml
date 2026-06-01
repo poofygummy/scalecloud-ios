@@ -16,8 +16,9 @@ jobs:
           git config --global credential.helper ""
           git config --global --unset-all url.https://github.com/.insteadOf || true
 
-          git clone https://github.com/nextcloud/NextcloudKit.git
-          cd NextcloudKit
+          # Clone into a directory with a name that won't collide with generate-xcodeproj defaults
+          git clone https://github.com/nextcloud/NextcloudKit.git nextcloudkit-source
+          cd nextcloudkit-source
           git checkout 7.3.2
           echo "Checked out NextcloudKit version:"
           git log --oneline -1
@@ -29,13 +30,13 @@ jobs:
 
       - name: Build NextcloudKit with Xcode
         run: |
-          cd NextcloudKit
+          cd nextcloudkit-source
           
           # Clean any previous generated project to avoid conflicts
-          rm -rf XcodeProject
+          rm -rf GeneratedXcodeProject
 
           # Generate Xcode project into a clearly separate directory
-          # (not named "NextcloudKit") to prevent "destinationPath already exists" errors
+          # (not named after the source dir) to prevent "destinationPath already exists" errors
           swift package generate-xcodeproj --destination-path ./GeneratedXcodeProject
           
           # Build using the generated project in the new location
