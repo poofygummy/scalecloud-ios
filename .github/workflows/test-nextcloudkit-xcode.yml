@@ -27,12 +27,13 @@ jobs:
         run: |
           cd NextcloudKit
           
-          # Modern way to build an SPM package with xcodebuild (no generate-xcodeproj needed)
-          xcodebuild -resolvePackageDependencies \
-            -scheme NextcloudKit \
-            -destination 'generic/platform=iOS'
+          # Generate Xcode project with a custom destination path to avoid name collision
+          # with the "NextcloudKit" folder
+          swift package generate-xcodeproj --destination-path ./XcodeProject
           
+          # Build the library scheme from the generated project
           xcodebuild \
+            -project ./XcodeProject/NextcloudKit.xcodeproj \
             -scheme NextcloudKit \
             -destination 'generic/platform=iOS' \
             clean build \
