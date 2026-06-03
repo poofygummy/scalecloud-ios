@@ -71,12 +71,12 @@ public struct NKSession: Sendable {
             return nil
         }
         return [
-            kCFNetworkProxiesHTTPEnable: true,
-            kCFNetworkProxiesHTTPProxy: "127.0.0.1",
-            kCFNetworkProxiesHTTPPort: proxyPort,
-            kCFNetworkProxiesHTTPSEnable: true,
-            kCFNetworkProxiesHTTPSProxy: "127.0.0.1",
-            kCFNetworkProxiesHTTPSPort: proxyPort
+            "HTTPEnable": 1,
+            "HTTPProxy": "127.0.0.1",
+            "HTTPPort": proxyPort,
+            "HTTPSEnable": 1,
+            "HTTPSProxy": "127.0.0.1",
+            "HTTPSPort": proxyPort
         ]
     }
 
@@ -111,37 +111,9 @@ public struct NKSession: Sendable {
         }
     }
 
-    public lazy var sessionDownloadBackgroundExt: URLSession = {
-        let config = URLSessionConfiguration.background(withIdentifier: NKCommon().identifierSessionDownloadBackgroundExt)
-        config.sharedContainerIdentifier = groupIdentifier
-        config.sessionSendsLaunchEvents = true
-        config.isDiscretionary = false
-        config.allowsCellularAccess = true
-        config.requestCachePolicy = .useProtocolCachePolicy
-        config.httpMaximumConnectionsPerHost = httpMaximumConnectionsPerHostInDownload
-        config.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: sharedCookieStorage)
-        #if os(iOS) || targetEnvironment(macCatalyst)
-        config.multipathServiceType = .handover
-        #endif
-        config.connectionProxyDictionary = proxyDictionary
-        return URLSession(configuration: config, delegate: backgroundSessionDelegate, delegateQueue: .main)
-    }()
+    public let sessionDownloadBackgroundExt: URLSession
 
-    public lazy var sessionUploadBackgroundExt: URLSession = {
-        let config = URLSessionConfiguration.background(withIdentifier: NKCommon().identifierSessionUploadBackgroundExt)
-        config.sharedContainerIdentifier = groupIdentifier
-        config.sessionSendsLaunchEvents = true
-        config.isDiscretionary = false
-        config.allowsCellularAccess = true
-        config.requestCachePolicy = .useProtocolCachePolicy
-        config.httpMaximumConnectionsPerHost = httpMaximumConnectionsPerHostInUpload
-        config.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: sharedCookieStorage)
-        #if os(iOS) || targetEnvironment(macCatalyst)
-        config.multipathServiceType = .handover
-        #endif
-        config.connectionProxyDictionary = proxyDictionary
-        return URLSession(configuration: config, delegate: backgroundSessionDelegate, delegateQueue: .main)
-    }()
+    public let sessionUploadBackgroundExt: URLSession
 
     init(nkCommonInstance: NKCommon,
          urlBase: String,
@@ -265,5 +237,37 @@ public struct NKSession: Sendable {
         configurationUploadBackgroundWWan.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: sharedCookieStorage)
         sessionUploadBackgroundWWan = URLSession(configuration: configurationUploadBackgroundWWan, delegate: backgroundSessionDelegate, delegateQueue: OperationQueue.main)
         NKSession.registerSession(sessionUploadBackgroundWWan)
+
+        // Session Upload Background Extension (for File Provider Extension)
+        let configurationDownloadBackgroundExt = URLSessionConfiguration.background(withIdentifier: NKCommon().identifierSessionDownloadBackgroundExt)
+        configurationDownloadBackgroundExt.sharedContainerIdentifier = groupIdentifier
+        configurationDownloadBackgroundExt.sessionSendsLaunchEvents = true
+        configurationDownloadBackgroundExt.isDiscretionary = false
+        configurationDownloadBackgroundExt.allowsCellularAccess = true
+        configurationDownloadBackgroundExt.requestCachePolicy = .useProtocolCachePolicy
+        configurationDownloadBackgroundExt.httpMaximumConnectionsPerHost = self.httpMaximumConnectionsPerHostInDownload
+        configurationDownloadBackgroundExt.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: sharedCookieStorage)
+        #if os(iOS) || targetEnvironment(macCatalyst)
+            configurationDownloadBackgroundExt.multipathServiceType = .handover
+        #endif
+        configurationDownloadBackgroundExt.connectionProxyDictionary = proxyDictionary
+        sessionDownloadBackgroundExt = URLSession(configuration: configurationDownloadBackgroundExt, delegate: backgroundSessionDelegate, delegateQueue: .main)
+        NKSession.registerSession(sessionDownloadBackgroundExt)
+
+        // Session Upload Background Extension (for File Provider Extension)
+        let configurationUploadBackgroundExt: URLSessionConfiguration = URLSessionConfiguration.background(withIdentifier: NKCommon().identifierSessionUploadBackgroundExt)
+        configurationUploadBackgroundExt.sharedContainerIdentifier = groupIdentifier
+        configurationUploadBackgroundExt.sessionSendsLaunchEvents = true
+        configurationUploadBackgroundExt.isDiscretionary = false
+        configurationUploadBackgroundExt.allowsCellularAccess = true
+        configurationUploadBackgroundExt.requestCachePolicy = .useProtocolCachePolicy
+        configurationUploadBackgroundExt.httpMaximumConnectionsPerHost = self.httpMaximumConnectionsPerHostInUpload
+        configurationUploadBackgroundExt.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: sharedCookieStorage)
+        #if os(iOS) || targetEnvironment(macCatalyst)
+            configurationUploadBackgroundExt.multipathServiceType = .handover
+        #endif
+        configurationUploadBackgroundExt.connectionProxyDictionary = proxyDictionary
+        sessionUploadBackgroundExt = URLSession(configuration: configurationUploadBackgroundExt, delegate: backgroundSessionDelegate, delegateQueue: .main)
+        NKSession.registerSession(sessionUploadBackgroundExt)
     }
 }
