@@ -4,9 +4,9 @@
 
 import Foundation
 import SCGo
-@preconcurrency import Alamofire
+import Alamofire
 
-public struct NKSession: Sendable {
+public struct NKSession: @unchecked Sendable {
     public var urlBase: String
     public var user: String
     public var userId: String
