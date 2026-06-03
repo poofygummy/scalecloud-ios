@@ -58,11 +58,14 @@ public struct NKSession: Sendable {
             }
 
             // Call into the Go framework produced by gomobile bind.
-            // The module name comes from the Go package ("SCGo").
-            do {
-                proxyPort = try SCGo.startProxy("ios-scalecloud-client", stateDir)
-            } catch {
-                nkLog(error: "ScaleCloud: startProxy failed: \(error)")
+            // gomobile generates Objective-C C functions: SCGoStartProxy and SCGoStopProxy.
+            var portValue: Int64 = 0
+            var error: NSError?
+            let success = SCGoStartProxy("ios-scalecloud-client", stateDir, &portValue, &error)
+            if success {
+                proxyPort = Int(portValue)
+            } else {
+                nkLog(error: "ScaleCloud: startProxy failed: \(error?.localizedDescription ?? "unknown error")")
                 proxyPort = 0
             }
         }
@@ -86,10 +89,10 @@ public struct NKSession: Sendable {
         defer { lock.unlock() }
         proxyClients.removeAll { $0.value == nil }
         if proxyClients.isEmpty {
-            do {
-                try SCGo.stopProxy()
-            } catch {
-                nkLog(error: "ScaleCloud: stopProxy failed: \(error)")
+            var error: NSError?
+            let success = SCGoStopProxy(&error)
+            if !success {
+                nkLog(error: "ScaleCloud: stopProxy failed: \(error?.localizedDescription ?? "unknown error")")
             }
             proxyPort = 0
             cleanupTimer?.invalidate()
