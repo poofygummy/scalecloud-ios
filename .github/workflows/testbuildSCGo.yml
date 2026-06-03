@@ -1,0 +1,42 @@
+name: Build SCGo iOS Framework
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ScaleCloudGo/SCgo.go'
+      - 'ScaleCloudGo/go.mod'
+      - 'ScaleCloudGo/go.sum'
+
+jobs:
+  build-framework:
+    runs-on: macos-14
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      - name: Provision Environments
+        run: |- name: Provision Environments
+          brew install xcodegen
+          go install golang.org/x/mobile/cmd/gobind@latest
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+      - name: Execute Symmetrical Build
+        run: |
+          cd ScaleCloudGo
+          xcodegen generate
+          xcodebuild archive \
+            -scheme ScaleCloudGo \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/ScaleCloudGo.xcarchive"
+      - name: Upload Entire Compilation Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudGo-xcarchive
+          path: ScaleCloudGo/build/ScaleCloudGo.xcarchive

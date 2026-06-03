@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Lints the project using SwiftLint
+
+name: SwiftLint
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [synchronize, opened, reopened, ready_for_review]
+    branches:
+      - main
+      - develop
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+     - uses: actions/checkout@v2
+
+     - name: GitHub Action for SwiftLint
+       uses: norio-nomura/action-swiftlint@3.2.1

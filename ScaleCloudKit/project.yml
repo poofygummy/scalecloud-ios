@@ -1,0 +1,13 @@
+nname: SextcloudKitProject
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+targets:
+  NextcloudKit:
+    type: framework
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources
+    dependencies:
+      - framework: ../SCGo.xcframework
