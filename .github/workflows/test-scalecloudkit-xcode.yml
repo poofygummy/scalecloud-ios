@@ -1,15 +1,6 @@
 name: Build ScalecloudKit iOS framework
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    types: [synchronize, opened, reopened, ready_for_review]
-    branches:
-      - main
-      - develop
   workflow_dispatch: {}
 
 jobs:

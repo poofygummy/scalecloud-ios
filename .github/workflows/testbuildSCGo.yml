@@ -22,7 +22,7 @@ jobs:
         with:
           go-version: '1.26'
       - name: Provision Environments
-        run: |- name: Provision Environments
+        run: |
           brew install xcodegen
           go install golang.org/x/mobile/cmd/gobind@latest
           go install golang.org/x/mobile/cmd/gomobile@latest

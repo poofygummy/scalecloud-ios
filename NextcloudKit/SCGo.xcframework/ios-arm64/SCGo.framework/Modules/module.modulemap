@@ -1,8 +1,0 @@
-framework module "SCGo" {
-	header "ref.h"
-    header "Scalecloud.objc.h"
-    header "Universe.objc.h"
-    header "SCGo.h"
-
-    export *
-}
