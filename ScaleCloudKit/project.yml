@@ -1,9 +1,9 @@
-nname: SextcloudKitProject
+name: ScaleCloudKitProject
 settings:
   base:
     IPHONEOS_DEPLOYMENT_TARGET: "14.0"
 targets:
-  NextcloudKit:
+  ScaleCloudKit:
     type: framework
     platform: iOS
     deploymentTarget: "14.0"
