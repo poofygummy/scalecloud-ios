@@ -36,7 +36,7 @@ jobs:
 
       # Now generate from ROOT so workspace + projectReferences resolve correctly
       - name: Generate workspace + ScaleCloudKit
-        run: xcodegen generate --spec workspace.yml
+        run: xcodegen generate --spec workspace.yml --workspace
 
       - name: Build ScaleCloudKit (via workspace)
         run: |
