@@ -10,6 +10,7 @@ targets:
     sources:
       - path: Sources
     dependencies:
+      - project: ScaleCloudGo
       - target: ScaleCloudGo
 projectReferences:
   ScaleCloudGo:
