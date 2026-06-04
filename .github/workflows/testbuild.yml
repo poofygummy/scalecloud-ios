@@ -60,3 +60,12 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
             ONLY_ACTIVE_ARCH=NO
+            
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.scheme.outputs.scheme }}-archive
+          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/**/*.xcframework
+          if-no-files-found: warn
+          retention-days: 1
+          
