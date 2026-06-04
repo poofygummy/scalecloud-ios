@@ -33,6 +33,9 @@ jobs:
       - name: Generate ScaleCloudGo project
         working-directory: ScaleCloudGo
         run: xcodegen generate
+        # ← Add this diagnostic step
+      - name: List actual targets in ScaleCloudGo project
+        run: xcodebuild -project ScaleCloudGo/ScaleCloudGo.xcodeproj -list
 
       # 2. Generate ScaleCloudKit from root (so ../ paths in projectReferences resolve correctly)
       - name: Generate ScaleCloudKit
