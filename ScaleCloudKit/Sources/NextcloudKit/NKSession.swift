@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Foundation
-import SCGo
+import ScaleCloudGo
 import Alamofire
 
 public struct NKSession: @unchecked Sendable {
@@ -58,10 +58,9 @@ public struct NKSession: @unchecked Sendable {
             }
 
             // Call into the Go framework produced by gomobile bind.
-            // gomobile generates Objective-C C functions: SCGoStartProxy and SCGoStopProxy.
             var portValue: Int64 = 0
             var error: NSError?
-            let success = SCGoStartProxy("ios-scalecloud-client", stateDir, &portValue, &error)
+            let success = ScaleCloudGoStartProxy("ios-scalecloud-client", stateDir, &portValue, &error)
             if success {
                 proxyPort = Int(portValue)
             } else {
@@ -90,7 +89,7 @@ public struct NKSession: @unchecked Sendable {
         proxyClients.removeAll { $0.value == nil }
         if proxyClients.isEmpty {
             var error: NSError?
-            let success = SCGoStopProxy(&error)
+            let success = ScaleCloudGoStopProxy(&error)
             if !success {
                 nkLog(error: "ScaleCloud: stopProxy failed: \(error?.localizedDescription ?? "unknown error")")
             }
