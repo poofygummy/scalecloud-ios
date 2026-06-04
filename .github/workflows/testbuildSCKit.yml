@@ -10,7 +10,6 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
-    
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -30,19 +29,19 @@ jobs:
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      # Generate prerequisite project first so projectReferences in ScaleCloudKit works
+      # Generate prerequisite first
       - name: Generate ScaleCloudGo project
         working-directory: ScaleCloudGo
         run: xcodegen generate
 
-      - name: Generate ScaleCloudKit project
-        working-directory: ScaleCloudKit
+      # Now generate from ROOT so workspace + projectReferences resolve correctly
+      - name: Generate workspace + ScaleCloudKit
         run: xcodegen generate
 
-      - name: Build ScaleCloudKit (Xcode should auto-build ScaleCloudGo via project ref)
-        working-directory: ScaleCloudKit
+      - name: Build ScaleCloudKit (via workspace)
         run: |
           xcodebuild archive \
+            -workspace ScaleCloudUniversal.xcworkspace \
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
             -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
@@ -53,4 +52,4 @@ jobs:
           name: ScaleCloudKit-xcarchive
           path: ScaleCloudKit/build/ScaleCloudKit.xcarchive
           retention-days: 1
-
+          
