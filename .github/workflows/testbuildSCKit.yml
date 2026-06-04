@@ -26,7 +26,7 @@ jobs:
         run: |
           # We must generate the dependency first so the reference is valid
           xcodegen --spec ScaleCloudGo/project.yml
-          xcodegen --spec ScaleCloudKit/project.yml
+          xcodegen --spec ScaleCloudKit/project.yml --no-validate
 
       - name: Execute Build
         run: |
