@@ -38,7 +38,7 @@ jobs:
           gomobile init
 
       - name: Generate workspace
-        run: xcodegen workspace --spec workspace.yml
+        run: xcodegen workspace
 
       - name: Determine scheme
         id: scheme
