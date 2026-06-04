@@ -32,10 +32,13 @@ jobs:
         run: |
           brew install xcodegen
           go install golang.org/x/mobile/cmd/gomobile@latest
+          # Inject Go's bin path directly into the GitHub Actions system environment
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          export PATH="$(go env GOPATH)/bin:$PATH"
           gomobile init
 
       - name: Generate workspace
-        run: xcodegen generate --spec workspace.yml
+        run: xcodegen workspace --spec workspace.yml
 
       - name: Determine scheme
         id: scheme
