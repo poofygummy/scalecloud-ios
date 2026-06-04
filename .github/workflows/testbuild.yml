@@ -18,7 +18,6 @@ jobs:
   build:
     runs-on: macos-14
     steps:
-    
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -28,17 +27,17 @@ jobs:
           go-version: '1.26'
           cache-dependency-path: ScaleCloudGo/go.sum
 
-      - name: Install tools
+      - name: Install Tuist and Go Tools
         run: |
-          brew install xcodegen
+          # Install Tuist
+          curl -Ls https://install.tuist.io | bash
+          # Install Go mobile tools
           go install golang.org/x/mobile/cmd/gomobile@latest
-          # Inject Go's bin path directly into the GitHub Actions system environment
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          export PATH="$(go env GOPATH)/bin:$PATH"
           gomobile init
 
-      - name: Generate workspace
-        run: xcodegen workspace
+      - name: Generate Workspace
+        run: tuist generate
 
       - name: Determine scheme
         id: scheme
