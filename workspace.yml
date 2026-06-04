@@ -1,4 +1,4 @@
-name: ScaleCloudUniversal
+name: ScaleCloud
 projects:
   - ScaleCloudWrap/project.yml
   - ScaleCloudApp/project.yml
