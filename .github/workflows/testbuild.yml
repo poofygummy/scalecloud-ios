@@ -54,18 +54,20 @@ jobs:
 
       - name: Build
         run: |
-          xcodebuild archive \
+          xcodebuild build \
             -workspace ScaleCloud.xcworkspace \
             -scheme "${{ steps.scheme.outputs.scheme }}" \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath .build \
+            -configuration Release \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
             ONLY_ACTIVE_ARCH=NO
-            
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.scheme.outputs.scheme }}-archive
-          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/**/*.xcframework
-          if-no-files-found: warn
+          name: ${{ steps.scheme.outputs.scheme }}-binaries
+          path: .build/Build/Products/Release-iphoneos/*.framework
+          if-no-files-found: error
           retention-days: 1
           
