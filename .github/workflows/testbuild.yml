@@ -1,0 +1,55 @@
+name: Build ScaleCloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      layer:
+        description: 'Layer to build'
+        required: true
+        default: 'wrap'
+        type: choice
+        options:
+          - go
+          - kit
+          - app
+          - wrap
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Install tools
+        run: |
+          brew install xcodegen
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+
+      - name: Generate workspace
+        run: xcodegen generate
+
+      - name: Determine scheme
+        id: scheme
+        run: |
+          case "${{ inputs.layer }}" in
+            go)    echo "scheme=ScaleCloudGo" >> $GITHUB_OUTPUT ;;
+            kit)   echo "scheme=ScaleCloudKit" >> $GITHUB_OUTPUT ;;
+            app)   echo "scheme=ScaleCloudApp" >> $GITHUB_OUTPUT ;;
+            wrap)  echo "scheme=ScaleCloudWrap" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Build
+        run: |
+          xcodebuild archive \
+            -workspace ScaleCloud.xcworkspace \
+            -scheme "${{ steps.scheme.outputs.scheme }}" \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO
