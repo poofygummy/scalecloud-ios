@@ -1,4 +1,4 @@
-name: Build ScaleCloudKit Framework
+name: Build ScaleCloudKit iOS Framework
 
 on:
   workflow_dispatch:
@@ -6,26 +6,35 @@ on:
 jobs:
   build-kit:
     runs-on: macos-14
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Provision Xcode Environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Provision
         run: |
           brew install xcodegen
-          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          go install golang.org/x/mobile/cmd/gobind@latest
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+
+      - name: Generate Projects
+        run: |
+          # We must generate the dependency first so the reference is valid
+          xcodegen --spec ScaleCloudGo/project.yml
+          xcodegen --spec ScaleCloudKit/project.yml
 
       - name: Execute Build
         run: |
-          cd ScaleCloudKit
-          xcodegen generate
           xcodebuild archive \
+            -project ScaleCloudKit/ScaleCloudKit.xcodeproj \
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
+            -archivePath "ScaleCloudKit/build/ScaleCloudKit.xcarchive"
 
       - name: Upload Output
         uses: actions/upload-artifact@v4
