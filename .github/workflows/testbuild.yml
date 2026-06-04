@@ -2,18 +2,17 @@ name: Build ScaleCloud
 
 on:
   workflow_dispatch:
-
-inputs:
-  layer:
-    description: 'Layer to build'
-    required: true
-    default: 'wrap'
-    type: choice
-    options:
-      - go
-      - kit
-      - app
-      - wrap
+    inputs:
+      layer:
+        description: 'Layer to build'
+        required: true
+        default: 'wrap'
+        type: choice
+        options:
+          - go
+          - kit
+          - app
+          - wrap
 
 jobs:
   build:
