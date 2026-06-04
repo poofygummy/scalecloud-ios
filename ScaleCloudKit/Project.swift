@@ -12,7 +12,7 @@ let project = Project(
             deploymentTargets: .iOS("14.0"),
             sources: ["Sources/**"],
             dependencies: [
-                .project(target: "ScaleCloudGo", path: "../ScaleCloudGo"),
+                .framework(path: "../ScaleCloudGo/ScaleCloudGo.framework"),
                 .external(name: "Alamofire"),
                 .external(name: "SwiftyJSON"),
                 .external(name: "SwiftyXMLParser")
