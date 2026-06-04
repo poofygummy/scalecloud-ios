@@ -29,10 +29,13 @@ jobs:
 
       - name: Install Tuist and Go Tools
         run: |
+          # Clean up any existing tuist file or directory to avoid collision
+          rm -rf tuist
+          
           # Download the specific Tuist release binary directly
-          curl -L -o tuist https://github.com/tuist/tuist/releases/latest/download/tuist
-          chmod +x tuist
-          sudo mv tuist /usr/local/bin/tuist
+          curl -L -o tuist_binary https://github.com/tuist/tuist/releases/latest/download/tuist
+          chmod +x tuist_binary
+          sudo mv tuist_binary /usr/local/bin/tuist
           
           # Install Go mobile tools
           go install golang.org/x/mobile/cmd/gomobile@latest
