@@ -10,8 +10,7 @@ targets:
     sources:
       - path: Sources
     dependencies:
-      - project: ScaleCloudGo
-      - target: ScaleCloudGo
+      - target: ScaleCloudGo/ScaleCloudGo
 projectReferences:
   ScaleCloudGo:
     path: ../ScaleCloudGo/ScaleCloudGo.xcodeproj
