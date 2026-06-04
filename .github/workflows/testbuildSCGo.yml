@@ -9,36 +9,22 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.26'
           cache-dependency-path: 'ScaleCloudGo/go.sum'
-
-      - name: Cache Go Tooling
-        id: cache-go-tooling
-        uses: actions/cache@v4
-        with:
-          path: ~/go/bin
-          key: ${{ runner.os }}-go-bin-v1
-
       - name: Provision Environments
-        if: steps.cache-go-tooling.outputs.cache-hit != 'true'
         run: |
           brew install xcodegen
           go install golang.org/x/mobile/cmd/gobind@latest
           go install golang.org/x/mobile/cmd/gomobile@latest
           gomobile init
-
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
-
       - name: Execute Symmetrical Build
         run: |
           cd ScaleCloudGo
@@ -47,7 +33,6 @@ jobs:
             -scheme ScaleCloudGo \
             -destination 'generic/platform=iOS' \
             -archivePath "$PWD/build/ScaleCloudGo.xcarchive"
-
       - name: Upload Entire Compilation Output
         uses: actions/upload-artifact@v4
         with:

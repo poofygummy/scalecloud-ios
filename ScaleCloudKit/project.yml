@@ -1,4 +1,4 @@
-name: ScaleCloudKitProject
+name: ScaleCloudKit
 settings:
   base:
     IPHONEOS_DEPLOYMENT_TARGET: "14.0"
@@ -10,4 +10,6 @@ targets:
     sources:
       - path: Sources
     dependencies:
-      - framework: ../SCGo.xcframework
+      - target: ScaleCloudGo
+projectReferences:
+  ScaleCloudGo: ../ScaleCloudGo/ScaleCloudGo.xcodeproj

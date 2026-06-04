@@ -1,0 +1,34 @@
+name: Build ScaleCloudKit Framework
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-kit:
+    runs-on: macos-14
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Provision Xcode Environment
+        run: |
+          brew install xcodegen
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Execute Build
+        run: |
+          cd ScaleCloudKit
+          xcodegen generate
+          xcodebuild archive \
+            -scheme ScaleCloudKit \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
+
+      - name: Upload Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudKit-xcarchive
+          path: ScaleCloudKit/build/ScaleCloudKit.xcarchive
