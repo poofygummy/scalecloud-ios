@@ -27,16 +27,11 @@ jobs:
           go-version: '1.26'
           cache-dependency-path: ScaleCloudGo/go.sum
 
-      - name: Install Tuist and Go Tools
-        run: |
-          # Clean up any existing tuist file or directory to avoid collision
-          rm -rf tuist
-          
-          # Download the specific Tuist release binary directly
-          curl -L -o tuist_binary https://github.com/tuist/tuist/releases/latest/download/tuist
-          chmod +x tuist_binary
-          sudo mv tuist_binary /usr/local/bin/tuist
-          
+      - name: Install Tuist
+        uses: tuist/tuist-action@v1
+
+      - name: Install Go Tools
+        run: | 
           # Install Go mobile tools
           go install golang.org/x/mobile/cmd/gomobile@latest
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
