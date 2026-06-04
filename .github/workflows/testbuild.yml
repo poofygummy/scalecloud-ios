@@ -38,7 +38,9 @@ jobs:
           gomobile init
 
       - name: Generate Workspace
-        run: tuist generate
+        run: |
+          tuist install
+          tuist generate
 
       - name: Determine scheme
         id: scheme
