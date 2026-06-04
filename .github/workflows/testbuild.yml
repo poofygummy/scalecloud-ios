@@ -28,6 +28,7 @@ jobs:
           cache-dependency-path: ScaleCloudGo/go.sum
 
       - name: Install Go Tools and tuist
+        uses: jdx/mise-action@v2
         run: | 
           brew install --formula tuist
 
