@@ -29,19 +29,20 @@ jobs:
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      # Generate prerequisite first
+      # 1. Generate prerequisite first
       - name: Generate ScaleCloudGo project
         working-directory: ScaleCloudGo
         run: xcodegen generate
 
-      # Now generate from ROOT so workspace + projectReferences resolve correctly
-      - name: Generate workspace + ScaleCloudKit
-        run: xcodegen generate --spec workspace.yml --workspace
+      # 2. Generate ScaleCloudKit from root (so ../ paths in projectReferences resolve correctly)
+      - name: Generate ScaleCloudKit
+        run: xcodegen generate --spec ScaleCloudKit/project.yml
 
-      - name: Build ScaleCloudKit (via workspace)
+      # 3. Build using the individual project (no workspace needed)
+      - name: Build ScaleCloudKit
         run: |
           xcodebuild archive \
-            -workspace ScaleCloudUniversal.xcworkspace \
+            -project ScaleCloudKit/ScaleCloudKit.xcodeproj \
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
             -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
