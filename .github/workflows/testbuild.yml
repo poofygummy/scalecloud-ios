@@ -29,11 +29,15 @@ jobs:
 
       - name: Install Tuist and Go Tools
         run: |
-          # Install Tuist
-          curl -Ls https://install.tuist.io | bash
+          # Download the specific Tuist release binary directly
+          curl -L -o tuist https://github.com/tuist/tuist/releases/latest/download/tuist
+          chmod +x tuist
+          sudo mv tuist /usr/local/bin/tuist
+          
           # Install Go mobile tools
           go install golang.org/x/mobile/cmd/gomobile@latest
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          export PATH="$PATH:$(go env GOPATH)/bin"
           gomobile init
 
       - name: Generate Workspace
