@@ -12,4 +12,5 @@ targets:
     dependencies:
       - target: ScaleCloudApp
 projectReferences:
-  ScaleCloudApp: ../ScaleCloudApp/ScaleCloudApp.xcodeproj
+  ScaleCloudApp:
+    path: ../ScaleCloudApp/ScaleCloudApp.xcodeproj
