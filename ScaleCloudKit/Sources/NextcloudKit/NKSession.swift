@@ -58,7 +58,7 @@ public struct NKSession: @unchecked Sendable {
             }
 
             // Call into the Go framework produced by gomobile bind.
-            var portValue: Int64 = 0
+            var portValue: Int = 0
             var error: NSError?
             let success = ScaleCloudGoStartProxy("ios-scalecloud-client", stateDir, &portValue, &error)
             if success {
