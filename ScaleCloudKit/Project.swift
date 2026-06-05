@@ -2,7 +2,10 @@ import ProjectDescription
 
 let project = Project(
     name: "ScaleCloudKit",
-    settings: .settings(base: ["IPHONEOS_DEPLOYMENT_TARGET": "14.0"]),
+    settings: .settings(base: [
+    "IPHONEOS_DEPLOYMENT_TARGET": "14.0",
+    "FRAMEWORK_SEARCH_PATHS": "$(inherited) $(BUILT_PRODUCTS_DIR)"
+    ])
     targets: [
         .target(
             name: "ScaleCloudKit",
