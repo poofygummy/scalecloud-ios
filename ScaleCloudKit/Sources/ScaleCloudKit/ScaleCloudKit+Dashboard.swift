@@ -15,12 +15,12 @@ public extension ScaleCloudKit {
     /// - options: Optional request options such as custom headers or retry policy (default is empty).
     /// - request: A closure that receives the underlying Alamofire `DataRequest`, useful for inspection or mutation.
     /// - taskHandler: A closure to access the `URLSessionTask` for progress or cancellation control.
-    /// - completion: Completion handler returning the account, list of widgets, the raw response, and any NKError.
+    /// - completion: Completion handler returning the account, list of widgets, the raw response, and any SCKError.
     func getDashboardWidget(account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             request: @escaping (DataRequest?) -> Void = { _ in },
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                            completion: @escaping (_ account: String, _ dashboardWidgets: [NCCDashboardWidget]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                            completion: @escaping (_ account: String, _ dashboardWidgets: [NCCDashboardWidget]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/dashboard/api/v1/widgets"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -28,7 +28,7 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        let dashboardRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        let dashboardRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -36,15 +36,15 @@ public extension ScaleCloudKit {
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let results = NCCDashboardWidget.factory(data: data)
                     options.queue.async { completion(account, results, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             }
         }
@@ -57,16 +57,16 @@ public extension ScaleCloudKit {
     ///   - options: Optional configuration for the request.
     ///   - request: Optional handler to capture the `DataRequest`.
     ///   - taskHandler: Optional handler for the `URLSessionTask`.
-    /// - Returns: A tuple with the account, list of widgets, raw response, and NKError.
+    /// - Returns: A tuple with the account, list of widgets, raw response, and SCKError.
     func getDashboardWidgetAsync(account: String,
-                                 options: NKRequestOptions = NKRequestOptions(),
+                                 options: SCKRequestOptions = SCKRequestOptions(),
                                  request: @escaping (DataRequest?) -> Void = { _ in },
                                  taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         dashboardWidgets: [NCCDashboardWidget]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getDashboardWidget(account: account,
@@ -95,10 +95,10 @@ public extension ScaleCloudKit {
     /// - completion: Completion handler returning the account, list of applications, response, and error.
     func getDashboardWidgetsApplication(_ items: String,
                                         account: String,
-                                        options: NKRequestOptions = NKRequestOptions(),
+                                        options: SCKRequestOptions = SCKRequestOptions(),
                                         request: @escaping (DataRequest?) -> Void = { _ in },
                                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                        completion: @escaping (_ account: String, _ dashboardApplications: [NCCDashboardApplication]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                        completion: @escaping (_ account: String, _ dashboardApplications: [NCCDashboardApplication]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/dashboard/api/v1/widget-items?widgets[]=\(items)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -106,7 +106,7 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        let dashboardRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        let dashboardRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -114,15 +114,15 @@ public extension ScaleCloudKit {
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let results = NCCDashboardApplication.factory(data: data)
                     options.queue.async { completion(account, results, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             }
         }
@@ -136,17 +136,17 @@ public extension ScaleCloudKit {
     ///   - options: Optional request configuration.
     ///   - request: Handler for the `DataRequest` (if needed).
     ///   - taskHandler: Handler for the underlying `URLSessionTask`.
-    /// - Returns: A tuple with account, dashboard applications, response data, and NKError.
+    /// - Returns: A tuple with account, dashboard applications, response data, and SCKError.
     func getDashboardWidgetsApplicationAsync(_ items: String,
                                              account: String,
-                                             options: NKRequestOptions = NKRequestOptions(),
+                                             options: SCKRequestOptions = SCKRequestOptions(),
                                              request: @escaping (DataRequest?) -> Void = { _ in },
                                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         dashboardApplications: [NCCDashboardApplication]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getDashboardWidgetsApplication(items,

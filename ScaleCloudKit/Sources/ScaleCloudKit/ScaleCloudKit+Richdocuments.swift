@@ -15,12 +15,12 @@ public extension ScaleCloudKit {
     /// - options: Optional configuration such as custom headers, queue, or API version.
     /// - taskHandler: Callback invoked when the underlying URLSessionTask is created.
     /// - completion: Completion handler returning the account, document URL (if available),
-    ///               the raw HTTP response, and an NKError object.
+    ///               the raw HTTP response, and an SCKError object.
     func createUrlRichdocuments(fileID: String,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/richdocuments/api/v1/document"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -29,13 +29,13 @@ public extension ScaleCloudKit {
         }
         let parameters: [String: Any] = ["fileId": fileID]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -43,7 +43,7 @@ public extension ScaleCloudKit {
                     let url = json["ocs"]["data"]["url"].stringValue
                     options.queue.async { completion(account, url, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -56,16 +56,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used for the operation.
     ///   - options: Request configuration (headers, queue, version, etc.).
     ///   - taskHandler: Optional handler to observe the URLSessionTask.
-    /// - Returns: A tuple containing the account, the richdocument URL (if any), the raw response data, and any NKError.
+    /// - Returns: A tuple containing the account, the richdocument URL (if any), the raw response data, and any SCKError.
     func createUrlRichdocumentsAsync(fileID: String,
                                      account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         url: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             createUrlRichdocuments(fileID: fileID,
@@ -89,12 +89,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the request.
     /// - options: Optional configuration (headers, queue, API version, etc.).
     /// - taskHandler: Callback invoked when the underlying URLSessionTask is created.
-    /// - completion: Completion handler returning the account, array of templates, response data, and NKError.
+    /// - completion: Completion handler returning the account, array of templates, response data, and SCKError.
     func getTemplatesRichdocuments(typeTemplate: String,
                                    account: String,
-                                   options: NKRequestOptions = NKRequestOptions(),
+                                   options: SCKRequestOptions = SCKRequestOptions(),
                                    taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                   completion: @escaping (_ account: String, _ templates: [NKRichdocumentsTemplate]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                   completion: @escaping (_ account: String, _ templates: [SCKRichdocumentsTemplate]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/richdocuments/api/v1/templates/\(typeTemplate)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -102,21 +102,21 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"].arrayValue
                 if json["ocs"]["meta"]["statuscode"].int == 200 {
-                    var templates: [NKRichdocumentsTemplate] = []
+                    var templates: [SCKRichdocumentsTemplate] = []
                     for templateJSON in data {
-                        let template = NKRichdocumentsTemplate()
+                        let template = SCKRichdocumentsTemplate()
 
                         template.delete = templateJSON["delete"].stringValue
                         template.templateId = templateJSON["id"].intValue
@@ -128,7 +128,7 @@ public extension ScaleCloudKit {
                     }
                     options.queue.async { completion(account, templates, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -141,16 +141,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account for which templates are requested.
     ///   - options: Optional request configuration.
     ///   - taskHandler: Optional handler to observe the `URLSessionTask`.
-    /// - Returns: A tuple containing the account, array of templates, raw response data, and any NKError.
+    /// - Returns: A tuple containing the account, array of templates, raw response data, and any SCKError.
     func getTemplatesRichdocumentsAsync(typeTemplate: String,
                                         account: String,
-                                        options: NKRequestOptions = NKRequestOptions(),
+                                        options: SCKRequestOptions = SCKRequestOptions(),
                                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        templates: [NKRichdocumentsTemplate]?,
+        templates: [SCKRichdocumentsTemplate]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getTemplatesRichdocuments(typeTemplate: typeTemplate,
@@ -175,13 +175,13 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the request.
     /// - options: Optional request configuration (headers, queue, API version, etc.).
     /// - taskHandler: Callback invoked when the underlying URLSessionTask is created.
-    /// - completion: Completion handler returning the account, resulting file URL, raw response, and NKError.
+    /// - completion: Completion handler returning the account, resulting file URL, raw response, and SCKError.
     func createRichdocuments(path: String,
                              templateId: String,
                              account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                             completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                             completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/richdocuments/api/v1/templates/new"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -190,13 +190,13 @@ public extension ScaleCloudKit {
         }
         let parameters: [String: Any] = ["path": path, "template": templateId]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -204,7 +204,7 @@ public extension ScaleCloudKit {
                     let url = json["ocs"]["data"]["url"].stringValue
                     options.queue.async { completion(account, url, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -222,13 +222,13 @@ public extension ScaleCloudKit {
     func createRichdocumentsAsync(path: String,
                                    templateId: String,
                                    account: String,
-                                   options: NKRequestOptions = NKRequestOptions(),
+                                   options: SCKRequestOptions = SCKRequestOptions(),
                                    taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         url: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             createRichdocuments(path: path,
@@ -253,12 +253,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account initiating the creation.
     /// - options: Optional configuration for the request (e.g. headers, queue, API version).
     /// - taskHandler: Callback invoked when the underlying URLSessionTask is created.
-    /// - completion: Completion handler returning account, resulting file URL, raw response data, and NKError.
+    /// - completion: Completion handler returning account, resulting file URL, raw response data, and SCKError.
     func createAssetRichdocuments(path: String,
                                   account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                  completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                  completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "index.php/apps/richdocuments/assets"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -267,13 +267,13 @@ public extension ScaleCloudKit {
         }
         let parameters: [String: Any] = ["path": path]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -293,13 +293,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with account, resulting URL, raw response, and error.
     func createAssetRichdocumentsAsync(path: String,
                                        account: String,
-                                       options: NKRequestOptions = NKRequestOptions(),
+                                       options: SCKRequestOptions = SCKRequestOptions(),
                                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         url: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             createAssetRichdocuments(path: path,

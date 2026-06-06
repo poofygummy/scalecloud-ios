@@ -18,14 +18,14 @@ public extension ScaleCloudKit {
     /// - userAgent: Optional user-agent string to include in the request.
     /// - options: Optional request configuration (headers, queue, etc.).
     /// - taskHandler: Callback for observing the underlying URLSessionTask.
-    /// - completion: Returns the token string (if any), raw response data, and NKError result.
+    /// - completion: Returns the token string (if any), raw response data, and SCKError result.
     func getAppPassword(url: String,
                         user: String,
                         password: String,
                         userAgent: String? = nil,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                        completion: @escaping (_ token: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                        completion: @escaping (_ token: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/core/getapppassword"
         guard let url = self.nkCommonInstance.createStandardUrl(serverUrl: url, endpoint: endpoint) else {
             return options.queue.async { completion(nil, nil, .urlError) }
@@ -40,7 +40,7 @@ public extension ScaleCloudKit {
         do {
             try urlRequest = URLRequest(url: url, method: HTTPMethod(rawValue: "GET"), headers: headers)
         } catch {
-            return options.queue.async { completion(nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(nil, nil, SCKError(error: error)) }
         }
 
         unauthorizedSession.request(urlRequest).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
@@ -49,10 +49,10 @@ public extension ScaleCloudKit {
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(nil, response, error) }
             case .success(let data):
-                let apppassword = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataAppPassword(data: data)
+                let apppassword = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataAppPassword(data: data)
                 options.queue.async { completion(apppassword, response, .success) }
             }
         }
@@ -72,12 +72,12 @@ public extension ScaleCloudKit {
                              user: String,
                              password: String,
                              userAgent: String? = nil,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         token: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getAppPassword(url: url,
@@ -104,14 +104,14 @@ public extension ScaleCloudKit {
     /// - userAgent: Optional user-agent string to include in the request.
     /// - options: Optional request configuration (headers, queue, etc.).
     /// - taskHandler: Callback for observing the underlying URLSessionTask.
-    /// - completion: Returns the token string (if any), raw response data, and NKError result.
+    /// - completion: Returns the token string (if any), raw response data, and SCKError result.
     func getAppPasswordOnetime(url: String,
                                user: String,
                                onetimeToken: String,
                                userAgent: String? = nil,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                               completion: @escaping (_ token: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                               completion: @escaping (_ token: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/core/getapppassword-onetime"
         guard let url = self.nkCommonInstance.createStandardUrl(serverUrl: url, endpoint: endpoint) else {
             return options.queue.async { completion(nil, nil, .urlError) }
@@ -126,7 +126,7 @@ public extension ScaleCloudKit {
         do {
             try urlRequest = URLRequest(url: url, method: HTTPMethod(rawValue: "GET"), headers: headers)
         } catch {
-            return options.queue.async { completion(nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(nil, nil, SCKError(error: error)) }
         }
 
         unauthorizedSession.request(urlRequest).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
@@ -135,10 +135,10 @@ public extension ScaleCloudKit {
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(nil, response, error) }
             case .success(let data):
-                let apppassword = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataAppPassword(data: data)
+                let apppassword = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataAppPassword(data: data)
                 options.queue.async { completion(apppassword, response, .success) }
             }
         }
@@ -158,12 +158,12 @@ public extension ScaleCloudKit {
                                     user: String,
                                     onetimeToken: String,
                                     userAgent: String? = nil,
-                                    options: NKRequestOptions = NKRequestOptions(),
+                                    options: SCKRequestOptions = SCKRequestOptions(),
                                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         token: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getAppPasswordOnetime(url: url,
@@ -191,15 +191,15 @@ public extension ScaleCloudKit {
     /// - account: The logical account identifier used in the app.
     /// - options: Optional request configuration (headers, queues, etc.).
     /// - taskHandler: Callback to observe the underlying URLSessionTask.
-    /// - completion: Returns the raw response and a possible NKError result.
+    /// - completion: Returns the raw response and a possible SCKError result.
     func deleteAppPassword(serverUrl: String,
                            username: String,
                            password: String,
                            userAgent: String? = nil,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                           completion: @escaping (_ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                           completion: @escaping (_ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/core/apppassword"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = self.nkCommonInstance.createStandardUrl(serverUrl: serverUrl, endpoint: endpoint) else {
@@ -215,7 +215,7 @@ public extension ScaleCloudKit {
         do {
             try urlRequest = URLRequest(url: url, method: HTTPMethod(rawValue: "DELETE"), headers: headers)
         } catch {
-            return options.queue.async { completion(nil, NKError(error: error)) }
+            return options.queue.async { completion(nil, SCKError(error: error)) }
         }
 
         nkSession.sessionData.request(urlRequest).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
@@ -224,7 +224,7 @@ public extension ScaleCloudKit {
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(response, error) }
             case .success:
                 options.queue.async { completion(response, .success) }
@@ -248,11 +248,11 @@ public extension ScaleCloudKit {
                                 password: String,
                                 userAgent: String? = nil,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             deleteAppPassword(serverUrl: serverUrl,
@@ -277,7 +277,7 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple consisting of the `endpoint` to poll for the login status with the `token`. Additionally, the `login` to open for the user to log in.
     ///
-    func getLoginFlowV2(serverUrl: String, options: NKRequestOptions = NKRequestOptions(), taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async throws -> (endpoint: URL, login: URL, token: String) {
+    func getLoginFlowV2(serverUrl: String, options: SCKRequestOptions = SCKRequestOptions(), taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async throws -> (endpoint: URL, login: URL, token: String) {
         try await withCheckedThrowingContinuation { continuation in
             getLoginFlowV2(serverUrl: serverUrl, options: options, taskHandler: taskHandler) { token, endpointString, loginString, _, error in
                 if error != .success {
@@ -286,17 +286,17 @@ public extension ScaleCloudKit {
                 }
 
                 guard let endpointString, let endpointURL = URL(string: endpointString) else {
-                    continuation.resume(throwing: NKError.urlError)
+                    continuation.resume(throwing: SCKError.urlError)
                     return
                 }
 
                 guard let loginString, let loginURL = URL(string: loginString) else {
-                    continuation.resume(throwing: NKError.urlError)
+                    continuation.resume(throwing: SCKError.urlError)
                     return
                 }
 
                 guard let token else {
-                    continuation.resume(throwing: NKError.invalidData)
+                    continuation.resume(throwing: SCKError.invalidData)
                     return
                 }
 
@@ -309,7 +309,7 @@ public extension ScaleCloudKit {
     ///
     /// - Parameters:
     ///   - serverUrl: The base URL of the Nextcloud server used to initiate the login flow.
-    ///   - options: An optional `NKRequestOptions` object containing configuration such as API version, custom headers, and execution queue.
+    ///   - options: An optional `SCKRequestOptions` object containing configuration such as API version, custom headers, and execution queue.
     ///   - taskHandler: A closure that provides the `URLSessionTask` used for the request. Useful for monitoring or cancellation.
     ///
     /// - Completion:
@@ -317,11 +317,11 @@ public extension ScaleCloudKit {
     ///   - endpoint: The endpoint URL to be polled to check login completion.
     ///   - login: A user-visible login URL that can be presented to complete authentication.
     ///   - responseData: The raw `AFDataResponse<Data>` received from the server.
-    ///   - error: An `NKError` object representing success or failure of the operation.
+    ///   - error: An `SCKError` object representing success or failure of the operation.
     func getLoginFlowV2(serverUrl: String,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                        completion: @escaping (_ token: String?, _ endpoint: String?, _ login: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                        completion: @escaping (_ token: String?, _ endpoint: String?, _ login: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "index.php/login/v2"
         guard let url = nkCommonInstance.createStandardUrl(serverUrl: serverUrl, endpoint: endpoint) else {
             return options.queue.async { completion(nil, nil, nil, nil, .urlError) }
@@ -337,7 +337,7 @@ public extension ScaleCloudKit {
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(nil, nil, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -358,14 +358,14 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Optional callback to observe the `URLSessionTask`.
     /// - Returns: A tuple containing the login token, polling endpoint, login URL, response data, and any encountered error.
     func getLoginFlowV2Async(serverUrl: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         token: String?,
         endpoint: String?,
         login: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getLoginFlowV2(serverUrl: serverUrl,
@@ -389,12 +389,12 @@ public extension ScaleCloudKit {
     /// - endpoint: The base URL endpoint (e.g., https://cloud.example.com).
     /// - options: Optional request configuration (version, headers, queues, etc.).
     /// - taskHandler: Callback to observe the underlying URLSessionTask.
-    /// - completion: Returns the discovered server URL, loginName, appPassword, the raw response data, and any NKError.
+    /// - completion: Returns the discovered server URL, loginName, appPassword, the raw response data, and any SCKError.
     func getLoginFlowV2Poll(token: String,
                             endpoint: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                            completion: @escaping (_ server: String?, _ loginName: String?, _ appPassword: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                            completion: @escaping (_ server: String?, _ loginName: String?, _ appPassword: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let serverUrl = endpoint + "?token=" + token
         guard let url = serverUrl.asUrl else {
             return options.queue.async { completion(nil, nil, nil, nil, .urlError) }
@@ -410,7 +410,7 @@ public extension ScaleCloudKit {
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(nil, nil, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -430,17 +430,17 @@ public extension ScaleCloudKit {
     ///   - endpoint: Full base endpoint URL to call the polling API.
     ///   - options: Request configuration such as version, headers, queue.
     ///   - taskHandler: Optional callback to observe the underlying URLSessionTask.
-    /// - Returns: A tuple with server URL, login name, app password, raw response, and NKError.
+    /// - Returns: A tuple with server URL, login name, app password, raw response, and SCKError.
     func getLoginFlowV2PollAsync(token: String,
                                  endpoint: String,
-                                 options: NKRequestOptions = NKRequestOptions(),
+                                 options: SCKRequestOptions = SCKRequestOptions(),
                                  taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         server: String?,
         loginName: String?,
         appPassword: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getLoginFlowV2Poll(token: token,

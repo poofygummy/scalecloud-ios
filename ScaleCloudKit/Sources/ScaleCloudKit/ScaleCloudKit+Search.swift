@@ -18,15 +18,15 @@ public extension ScaleCloudKit {
     ///   - handle: Optional operation handle that receives the underlying DataRequest and URLSessionTask
     ///             as soon as they are created. Use it to cancel the request while it’s in flight
     ///             (via handle.cancel()) or to observe the task/request lifecycle.
-    ///   - filter: A closure to filter which `NKSearchProvider` are enabled.
+    ///   - filter: A closure to filter which `SCKSearchProvider` are enabled.
     ///
-    /// - Returns: NKSearchProvider, NKError
+    /// - Returns: SCKSearchProvider, SCKError
     func unifiedSearchProviders(timeout: TimeInterval = 30,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
-                                handle: NKOperationHandle? = nil,
-                                filter: @escaping (NKSearchProvider) -> Bool = { _ in true }
-    ) async -> (providers: [NKSearchProvider]?, error: NKError) {
+                                options: SCKRequestOptions = SCKRequestOptions(),
+                                handle: SCKOperationHandle? = nil,
+                                filter: @escaping (SCKSearchProvider) -> Bool = { _ in true }
+    ) async -> (providers: [SCKSearchProvider]?, error: SCKError) {
         let endpoint = "ocs/v2.php/search/providers"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -35,7 +35,7 @@ public extension ScaleCloudKit {
         }
 
         let request = nkSession.sessionData
-            .request(url, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            .request(url, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
             .onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 Task {
@@ -53,11 +53,11 @@ public extension ScaleCloudKit {
         case .success(let jsonData):
             let json = JSON(jsonData)
             let providerData = json["ocs"]["data"]
-            let providers = NKSearchProvider.factory(jsonArray: providerData)?.filter(filter)
+            let providers = SCKSearchProvider.factory(jsonArray: providerData)?.filter(filter)
 
             return(providers, .success)
         case .failure(let error):
-            let nkError = NKError(error: error, afResponse: response, responseData: response.data)
+            let nkError = SCKError(error: error, afResponse: response, responseData: response.data)
 
             return (nil, nkError)
         }
@@ -77,16 +77,16 @@ public extension ScaleCloudKit {
     ///             as soon as they are created. Use it to cancel the request while it’s in flight
     ///             (via handle.cancel()) or to observe the task/request lifecycle.
     ///
-    /// - Returns: NKSearchResult, NKError
+    /// - Returns: SCKSearchResult, SCKError
     func unifiedSearch(providerId: String,
                        term: String,
                        limit: Int? = nil,
                        cursor: Int? = nil,
                        timeout: TimeInterval = 60,
                        account: String,
-                       options: NKRequestOptions = NKRequestOptions(),
-                       handle: NKOperationHandle? = nil)
-    async -> (searchResult: NKSearchResult?, error: NKError) {
+                       options: SCKRequestOptions = SCKRequestOptions(),
+                       handle: SCKOperationHandle? = nil)
+    async -> (searchResult: SCKSearchResult?, error: SCKError) {
         guard let term = term.urlEncoded,
               let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options) else {
@@ -109,11 +109,11 @@ public extension ScaleCloudKit {
             try urlRequest = URLRequest(url: url, method: .get, headers: headers)
             urlRequest.timeoutInterval = timeout
         } catch {
-            return(nil, NKError(error: error))
+            return(nil, SCKError(error: error))
         }
 
         let request = nkSession.sessionData
-            .request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            .request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
             .validate(statusCode: 200..<300)
             .onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
@@ -131,28 +131,28 @@ public extension ScaleCloudKit {
         case .success(let jsonData):
             let json = JSON(jsonData)
             let searchData = json["ocs"]["data"]
-            let searchResult = NKSearchResult(json: searchData, id: providerId)
+            let searchResult = SCKSearchResult(json: searchData, id: providerId)
 
             return (searchResult, .success)
         case .failure(let error):
-            let nkError = NKError(error: error, afResponse: response, responseData: response.data)
+            let nkError = SCKError(error: error, afResponse: response, responseData: response.data)
 
             return (nil, nkError)
         }
     }
 }
 
-public class NKSearchResult: NSObject {
+public class SCKSearchResult: NSObject {
     public let id: String
     public let name: String
     public let isPaginated: Bool
-    public let entries: [NKSearchEntry]
+    public let entries: [SCKSearchEntry]
     public let cursor: Int?
 
     init?(json: JSON, id: String) {
         guard let isPaginated = json["isPaginated"].bool,
               let name = json["name"].string,
-              let entries = NKSearchEntry.factory(jsonArray: json["entries"])
+              let entries = SCKSearchEntry.factory(jsonArray: json["entries"])
         else { return nil }
         self.id = id
         self.cursor = json["cursor"].int
@@ -162,7 +162,7 @@ public class NKSearchResult: NSObject {
     }
 }
 
-public class NKSearchEntry: NSObject {
+public class SCKSearchEntry: NSObject {
     public let thumbnailURL: String
     public let title, subline: String
     public let resourceURL: String
@@ -195,13 +195,13 @@ public class NKSearchEntry: NSObject {
         self.attributes = json["attributes"].dictionaryObject
     }
 
-    static func factory(jsonArray: JSON) -> [NKSearchEntry]? {
+    static func factory(jsonArray: JSON) -> [SCKSearchEntry]? {
         guard let allProvider = jsonArray.array else { return nil }
-        return allProvider.compactMap(NKSearchEntry.init)
+        return allProvider.compactMap(SCKSearchEntry.init)
     }
 }
 
-public class NKSearchProvider: NSObject {
+public class SCKSearchProvider: NSObject {
     public let id, name: String
     public let order: Int
 
@@ -224,9 +224,9 @@ public class NKSearchProvider: NSObject {
         super.init()
     }
 
-    static func factory(jsonArray: JSON) -> [NKSearchProvider]? {
+    static func factory(jsonArray: JSON) -> [SCKSearchProvider]? {
         guard let allProvider = jsonArray.array else { return nil }
-        return allProvider.compactMap(NKSearchProvider.init)
+        return allProvider.compactMap(SCKSearchProvider.init)
     }
 }
 

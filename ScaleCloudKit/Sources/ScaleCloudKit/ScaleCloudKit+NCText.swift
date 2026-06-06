@@ -13,11 +13,11 @@ public extension ScaleCloudKit {
     /// - account: The account from which to fetch the editor details.
     /// - options: Optional request configuration such as headers, queue, or API version.
     /// - taskHandler: Callback to track the underlying URLSessionTask.
-    /// - completion: Returns the account, array of editors, array of creators, the raw response data, and NKError.
+    /// - completion: Returns the account, array of editors, array of creators, the raw response data, and SCKError.
     func textObtainEditorDetails(account: String,
-                                 options: NKRequestOptions = NKRequestOptions(),
+                                 options: SCKRequestOptions = SCKRequestOptions(),
                                  taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                 completion: @escaping (_ account: String, _  editors: [NKEditorDetailsEditor]?, _ creators: [NKEditorDetailsCreator]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                 completion: @escaping (_ account: String, _  editors: [SCKEditorDetailsEditor]?, _ creators: [SCKEditorDetailsCreator]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/files/api/v1/directEditing"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -25,29 +25,29 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, nil, response, error) }
             case .success(let responseData):
                 Task {
                     do {
-                        let (editors, creators) = try NKEditorDetailsConverter.from(data: responseData)
-                        let capabilities = await NKCapabilities.shared.getCapabilities(for: account)
+                        let (editors, creators) = try SCKEditorDetailsConverter.from(data: responseData)
+                        let capabilities = await SCKCapabilities.shared.getCapabilities(for: account)
                         capabilities.directEditingEditors = editors
                         capabilities.directEditingCreators = creators
-                        await NKCapabilities.shared.setCapabilities(for: account, capabilities: capabilities)
+                        await SCKCapabilities.shared.setCapabilities(for: account, capabilities: capabilities)
 
                         options.queue.async {
                             completion(account, editors, creators, response, .success)
                         }
 
                     } catch {
-                        nkLog(error: "Parsing error in NKEditorDetailsConverter: \(error)")
+                        nkLog(error: "Parsing error in SCKEditorDetailsConverter: \(error)")
                         options.queue.async {
                             completion(account, nil, nil, response, .invalidData)
                         }
@@ -63,16 +63,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account from which the information is retrieved.
     ///   - options: Configuration for the request, including headers and execution queue.
     ///   - taskHandler: Optional callback to monitor the underlying network task.
-    /// - Returns: A tuple containing the account, list of editors, list of creators, raw response, and NKError.
+    /// - Returns: A tuple containing the account, list of editors, list of creators, raw response, and SCKError.
     func textObtainEditorDetailsAsync(account: String,
-                                      options: NKRequestOptions = NKRequestOptions(),
+                                      options: SCKRequestOptions = SCKRequestOptions(),
                                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        editors: [NKEditorDetailsEditor]?,
-        creators: [NKEditorDetailsCreator]?,
+        editors: [SCKEditorDetailsEditor]?,
+        creators: [SCKEditorDetailsCreator]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textObtainEditorDetails(account: account,
@@ -98,14 +98,14 @@ public extension ScaleCloudKit {
     /// - account: The account initiating the file open request.
     /// - options: Optional configuration for the request (headers, API version, etc.).
     /// - taskHandler: Callback triggered with the underlying URLSessionTask.
-    /// - completion: Returns the account, the resulting file editor URL, raw response data, and an NKError.
+    /// - completion: Returns the account, the resulting file editor URL, raw response data, and an SCKError.
     func textOpenFile(fileNamePath: String,
                       fileId: String? = nil,
                       editor: String,
                       account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                      completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                      completion: @escaping (_ account: String, _  url: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let fileNamePath = fileNamePath.urlEncoded else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
@@ -119,13 +119,13 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .post, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -144,18 +144,18 @@ public extension ScaleCloudKit {
     ///   - account: Account performing the operation.
     ///   - options: Configuration options for the request.
     ///   - taskHandler: Optional monitoring for the underlying URLSessionTask.
-    /// - Returns: A tuple containing the account, resulting URL, raw response data, and NKError.
+    /// - Returns: A tuple containing the account, resulting URL, raw response data, and SCKError.
     func textOpenFileAsync(fileNamePath: String,
                            fileId: String? = nil,
                            editor: String,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         url: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textOpenFile(fileNamePath: fileNamePath,
@@ -180,11 +180,11 @@ public extension ScaleCloudKit {
     /// - account: The account requesting the list of templates.
     /// - options: Optional request configuration such as headers, queue, or API version.
     /// - taskHandler: Callback triggered with the underlying URLSessionTask.
-    /// - completion: Returns the account, an optional array of NKEditorTemplate, the raw response, and an NKError.
+    /// - completion: Returns the account, an optional array of SCKEditorTemplate, the raw response, and an SCKError.
     func textGetListOfTemplates(account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                completion: @escaping (_ account: String, _ templates: [NKEditorTemplate]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                completion: @escaping (_ account: String, _ templates: [SCKEditorTemplate]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/files/api/v1/directEditing/templates/text/textdocumenttemplate"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -192,23 +192,23 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let data):
                 Task {
                     do {
-                        let decoded = try JSONDecoder().decode(NKEditorTemplateResponse.self, from: data)
+                        let decoded = try JSONDecoder().decode(SCKEditorTemplateResponse.self, from: data)
                         let templates = decoded.ocs.data.editors
                         // Update capabilities
-                        let capabilities = await NKCapabilities.shared.getCapabilities(for: account)
+                        let capabilities = await SCKCapabilities.shared.getCapabilities(for: account)
                         capabilities.directEditingTemplates = templates
-                        await NKCapabilities.shared.setCapabilities(for: account, capabilities: capabilities)
+                        await SCKCapabilities.shared.setCapabilities(for: account, capabilities: capabilities)
 
                         options.queue.async { completion(account, templates, response, .success) }
                     } catch {
@@ -228,13 +228,13 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Optional callback to monitor the underlying URLSessionTask.
     /// - Returns: A tuple containing the account, list of templates (if any), raw response, and error information.
     func textGetListOfTemplatesAsync(account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        templates: [NKEditorTemplate]?,
+        templates: [SCKEditorTemplate]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textGetListOfTemplates(account: account,
@@ -260,15 +260,15 @@ public extension ScaleCloudKit {
     /// - account: The account performing the operation.
     /// - options: Optional request configuration (headers, queue, version, etc.).
     /// - taskHandler: Callback to monitor the underlying URLSessionTask.
-    /// - completion: Returns the account, the resulting file URL (if any), the raw response, and NKError.
+    /// - completion: Returns the account, the resulting file URL (if any), the raw response, and SCKError.
     func textCreateFile(fileNamePath: String,
                         editorId: String,
                         creatorId: String,
                         templateId: String,
                         account: String,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                        completion: @escaping (_ account: String, _ url: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                        completion: @escaping (_ account: String, _ url: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let fileNamePath = fileNamePath.urlEncoded else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
@@ -284,13 +284,13 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .post, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
@@ -310,19 +310,19 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used for the operation.
     ///   - options: Optional request settings (e.g., headers, queue, etc.).
     ///   - taskHandler: Optional callback to observe the URLSessionTask.
-    /// - Returns: A tuple containing the account, the resulting file URL, raw response data, and NKError.
+    /// - Returns: A tuple containing the account, the resulting file URL, raw response data, and SCKError.
     func textCreateFileAsync(fileNamePath: String,
                              editorId: String,
                              creatorId: String,
                              templateId: String,
                              account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         url: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textCreateFile(fileNamePath: fileNamePath,

@@ -14,13 +14,13 @@ public extension ScaleCloudKit {
     /// - account: The account performing the operation.
     /// - options: Optional request configuration (e.g., headers, queue, version).
     /// - taskHandler: Callback for tracking the underlying URLSessionTask.
-    /// - completion: Returns the account, raw response data, and NKError result.
+    /// - completion: Returns the account, raw response data, and SCKError result.
     func setLivephoto(serverUrlfileNamePath: String,
                       livePhotoFile: String,
                       account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                      completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                      completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let url = serverUrlfileNamePath.encodedToUrl,
               let nkSession = nkCommonInstance.nksessions.session(forAccount: account) else {
             return options.queue.async { completion(account, nil, .urlError) }
@@ -32,19 +32,19 @@ public extension ScaleCloudKit {
         var urlRequest: URLRequest
         do {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
-            let parameters = String(format: NKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodyLivephoto, livePhotoFile)
+            let parameters = String(format: SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodyLivephoto, livePhotoFile)
             urlRequest.httpBody = parameters.data(using: .utf8)
         } catch {
-            return options.queue.async { completion(account, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -60,16 +60,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account to use for the request.
     ///   - options: Optional request context and headers.
     ///   - taskHandler: Optional callback to observe the URLSessionTask.
-    /// - Returns: A tuple with the account, response data, and NKError result.
+    /// - Returns: A tuple with the account, response data, and SCKError result.
     func setLivephotoAsync(serverUrlfileNamePath: String,
                            livePhotoFile: String,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             setLivephoto(serverUrlfileNamePath: serverUrlfileNamePath,

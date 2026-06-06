@@ -17,13 +17,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, supported types, response, and error.
     func textProcessingGetTypesV2(account: String,
                                 supportedTaskType: String = "Text",
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         types: [TaskTypeData]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "ocs/v2.php/taskprocessing/tasktypes"
@@ -35,13 +35,13 @@ public extension ScaleCloudKit {
                 }
             }
 
-            nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, types: nil, responseData: response, error: error))
                     }
@@ -82,13 +82,13 @@ public extension ScaleCloudKit {
     func textProcessingScheduleV2(input: String,
                                 taskType: TaskTypeData,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         task: AssistantTask?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/taskprocessing/schedule"
@@ -103,13 +103,13 @@ public extension ScaleCloudKit {
             let inputField: [String: String] = ["input": input]
             let parameters: [String: Any] = ["input": inputField, "type": taskType.id ?? "", "appId": "assistant", "customId": ""]
 
-            nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, task: nil, responseData: response, error: error))
                     }
@@ -135,13 +135,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, task list, response, and error.
     func textProcessingGetTasksV2(taskType: String,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         tasks: TaskList?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/taskprocessing/tasks?taskType=\(taskType)"
@@ -153,13 +153,13 @@ public extension ScaleCloudKit {
                 }
             }
 
-            nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, tasks: nil, responseData: response, error: error))
                     }
@@ -185,12 +185,12 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, response, and error.
     func textProcessingDeleteTaskV2(taskId: Int64,
                                   account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/taskprocessing/task/\(taskId)"
@@ -202,13 +202,13 @@ public extension ScaleCloudKit {
                 }
             }
 
-            nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, responseData: response, error: error))
                     }
@@ -229,13 +229,13 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Optional closure to access the underlying URLSessionTask.
     /// - Returns: A tuple with named values for account, sessions, response, and error.
     func getAssistantChatConversations(account: String,
-                                       options: NKRequestOptions = NKRequestOptions(),
+                                       options: SCKRequestOptions = SCKRequestOptions(),
                                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         sessions: [AssistantConversation]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/sessions"
@@ -247,13 +247,13 @@ public extension ScaleCloudKit {
                 }
             }
 
-            nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, sessions: nil, responseData: response, error: error))
                     }
@@ -278,13 +278,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, chat messages, response, and error.
     func getAssistantChatMessages(sessionId: Int,
                                   account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         chatMessages: [AssistantChatMessage]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/messages"
@@ -296,13 +296,13 @@ public extension ScaleCloudKit {
                 }
             }
 
-            nkSession.sessionData.request(url, method: .get, parameters: ["sessionId": sessionId], encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, parameters: ["sessionId": sessionId], encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, chatMessages: nil, responseData: response, error: error))
                     }
@@ -327,13 +327,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, created message, response, and error.
     func createAssistantChatMessage(messageRequest: AssistantChatMessageRequest,
                                     account: String,
-                                    options: NKRequestOptions = NKRequestOptions(),
+                                    options: SCKRequestOptions = SCKRequestOptions(),
                                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         chatMessage: AssistantChatMessage?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/new_message"
@@ -345,13 +345,13 @@ public extension ScaleCloudKit {
                 }
             }
 
-            nkSession.sessionData.request(url, method: .put, parameters: messageRequest.bodyMap, encoding: JSONEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .put, parameters: messageRequest.bodyMap, encoding: JSONEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, chatMessage: nil, responseData: response, error: error))
                     }
@@ -378,13 +378,13 @@ public extension ScaleCloudKit {
     func createAssistantChatConversation(title: String?,
                                          timestamp: Int,
                                          account: String,
-                                         options: NKRequestOptions = NKRequestOptions(),
+                                         options: SCKRequestOptions = SCKRequestOptions(),
                                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         conversation: AssistantCreatedConversation?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/new_session"
@@ -401,13 +401,13 @@ public extension ScaleCloudKit {
                 parameters["title"] = title
             }
 
-            nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: JSONEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: JSONEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, conversation: nil, responseData: response, error: error))
                     }
@@ -434,13 +434,13 @@ public extension ScaleCloudKit {
     func checkAssistantChatGeneration(taskId: Int,
                                       sessionId: Int,
                                       account: String,
-                                      options: NKRequestOptions = NKRequestOptions(),
+                                      options: SCKRequestOptions = SCKRequestOptions(),
                                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         chatMessage: AssistantChatMessage?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/check_generation"
@@ -454,13 +454,13 @@ public extension ScaleCloudKit {
 
             let parameters: [String: Any] = ["taskId": taskId, "sessionId": sessionId]
 
-            nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, chatMessage: nil, responseData: response, error: error))
                     }
@@ -485,13 +485,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, session task, response, and error.
     func generateAssistantChatSession(sessionId: Int,
                                       account: String,
-                                      options: NKRequestOptions = NKRequestOptions(),
+                                      options: SCKRequestOptions = SCKRequestOptions(),
                                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         sessionTask: AssistantSessionTask?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/generate"
@@ -505,13 +505,13 @@ public extension ScaleCloudKit {
 
             let parameters: [String: Any] = ["sessionId": sessionId]
 
-            nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, sessionTask: nil, responseData: response, error: error))
                     }
@@ -536,13 +536,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, session (if found), response, and error.
     func checkAssistantChatSession(sessionId: Int,
                                    account: String,
-                                   options: NKRequestOptions = NKRequestOptions(),
+                                   options: SCKRequestOptions = SCKRequestOptions(),
                                    taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         session: AssistantSession?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let endpoint = "/ocs/v2.php/apps/assistant/chat/check_session"
@@ -556,13 +556,13 @@ public extension ScaleCloudKit {
 
             let parameters: [String: Any] = ["sessionId": sessionId]
 
-            nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+            nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
                 taskHandler(task)
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                     options.queue.async {
                         continuation.resume(returning: (account: account, session: nil, responseData: response, error: error))
                     }

@@ -4,22 +4,22 @@
 
 public extension ScaleCloudKit {
     /// Shared logger accessible via ScaleCloudKit.logger
-    static var logger: NKLogFileManager {
-        return NKLogFileManager.shared
+    static var logger: SCKLogFileManager {
+        return SCKLogFileManager.shared
     }
 
     /// Configure the shared logger from ScaleCloudKit
-    static func configureLogger(logLevel: NKLogLevel = .normal) {
-        NKLogFileManager.configure(logLevel: logLevel)
+    static func configureLogger(logLevel: SCKLogLevel = .normal) {
+        SCKLogFileManager.configure(logLevel: logLevel)
     }
 
     /// Configure the shared logger blacklist from ScaleCloudKit
     static func configureLoggerBlacklist(blacklist: [String]) {
-        NKLogFileManager.setBlacklist(blacklist: blacklist)
+        SCKLogFileManager.setBlacklist(blacklist: blacklist)
     }
 
     /// Configure the shared logger whitelist from ScaleCloudKit
     static func configureLoggerWhitelist(whitelist: [String]) {
-        NKLogFileManager.setCandidate(whitelist: whitelist)
+        SCKLogFileManager.setCandidate(whitelist: whitelist)
     }
 }

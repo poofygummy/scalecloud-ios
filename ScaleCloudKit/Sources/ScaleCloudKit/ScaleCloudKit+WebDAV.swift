@@ -19,12 +19,12 @@ public extension ScaleCloudKit {
     ///     - ocId: Optional file ID assigned by the server for the new folder.
     ///     - date: Optional date from the server response headers.
     ///     - responseData: The raw Alamofire response data.
-    ///     - error: The `NKError` result indicating success or failure.
+    ///     - error: The `SCKError` result indicating success or failure.
     func createFolder(serverUrlFileName: String,
                       account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                      completion: @escaping (_ account: String, _ ocId: String?, _ date: Date?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                      completion: @escaping (_ account: String, _ ocId: String?, _ date: Date?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let url = serverUrlFileName.encodedToUrl,
               let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
@@ -36,10 +36,10 @@ public extension ScaleCloudKit {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, nil, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -59,17 +59,17 @@ public extension ScaleCloudKit {
     /// Asynchronously creates a folder on the Nextcloud server.
     ///
     /// - Parameters: Same as the sync version.
-    /// - Returns: A tuple with account, optional ocId, optional date, responseData, and NKError.
+    /// - Returns: A tuple with account, optional ocId, optional date, responseData, and SCKError.
     func createFolderAsync(serverUrlFileName: String,
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         ocId: String?,
         date: Date?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             createFolder(serverUrlFileName: serverUrlFileName,
@@ -97,12 +97,12 @@ public extension ScaleCloudKit {
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
     ///     - responseData: The raw Alamofire response data.
-    ///     - error: The `NKError` result indicating success or failure.
+    ///     - error: The `SCKError` result indicating success or failure.
     func deleteFileOrFolder(serverUrlFileName: String,
                             account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                            completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                            completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let url = serverUrlFileName.encodedToUrl,
               let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
@@ -113,10 +113,10 @@ public extension ScaleCloudKit {
             try urlRequest = URLRequest(url: url, method: .delete, headers: headers)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -139,15 +139,15 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
     ///   - responseData: The raw Alamofire response data.
-    ///   - error: The `NKError` result indicating success or failure.
+    ///   - error: The `SCKError` result indicating success or failure.
     func deleteFileOrFolderAsync(serverUrlFileName: String,
                                  account: String,
-                                 options: NKRequestOptions = NKRequestOptions(),
+                                 options: SCKRequestOptions = SCKRequestOptions(),
                                  taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             deleteFileOrFolder(serverUrlFileName: serverUrlFileName,
@@ -175,14 +175,14 @@ public extension ScaleCloudKit {
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
     ///     - responseData: The raw Alamofire response data.
-    ///     - error: The `NKError` result indicating success or failure.
+    ///     - error: The `SCKError` result indicating success or failure.
     func moveFileOrFolder(serverUrlFileNameSource: String,
                           serverUrlFileNameDestination: String,
                           overwrite: Bool,
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                          completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                          completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let url = serverUrlFileNameSource.encodedToUrl,
               let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               var headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
@@ -200,10 +200,10 @@ public extension ScaleCloudKit {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -228,17 +228,17 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
     ///   - responseData: The raw Alamofire response data.
-    ///   - error: The `NKError` result indicating success or failure.
+    ///   - error: The `SCKError` result indicating success or failure.
     func moveFileOrFolderAsync(serverUrlFileNameSource: String,
                                serverUrlFileNameDestination: String,
                                overwrite: Bool,
                                account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             moveFileOrFolder(serverUrlFileNameSource: serverUrlFileNameSource,
@@ -268,14 +268,14 @@ public extension ScaleCloudKit {
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
     ///     - responseData: The raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func copyFileOrFolder(serverUrlFileNameSource: String,
                           serverUrlFileNameDestination: String,
                           overwrite: Bool,
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                          completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                          completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let url = serverUrlFileNameSource.encodedToUrl,
               let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               var headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
@@ -294,10 +294,10 @@ public extension ScaleCloudKit {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -322,17 +322,17 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
     ///   - responseData: The raw Alamofire response data.
-    ///   - error: The resulting `NKError`.
+    ///   - error: The resulting `SCKError`.
     func copyFileOrFolderAsync(serverUrlFileNameSource: String,
                                serverUrlFileNameDestination: String,
                                overwrite: Bool,
                                account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             copyFileOrFolder(serverUrlFileNameSource: serverUrlFileNameSource,
@@ -363,18 +363,18 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback triggered with the underlying `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
-    ///     - files: An optional array of `NKFile` objects representing the contents.
+    ///     - files: An optional array of `SCKFile` objects representing the contents.
     ///     - responseData: The raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func readFileOrFolder(serverUrlFileName: String,
                           depth: String,
                           showHiddenFiles: Bool = true,
                           includeHiddenFiles: [String] = [],
                           requestBody: Data? = nil,
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                          completion: @escaping (_ account: String, _ files: [NKFile]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                          completion: @escaping (_ account: String, _ files: [SCKFile]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var serverUrlFileName = serverUrlFileName
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = serverUrlFileName.encodedToUrl,
@@ -396,24 +396,24 @@ public extension ScaleCloudKit {
                 urlRequest.httpBody = requestBody
                 urlRequest.timeoutInterval = options.timeout
             } else {
-                urlRequest.httpBody = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodyFile(createProperties: options.createProperties, removeProperties: options.removeProperties).data(using: .utf8)
+                urlRequest.httpBody = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodyFile(createProperties: options.createProperties, removeProperties: options.removeProperties).data(using: .utf8)
             }
         } catch {
-            return options.queue.async { completion(account, nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success:
                 if let xmlData = response.data {
                     Task {
-                        let files = await NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataFile(xmlData: xmlData, nkSession: nkSession, rootFileName: self.nkCommonInstance.rootFileName, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles)
+                        let files = await SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataFile(xmlData: xmlData, nkSession: nkSession, rootFileName: self.nkCommonInstance.rootFileName, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles)
                         options.queue.async { completion(account, files, response, .success) }
                     }
                 } else {
@@ -437,22 +437,22 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
-    ///   - files: Optional array of `NKFile` contents.
+    ///   - files: Optional array of `SCKFile` contents.
     ///   - responseData: The raw Alamofire response data.
-    ///   - error: The resulting `NKError`.
+    ///   - error: The resulting `SCKError`.
     func readFileOrFolderAsync(serverUrlFileName: String,
                                depth: String,
                                showHiddenFiles: Bool = true,
                                includeHiddenFiles: [String] = [],
                                requestBody: Data? = nil,
                                account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        files: [NKFile]?,
+        files: [SCKFile]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             readFileOrFolder(serverUrlFileName: serverUrlFileName,
@@ -483,25 +483,25 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback triggered with the underlying `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
-    ///     - file: Optional `NKFile` object representing the file.
+    ///     - file: Optional `SCKFile` object representing the file.
     ///     - responseData: Raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func getFileFromFileId(fileId: String? = nil,
                            link: String? = nil,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                           completion: @escaping (_ account: String, _ file: NKFile?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                           completion: @escaping (_ account: String, _ file: SCKFile?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account) else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
         var httpBody: Data?
         if let fileId = fileId {
-            httpBody = String(format: NKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodySearchFileId(createProperties: options.createProperties, removeProperties: options.removeProperties), nkSession.userId, fileId).data(using: .utf8)
+            httpBody = String(format: SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodySearchFileId(createProperties: options.createProperties, removeProperties: options.removeProperties), nkSession.userId, fileId).data(using: .utf8)
         } else if let link = link {
             let linkArray = link.components(separatedBy: "/")
             if let fileId = linkArray.last {
-                httpBody = String(format: NKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodySearchFileId(createProperties: options.createProperties, removeProperties: options.removeProperties), nkSession.userId, fileId).data(using: .utf8)
+                httpBody = String(format: SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodySearchFileId(createProperties: options.createProperties, removeProperties: options.removeProperties), nkSession.userId, fileId).data(using: .utf8)
             }
         }
         guard let httpBody = httpBody else {
@@ -527,19 +527,19 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used.
-    ///   - file: Optional `NKFile` object.
+    ///   - file: Optional `SCKFile` object.
     ///   - responseData: Raw response data.
-    ///   - error: Resulting `NKError`.
+    ///   - error: Resulting `SCKError`.
     func getFileFromFileIdAsync(fileId: String? = nil,
                                 link: String? = nil,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        file: NKFile?,
+        file: SCKFile?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getFileFromFileId(fileId: fileId,
@@ -569,17 +569,17 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback triggered with the underlying `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
-    ///     - files: Optional array of `NKFile` results matching the search.
+    ///     - files: Optional array of `SCKFile` results matching the search.
     ///     - responseData: Raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func searchBodyRequest(serverUrl: String,
                            requestBody: String,
                            showHiddenFiles: Bool,
                            includeHiddenFiles: [String] = [],
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                           completion: @escaping (_ account: String, _ files: [NKFile]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                           completion: @escaping (_ account: String, _ files: [SCKFile]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         if let httpBody = requestBody.data(using: .utf8) {
             search(serverUrl: serverUrl, httpBody: httpBody, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles, account: account, options: options) { task in
                 taskHandler(task)
@@ -602,21 +602,21 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used.
-    ///   - files: Optional array of `NKFile` results.
+    ///   - files: Optional array of `SCKFile` results.
     ///   - responseData: Raw response data.
-    ///   - error: Resulting `NKError`.
+    ///   - error: Resulting `SCKError`.
     func searchBodyRequestAsync(serverUrl: String,
                                 requestBody: String,
                                 showHiddenFiles: Bool,
                                 includeHiddenFiles: [String] = [],
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        files: [NKFile]?,
+        files: [SCKFile]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             searchBodyRequest(serverUrl: serverUrl,
@@ -649,23 +649,23 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback for the underlying `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
-    ///     - files: Optional array of `NKFile` objects matching the search.
+    ///     - files: Optional array of `SCKFile` objects matching the search.
     ///     - responseData: Raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func searchLiteral(serverUrl: String,
                        depth: String,
                        literal: String,
                        showHiddenFiles: Bool,
                        includeHiddenFiles: [String] = [],
                        account: String,
-                       options: NKRequestOptions = NKRequestOptions(),
+                       options: SCKRequestOptions = SCKRequestOptions(),
                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                       completion: @escaping (_ account: String, _ files: [NKFile]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                       completion: @escaping (_ account: String, _ files: [SCKFile]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let href = ("/files/" + nkSession.userId).urlEncoded  else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
-        let requestBody = String(format: NKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodySearchFileName(createProperties: options.createProperties, removeProperties: options.removeProperties), href, depth, "%" + literal + "%")
+        let requestBody = String(format: SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodySearchFileName(createProperties: options.createProperties, removeProperties: options.removeProperties), href, depth, "%" + literal + "%")
         if let httpBody = requestBody.data(using: .utf8) {
             search(serverUrl: serverUrl, httpBody: httpBody, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles, account: account, options: options) { task in
                 taskHandler(task)
@@ -689,22 +689,22 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
-    ///   - files: Optional array of NKFile results.
+    ///   - files: Optional array of SCKFile results.
     ///   - responseData: Raw response data.
-    ///   - error: Resulting NKError.
+    ///   - error: Resulting SCKError.
     func searchLiteralAsync(serverUrl: String,
                             depth: String,
                             literal: String,
                             showHiddenFiles: Bool,
                             includeHiddenFiles: [String] = [],
                             account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        files: [NKFile]?,
+        files: [SCKFile]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             searchLiteral(serverUrl: serverUrl,
@@ -737,17 +737,17 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback to monitor the created `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the request.
-    ///     - files: Optional array of `NKFile` matching the search.
+    ///     - files: Optional array of `SCKFile` matching the search.
     ///     - responseData: Raw response data from Alamofire.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func search(serverUrl: String,
                 httpBody: Data,
                 showHiddenFiles: Bool,
                 includeHiddenFiles: [String],
                 account: String,
-                options: NKRequestOptions = NKRequestOptions(),
+                options: SCKRequestOptions = SCKRequestOptions(),
                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                completion: @escaping (_ account: String, _ files: [NKFile]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                completion: @escaping (_ account: String, _ files: [SCKFile]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
@@ -762,21 +762,21 @@ public extension ScaleCloudKit {
             urlRequest.httpBody = httpBody
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success:
                 if let xmlData = response.data {
                     Task {
-                        let files = await NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataFile(xmlData: xmlData, nkSession: nkSession, rootFileName: self.nkCommonInstance.rootFileName, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles)
+                        let files = await SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataFile(xmlData: xmlData, nkSession: nkSession, rootFileName: self.nkCommonInstance.rootFileName, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles)
                         options.queue.async { completion(account, files, response, .success) }
                     }
                 } else {
@@ -799,21 +799,21 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
-    ///   - files: Optional array of `NKFile` results.
+    ///   - files: Optional array of `SCKFile` results.
     ///   - responseData: Raw response data.
-    ///   - error: Resulting `NKError`.
+    ///   - error: Resulting `SCKError`.
     func searchAsync(serverUrl: String,
                      httpBody: Data,
                      showHiddenFiles: Bool,
                      includeHiddenFiles: [String],
                      account: String,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        files: [NKFile]?,
+        files: [SCKFile]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             search(serverUrl: serverUrl,
@@ -844,13 +844,13 @@ public extension ScaleCloudKit {
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the operation.
     ///     - responseData: Raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func setFavorite(fileName: String,
                      favorite: Bool,
                      account: String,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                     completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                     completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
             return options.queue.async { completion(account, nil, .urlError) }
@@ -864,14 +864,14 @@ public extension ScaleCloudKit {
 
         do {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
-            let body = NSString(format: NKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodyFileSetFavorite as NSString, (favorite ? 1 : 0)) as String
+            let body = NSString(format: SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodyFileSetFavorite as NSString, (favorite ? 1 : 0)) as String
             urlRequest.httpBody = body.data(using: .utf8)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -890,16 +890,16 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing:
     ///   - account: The account used for the operation.
     ///   - responseData: Raw response data from Alamofire.
-    ///   - error: The resulting `NKError`.
+    ///   - error: The resulting `SCKError`.
     func setFavoriteAsync(fileName: String,
                           favorite: Bool,
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             setFavorite(fileName: fileName,
@@ -926,15 +926,15 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback for monitoring the underlying `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the operation.
-    ///     - files: An optional array of `NKFile` representing the favorite items.
+    ///     - files: An optional array of `SCKFile` representing the favorite items.
     ///     - responseData: Raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func listingFavorites(showHiddenFiles: Bool,
                           includeHiddenFiles: [String] = [],
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                          completion: @escaping (_ account: String, _ files: [NKFile]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                          completion: @escaping (_ account: String, _ files: [SCKFile]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
@@ -948,24 +948,24 @@ public extension ScaleCloudKit {
 
         do {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
-            urlRequest.httpBody = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodyFileListingFavorites(createProperties: options.createProperties, removeProperties: options.removeProperties).data(using: .utf8)
+            urlRequest.httpBody = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).getRequestBodyFileListingFavorites(createProperties: options.createProperties, removeProperties: options.removeProperties).data(using: .utf8)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success:
                 if let xmlData = response.data {
                     Task {
-                        let files = await NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataFile(xmlData: xmlData, nkSession: nkSession, rootFileName: self.nkCommonInstance.rootFileName, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles)
+                        let files = await SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataFile(xmlData: xmlData, nkSession: nkSession, rootFileName: self.nkCommonInstance.rootFileName, showHiddenFiles: showHiddenFiles, includeHiddenFiles: includeHiddenFiles)
                         options.queue.async { completion(account, files, response, .success) }
                     }
                 } else {
@@ -981,19 +981,19 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used for the operation.
-    ///   - files: An optional array of `NKFile` for the favorite items.
+    ///   - files: An optional array of `SCKFile` for the favorite items.
     ///   - responseData: Raw response data from Alamofire.
-    ///   - error: The resulting `NKError`.
+    ///   - error: The resulting `SCKError`.
     func listingFavoritesAsync(showHiddenFiles: Bool,
                                includeHiddenFiles: [String] = [],
                                account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        files: [NKFile]?,
+        files: [SCKFile]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             listingFavorites(showHiddenFiles: showHiddenFiles,
@@ -1021,15 +1021,15 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback for monitoring the underlying `URLSessionTask`.
     ///   - completion: Completion handler returning:
     ///     - account: The account used for the operation.
-    ///     - items: An optional array of `NKTrash` objects representing trashed items.
+    ///     - items: An optional array of `SCKTrash` objects representing trashed items.
     ///     - responseData: Raw Alamofire response data.
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func listingTrash(filename: String? = nil,
                       showHiddenFiles: Bool,
                       account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                      completion: @escaping (_ account: String, _ items: [NKTrash]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                      completion: @escaping (_ account: String, _ items: [SCKTrash]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               var headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml") else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
@@ -1047,24 +1047,24 @@ public extension ScaleCloudKit {
 
         do {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
-            urlRequest.httpBody = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodyTrash.data(using: .utf8)
+            urlRequest.httpBody = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodyTrash.data(using: .utf8)
             urlRequest.timeoutInterval = options.timeout
         } catch {
-            return options.queue.async { completion(account, nil, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success:
                 if let xmlData = response.data {
                     Task {
-                        let items = await NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataTrash(xmlData: xmlData, nkSession: nkSession, showHiddenFiles: showHiddenFiles)
+                        let items = await SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataTrash(xmlData: xmlData, nkSession: nkSession, showHiddenFiles: showHiddenFiles)
                         options.queue.async { completion(account, items, response, .success) }
                     }
                 } else {
@@ -1080,19 +1080,19 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used for the operation.
-    ///   - items: An optional array of `NKTrash` representing trashed items.
+    ///   - items: An optional array of `SCKTrash` representing trashed items.
     ///   - responseData: Raw response data from Alamofire.
-    ///   - error: The resulting `NKError`.
+    ///   - error: The resulting `SCKError`.
     func listingTrashAsync(filename: String? = nil,
                            showHiddenFiles: Bool,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @Sendable @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        items: [NKTrash]?,
+        items: [SCKTrash]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             listingTrash(filename: filename,

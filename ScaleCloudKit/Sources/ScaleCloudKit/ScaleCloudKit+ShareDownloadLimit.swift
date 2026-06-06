@@ -17,11 +17,11 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account identifier.
     /// - token: The public share token associated with the file or folder.
     /// - completion: A closure returning:
-    ///   - NKDownloadLimit?: The current download limit information, or `nil` if not available.
-    ///   - NKError: An object representing success or error during the request.
-    func getDownloadLimit(account: String, token: String, completion: @escaping (NKDownloadLimit?, NKError) -> Void) {
+    ///   - SCKDownloadLimit?: The current download limit information, or `nil` if not available.
+    ///   - SCKError: An object representing success or error during the request.
+    func getDownloadLimit(account: String, token: String, completion: @escaping (SCKDownloadLimit?, SCKError) -> Void) {
         let endpoint = makeEndpoint(with: token)
-        let options = NKRequestOptions()
+        let options = SCKRequestOptions()
 
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -33,12 +33,12 @@ public extension ScaleCloudKit {
 
         nkSession
             .sessionData
-            .request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            .request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
             .validate(statusCode: 200..<300)
             .responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
 
                     options.queue.async {
                         completion(nil, error)
@@ -47,7 +47,7 @@ public extension ScaleCloudKit {
                     let json = JSON(jsonData)
 
                     guard json["ocs"]["meta"]["statuscode"].int == 200 else {
-                        let error = NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
+                        let error = SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
 
                         options.queue.async {
                             completion(nil, error)
@@ -75,7 +75,7 @@ public extension ScaleCloudKit {
                         return
                     }
 
-                    let downloadLimit = NKDownloadLimit(count: count.intValue, limit: limit.intValue, token: token)
+                    let downloadLimit = SCKDownloadLimit(count: count.intValue, limit: limit.intValue, token: token)
 
                     options.queue.async {
                         completion(downloadLimit, .success)
@@ -91,11 +91,11 @@ public extension ScaleCloudKit {
     /// - token: The public share token used to identify the shared file.
     ///
     /// Returns: A tuple containing:
-    /// - downloadLimit: The current NKDownloadLimit object if available.
-    /// - error: The NKError representing success or failure of the request.
+    /// - downloadLimit: The current SCKDownloadLimit object if available.
+    /// - error: The SCKError representing success or failure of the request.
     func getDownloadLimitAsync(account: String, token: String) async -> (
-        downloadLimit: NKDownloadLimit?,
-        error: NKError
+        downloadLimit: SCKDownloadLimit?,
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getDownloadLimit(account: account, token: token) { limit, error in
@@ -113,10 +113,10 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account identifier.
     /// - token: The public share token associated with the file or folder.
     /// - completion: A closure returning:
-    ///   - NKError: An object representing the success or failure of the request.
-    func removeShareDownloadLimit(account: String, token: String, completion: @escaping (_ error: NKError) -> Void) {
+    ///   - SCKError: An object representing the success or failure of the request.
+    func removeShareDownloadLimit(account: String, token: String, completion: @escaping (_ error: SCKError) -> Void) {
         let endpoint = makeEndpoint(with: token)
-        let options = NKRequestOptions()
+        let options = SCKRequestOptions()
 
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -128,12 +128,12 @@ public extension ScaleCloudKit {
 
         nkSession
             .sessionData
-            .request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            .request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
             .validate(statusCode: 200..<300)
             .responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
 
                     options.queue.async {
                         completion(error)
@@ -152,8 +152,8 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account used for the request.
     /// - token: The public token representing the shared resource.
     ///
-    /// Returns: An NKError that indicates the outcome of the operation.
-    func removeShareDownloadLimitAsync(account: String, token: String) async -> NKError {
+    /// Returns: An SCKError that indicates the outcome of the operation.
+    func removeShareDownloadLimitAsync(account: String, token: String) async -> SCKError {
         await withCheckedContinuation { continuation in
             removeShareDownloadLimit(account: account, token: token) { error in
                 continuation.resume(returning: error)
@@ -168,10 +168,10 @@ public extension ScaleCloudKit {
     /// - token: The public share token identifying the shared resource.
     /// - limit: The new download limit to be set.
     /// - completion: A closure returning:
-    ///   - error: An NKError representing the success or failure of the operation.
-    func setShareDownloadLimit(account: String, token: String, limit: Int, completion: @escaping (_ error: NKError) -> Void) {
+    ///   - error: An SCKError representing the success or failure of the operation.
+    func setShareDownloadLimit(account: String, token: String, limit: Int, completion: @escaping (_ error: SCKError) -> Void) {
         let endpoint = makeEndpoint(with: token)
-        let options = NKRequestOptions()
+        let options = SCKRequestOptions()
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/json"),
@@ -187,12 +187,12 @@ public extension ScaleCloudKit {
 
         nkSession
             .sessionData
-            .request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            .request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
             .validate(statusCode: 200..<300)
             .responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                 case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
 
                     options.queue.async {
                         completion(error)
@@ -212,8 +212,8 @@ public extension ScaleCloudKit {
     /// - token: The public share token of the resource.
     /// - limit: The maximum number of downloads to allow.
     ///
-    /// Returns: An NKError indicating whether the operation was successful.
-    func setShareDownloadLimitAsync(account: String, token: String, limit: Int) async -> NKError {
+    /// Returns: An SCKError indicating whether the operation was successful.
+    func setShareDownloadLimitAsync(account: String, token: String, limit: Int) async -> SCKError {
         await withCheckedContinuation { continuation in
             setShareDownloadLimit(account: account, token: token, limit: limit) { error in
                 continuation.resume(returning: error)

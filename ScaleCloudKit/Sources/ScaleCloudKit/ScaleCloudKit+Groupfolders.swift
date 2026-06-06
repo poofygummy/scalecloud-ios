@@ -16,11 +16,11 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account requesting the list of group folders.
     /// - options: Optional request options (e.g., API version, custom headers, queue).
     /// - taskHandler: Closure to access the underlying URLSessionTask.
-    /// - completion: Completion handler returning the account, list of group folders, response, and any NKError.
+    /// - completion: Completion handler returning the account, list of group folders, response, and any SCKError.
     func getGroupfolders(account: String,
-                         options: NKRequestOptions = NKRequestOptions(),
+                         options: SCKRequestOptions = SCKRequestOptions(),
                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                         completion: @escaping (_ account: String, _ results: [NKGroupfolders]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                         completion: @escaping (_ account: String, _ results: [SCKGroupfolders]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "index.php/apps/groupfolders/folders?applicable=1"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -28,26 +28,26 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]
                 guard json["ocs"]["meta"]["statuscode"].int == 200 || json["ocs"]["meta"]["statuscode"].int == 100
                 else {
-                    let error = NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
+                    let error = SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
                     options.queue.async { completion(account, nil, response, error) }
                     return
                 }
-                var results = [NKGroupfolders]()
+                var results = [SCKGroupfolders]()
                 for (_, subJson) in data {
-                    if let result = NKGroupfolders(json: subJson) {
+                    if let result = SCKGroupfolders(json: subJson) {
                         results.append(result)
                     }
                 }
@@ -61,15 +61,15 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account identifier.
     ///   - options: Optional request configuration (headers, queue, etc.).
     ///   - taskHandler: Optional monitoring of the `URLSessionTask`.
-    /// - Returns: A tuple containing the account, an optional array of `NKGroupfolders`, the response data, and an `NKError`.
+    /// - Returns: A tuple containing the account, an optional array of `SCKGroupfolders`, the response data, and an `SCKError`.
     func getGroupfoldersAsync(account: String,
-                              options: NKRequestOptions = NKRequestOptions(),
+                              options: SCKRequestOptions = SCKRequestOptions(),
                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        results: [NKGroupfolders]?,
+        results: [SCKGroupfolders]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getGroupfolders(account: account,
@@ -86,7 +86,7 @@ public extension ScaleCloudKit {
     }
 }
 
-public class NKGroupfolders: NSObject {
+public class SCKGroupfolders: NSObject {
     public let id: Int
     public let mountPoint: String
     public let acl: Bool

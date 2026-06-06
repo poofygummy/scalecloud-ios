@@ -15,12 +15,12 @@ public extension ScaleCloudKit {
     /// - request: Optional callback to observe or manipulate the underlying DataRequest.
     /// - taskHandler: Callback triggered when the URLSessionTask is created.
     /// - completion: Completion handler returning the account, the list of recommendations,
-    ///               the raw response data, and an NKError result.
+    ///               the raw response data, and an SCKError result.
     func getRecommendedFiles(account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              request: @escaping (DataRequest?) -> Void = { _ in },
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                             completion: @escaping (_ account: String, _ recommendations: [NKRecommendation]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                             completion: @escaping (_ account: String, _ recommendations: [SCKRecommendation]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/recommendations/api/v1/recommendations"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -28,7 +28,7 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        let tosRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        let tosRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -45,7 +45,7 @@ public extension ScaleCloudKit {
                     options.queue.async { completion(account, nil, response, .xmlError) }
                 }
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async {
                     completion(account, nil, response, error)
                 }
@@ -61,16 +61,16 @@ public extension ScaleCloudKit {
     ///   - options: Optional configuration for queue, headers, etc.
     ///   - request: Optional callback to capture the DataRequest object.
     ///   - taskHandler: Optional handler for the URLSessionTask.
-    /// - Returns: A tuple containing the account, list of recommended files, raw response data, and NKError result.
+    /// - Returns: A tuple containing the account, list of recommended files, raw response data, and SCKError result.
     func getRecommendedFilesAsync(account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   request: @escaping (DataRequest?) -> Void = { _ in },
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        recommendations: [NKRecommendation]?,
+        recommendations: [SCKRecommendation]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getRecommendedFiles(account: account,

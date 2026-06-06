@@ -7,11 +7,11 @@ import Foundation
 public final class FileAutoRenamer: Sendable {
     private let forbiddenFileNameCharacters: [String]
     private let forbiddenFileNameExtensions: [String]
-    private let capabilities: NKCapabilities.Capabilities
+    private let capabilities: SCKCapabilities.Capabilities
 
     private let replacement = "_"
 
-    public init(capabilities: NKCapabilities.Capabilities) {
+    public init(capabilities: SCKCapabilities.Capabilities) {
         self.forbiddenFileNameCharacters = capabilities.forbiddenFileNameCharacters
         self.forbiddenFileNameExtensions = capabilities.forbiddenFileNameExtensions.map { $0.lowercased() }
         self.capabilities = capabilities

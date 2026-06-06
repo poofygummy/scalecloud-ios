@@ -14,9 +14,9 @@ import Alamofire
 import SwiftyJSON
 
 final class NextcloudKitSessionDelegate: SessionDelegate, @unchecked Sendable {
-    public let nkCommonInstance: NKCommon?
+    public let nkCommonInstance: SCKCommon?
 
-    public init(fileManager: FileManager = .default, nkCommonInstance: NKCommon? = nil) {
+    public init(fileManager: FileManager = .default, nkCommonInstance: SCKCommon? = nil) {
         self.nkCommonInstance = nkCommonInstance
         super.init(fileManager: fileManager)
     }

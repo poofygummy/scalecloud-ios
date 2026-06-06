@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public class NKShareParameter: NSObject {
+public class SCKShareParameter: NSObject {
     let path: String?
     let idShare: Int
     let reshares: Bool
@@ -56,34 +56,34 @@ public class NKShareParameter: NSObject {
 }
 
 public extension ScaleCloudKit {
-    func readShares(parameters: NKShareParameter,
+    func readShares(parameters: SCKShareParameter,
                     account: String,
-                    options: NKRequestOptions = NKRequestOptions(),
+                    options: SCKRequestOptions = SCKRequestOptions(),
                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                    completion: @escaping (_ account: String, _ shares: [NKShare]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                    completion: @escaping (_ account: String, _ shares: [SCKShare]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: parameters.endpoint),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options) else {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, parameters: parameters.queryParameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, parameters: parameters.queryParameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 guard json["ocs"]["meta"]["statuscode"].int == 200
                 else {
-                    let error = NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
+                    let error = SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
                     options.queue.async { completion(account, nil, response, error) }
                     return
                 }
-                var shares: [NKShare] = []
+                var shares: [SCKShare] = []
                 for (_, subJson): (String, JSON) in json["ocs"]["data"] {
                     let share = self.convertResponseShare(json: subJson, account: account)
                     shares.append(share)
@@ -95,19 +95,19 @@ public extension ScaleCloudKit {
 
     /// Asynchronously reads shares for a given account using the provided parameters.
     /// - Parameters:
-    ///   - parameters: The `NKShareParameter` object containing filters and options for the request.
+    ///   - parameters: The `SCKShareParameter` object containing filters and options for the request.
     ///   - account: The account identifier for which to fetch shares.
-    ///   - options: Optional `NKRequestOptions` to customize the request (default is empty).
+    ///   - options: Optional `SCKRequestOptions` to customize the request (default is empty).
     ///   - taskHandler: Closure called when the underlying `URLSessionTask` is created, useful for tracking or cancellation.
     /// - Returns: A tuple containing:
     ///   - `account`: The account used for the request.
-    ///   - `shares`: An optional array of `NKShare` objects returned by the server.
+    ///   - `shares`: An optional array of `SCKShare` objects returned by the server.
     ///   - `responseData`: The raw Alamofire response object.
-    ///   - `error`: An `NKError` indicating the result of the request.
-    func readSharesAsync(parameters: NKShareParameter,
+    ///   - `error`: An `SCKError` indicating the result of the request.
+    func readSharesAsync(parameters: SCKShareParameter,
                          account: String,
-                         options: NKRequestOptions = NKRequestOptions(),
-                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async -> (account: String, shares: [NKShare]?, responseData: AFDataResponse<Data>?, error: NKError) {
+                         options: SCKRequestOptions = SCKRequestOptions(),
+                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async -> (account: String, shares: [SCKShare]?, responseData: AFDataResponse<Data>?, error: SCKError) {
 
         await withCheckedContinuation { continuation in
             readShares(
@@ -139,9 +139,9 @@ public extension ScaleCloudKit {
                        itemType: String = "file",
                        lookup: Bool = false,
                        account: String,
-                       options: NKRequestOptions = NKRequestOptions(),
+                       options: SCKRequestOptions = SCKRequestOptions(),
                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                       completion: @escaping (_ account: String, _ sharees: [NKSharee]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                       completion: @escaping (_ account: String, _ sharees: [SCKSharee]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/files_sharing/api/v1/sharees"
         var lookupString = "false"
         if lookup {
@@ -160,22 +160,22 @@ public extension ScaleCloudKit {
             "lookup": lookupString
         ]
 
-        nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
 
                 if json["ocs"]["meta"]["statuscode"].int == 200 {
-                    var sharees: [NKSharee] = []
+                    var sharees: [SCKSharee] = []
                     for shareType in ["users", "groups", "remotes", "remote_groups", "emails", "circles", "rooms", "lookup"] {
                         for (_, subJson): (String, JSON) in json["ocs"]["data"]["exact"][shareType] {
-                            let sharee = NKSharee()
+                            let sharee = SCKSharee()
 
                             sharee.label = subJson["label"].stringValue
                             sharee.name = subJson["name"].stringValue
@@ -198,7 +198,7 @@ public extension ScaleCloudKit {
                             sharees.append(sharee)
                         }
                         for (_, subJson): (String, JSON) in json["ocs"]["data"][shareType] {
-                            let sharee = NKSharee()
+                            let sharee = SCKSharee()
 
                             sharee.label = subJson["label"].stringValue
                             sharee.name = subJson["name"].stringValue
@@ -223,7 +223,7 @@ public extension ScaleCloudKit {
                     }
                     options.queue.async { completion(account, sharees, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -241,9 +241,9 @@ public extension ScaleCloudKit {
     ///   - options: Optional request parameters (default is `.init()`).
     /// - Returns: A tuple containing:
     ///   - account: The associated account string.
-    ///   - sharees: An optional array of `NKSharee` objects returned by the server.
+    ///   - sharees: An optional array of `SCKSharee` objects returned by the server.
     ///   - responseData: The full `AFDataResponse<Data>` from Alamofire.
-    ///   - error: An `NKError` object representing success or failure.
+    ///   - error: An `SCKError` object representing success or failure.
     func searchShareesAsync(
         search: String = "",
         page: Int = 1,
@@ -251,12 +251,12 @@ public extension ScaleCloudKit {
         itemType: String = "file",
         lookup: Bool = false,
         account: String,
-        options: NKRequestOptions = NKRequestOptions()
+        options: SCKRequestOptions = SCKRequestOptions()
     ) async -> (
         account: String,
-        sharees: [NKSharee]?,
+        sharees: [SCKSharee]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             searchSharees(
@@ -309,9 +309,9 @@ public extension ScaleCloudKit {
                      permissions: Int = 1,
                      attributes: String? = nil,
                      account: String,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                     completion: @escaping (_ account: String, _ share: NKShare?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                     completion: @escaping (_ account: String, _ share: SCKShare?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/files_sharing/api/v1/shares"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -342,21 +342,21 @@ public extension ScaleCloudKit {
             parameters["attributes"] = attributes
         }
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if statusCode == 200 {
                     options.queue.async { completion(account, self.convertResponseShare(json: json["ocs"]["data"], account: account), response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -378,9 +378,9 @@ public extension ScaleCloudKit {
     ///   - options: Optional request options (default is `.init()`).
     /// - Returns: A tuple containing:
     ///   - account: The account string.
-    ///   - share: An optional `NKShare` object representing the created share.
+    ///   - share: An optional `SCKShare` object representing the created share.
     ///   - responseData: The raw `AFDataResponse<Data>` returned by Alamofire.
-    ///   - error: An `NKError` representing the result of the operation.
+    ///   - error: An `SCKError` representing the result of the operation.
     func createShareAsync(
         path: String,
         shareType: Int,
@@ -392,12 +392,12 @@ public extension ScaleCloudKit {
         permissions: Int = 1,
         attributes: String? = nil,
         account: String,
-        options: NKRequestOptions = NKRequestOptions()
+        options: SCKRequestOptions = SCKRequestOptions()
     ) async -> (
         account: String,
-        share: NKShare?,
+        share: SCKShare?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             createShare(
@@ -455,9 +455,9 @@ public extension ScaleCloudKit {
                      hideDownload: Bool,
                      attributes: String? = nil,
                      account: String,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                     completion: @escaping (_ account: String, _ share: NKShare?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                     completion: @escaping (_ account: String, _ share: SCKShare?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/files_sharing/api/v1/shares/\(idShare)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -490,21 +490,21 @@ public extension ScaleCloudKit {
             parameters["attributes"] = attributes
         }
 
-        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if statusCode == 200 {
                     options.queue.async { completion(account, self.convertResponseShare(json: json["ocs"]["data"], account: account), response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -526,9 +526,9 @@ public extension ScaleCloudKit {
     ///   - options: Optional request options (default is `.init()`).
     /// - Returns: A tuple containing:
     ///   - account: The account string.
-    ///   - share: The updated `NKShare` object, or nil on failure.
+    ///   - share: The updated `SCKShare` object, or nil on failure.
     ///   - responseData: The raw `AFDataResponse<Data>` returned by Alamofire.
-    ///   - error: An `NKError` representing the outcome of the operation.
+    ///   - error: An `SCKError` representing the outcome of the operation.
     func updateShareAsync(
         idShare: Int,
         password: String? = nil,
@@ -540,12 +540,12 @@ public extension ScaleCloudKit {
         hideDownload: Bool,
         attributes: String? = nil,
         account: String,
-        options: NKRequestOptions = NKRequestOptions()
+        options: SCKRequestOptions = SCKRequestOptions()
     ) async -> (
         account: String,
-        share: NKShare?,
+        share: SCKShare?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             updateShare(
@@ -578,9 +578,9 @@ public extension ScaleCloudKit {
     */
     func deleteShare(idShare: Int,
                      account: String,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                     completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                     completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/files_sharing/api/v1/shares/\(idShare)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -588,7 +588,7 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
@@ -609,15 +609,15 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing:
     ///   - account: The account string used for the request.
     ///   - responseData: The full `AFDataResponse<Data>` returned from the server.
-    ///   - error: An `NKError` representing the result of the deletion operation.
+    ///   - error: An `SCKError` representing the result of the deletion operation.
     func deleteShareAsync(
         idShare: Int,
         account: String,
-        options: NKRequestOptions = NKRequestOptions()
+        options: SCKRequestOptions = SCKRequestOptions()
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             deleteShare(
@@ -638,8 +638,8 @@ public extension ScaleCloudKit {
 
     // MARK: -
 
-    private func convertResponseShare(json: JSON, account: String) -> NKShare {
-        let share = NKShare()
+    private func convertResponseShare(json: JSON, account: String) -> SCKShare {
+        let share = SCKShare()
 
         share.account = account
         share.canDelete = json["can_delete"].boolValue

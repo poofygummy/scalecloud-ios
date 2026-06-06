@@ -14,11 +14,11 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account initiating the request.
     /// - options: Optional configuration for the HTTP request.
     /// - taskHandler: Optional closure to access the underlying URLSessionTask.
-    /// - completion: Completion handler providing the account, available task types, response, and NKError.
+    /// - completion: Completion handler providing the account, available task types, response, and SCKError.
     func textProcessingGetTypes(account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                completion: @escaping (_ account: String, _ types: [NKTextProcessingTaskType]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                completion: @escaping (_ account: String, _ types: [SCKTextProcessingTaskType]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/textprocessing/tasktypes"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -26,23 +26,23 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]["types"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
-                    let results = NKTextProcessingTaskType.deserialize(multipleObjects: data)
+                    let results = SCKTextProcessingTaskType.deserialize(multipleObjects: data)
                     options.queue.async { completion(account, results, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -55,13 +55,13 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Closure to access the session task.
     /// - Returns: A tuple with named values for account, list of task types, response, and error.
     func textProcessingGetTypesAsync(account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        types: [NKTextProcessingTaskType]?,
+        types: [SCKTextProcessingTaskType]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textProcessingGetTypes(account: account,
@@ -88,15 +88,15 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account executing the request.
     /// - options: Optional request configuration (headers, queue, etc.).
     /// - taskHandler: Optional closure to access the URLSessionTask.
-    /// - completion: Completion handler returning the account, resulting task object, response, and any NKError.
+    /// - completion: Completion handler returning the account, resulting task object, response, and any SCKError.
     func textProcessingSchedule(input: String,
                                 typeId: String,
                                 appId: String = "assistant",
                                 identifier: String,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                completion: @escaping (_ account: String, _ task: NKTextProcessingTask?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                completion: @escaping (_ account: String, _ task: SCKTextProcessingTask?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "/ocs/v2.php/textprocessing/schedule"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -105,23 +105,23 @@ public extension ScaleCloudKit {
         }
         let parameters: [String: Any] = ["input": input, "type": typeId, "appId": appId, "identifier": identifier]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]["task"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
-                    let result = NKTextProcessingTask.deserialize(singleObject: data)
+                    let result = SCKTextProcessingTask.deserialize(singleObject: data)
                     options.queue.async { completion(account, result, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -142,13 +142,13 @@ public extension ScaleCloudKit {
                                      appId: String = "assistant",
                                      identifier: String,
                                      account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        task: NKTextProcessingTask?,
+        task: SCKTextProcessingTask?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textProcessingSchedule(input: input,
@@ -176,12 +176,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account making the request.
     /// - options: Optional request configuration.
     /// - taskHandler: Optional closure to access the URLSessionTask.
-    /// - completion: Completion handler returning the account, task object, raw response, and NKError.
+    /// - completion: Completion handler returning the account, task object, raw response, and SCKError.
     func textProcessingGetTask(taskId: Int,
                                account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                               completion: @escaping (_ account: String, _ task: NKTextProcessingTask?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                               completion: @escaping (_ account: String, _ task: SCKTextProcessingTask?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "/ocs/v2.php/textprocessing/task/\(taskId)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -189,23 +189,23 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]["task"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
-                    let result = NKTextProcessingTask.deserialize(singleObject: data)
+                    let result = SCKTextProcessingTask.deserialize(singleObject: data)
                     options.queue.async { completion(account, result, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -220,13 +220,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, task object, response, and error.
     func textProcessingGetTaskAsync(taskId: Int,
                                     account: String,
-                                    options: NKRequestOptions = NKRequestOptions(),
+                                    options: SCKRequestOptions = SCKRequestOptions(),
                                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        task: NKTextProcessingTask?,
+        task: SCKTextProcessingTask?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textProcessingGetTask(taskId: taskId,
@@ -251,12 +251,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account making the request.
     /// - options: Optional request configuration.
     /// - taskHandler: Optional closure to access the URLSessionTask.
-    /// - completion: Completion handler returning the account, deleted task object, raw response, and NKError.
+    /// - completion: Completion handler returning the account, deleted task object, raw response, and SCKError.
     func textProcessingDeleteTask(taskId: Int,
                                   account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                  completion: @escaping (_ account: String, _ task: NKTextProcessingTask?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                  completion: @escaping (_ account: String, _ task: SCKTextProcessingTask?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "/ocs/v2.php/textprocessing/task/\(taskId)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -264,23 +264,23 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]["task"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
-                    let result = NKTextProcessingTask.deserialize(singleObject: data)
+                    let result = SCKTextProcessingTask.deserialize(singleObject: data)
                     options.queue.async { completion(account, result, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -295,13 +295,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, deleted task object, response, and error.
     func textProcessingDeleteTaskAsync(taskId: Int,
                                        account: String,
-                                       options: NKRequestOptions = NKRequestOptions(),
+                                       options: SCKRequestOptions = SCKRequestOptions(),
                                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        task: NKTextProcessingTask?,
+        task: SCKTextProcessingTask?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textProcessingDeleteTask(taskId: taskId,
@@ -326,12 +326,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account making the request.
     /// - options: Optional HTTP request configuration.
     /// - taskHandler: Optional closure to access the URLSessionTask.
-    /// - completion: Completion handler returning the account, task list, raw response, and NKError.
+    /// - completion: Completion handler returning the account, task list, raw response, and SCKError.
     func textProcessingTaskList(appId: String,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                completion: @escaping (_ account: String, _ task: [NKTextProcessingTask]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                completion: @escaping (_ account: String, _ task: [SCKTextProcessingTask]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "/ocs/v2.php/textprocessing/tasks/app/\(appId)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -339,23 +339,23 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]["tasks"]
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
-                    let results = NKTextProcessingTask.deserialize(multipleObjects: data)
+                    let results = SCKTextProcessingTask.deserialize(multipleObjects: data)
                     options.queue.async { completion(account, results, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -370,13 +370,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with named values for account, task list, response, and error.
     func textProcessingTaskListAsync(appId: String,
                                      account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        task: [NKTextProcessingTask]?,
+        task: [SCKTextProcessingTask]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             textProcessingTaskList(appId: appId,

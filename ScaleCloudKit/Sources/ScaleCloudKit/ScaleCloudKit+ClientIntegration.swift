@@ -18,16 +18,16 @@ public extension ScaleCloudKit {
     /// - userAgent: Optional user-agent string to include in the request.
     /// - options: Optional request configuration (headers, queue, etc.).
     /// - taskHandler: Callback for observing the underlying URLSessionTask.
-    /// - completion: Returns the token string (if any), raw response data, and NKError result.
+    /// - completion: Returns the token string (if any), raw response data, and SCKError result.
     internal func sendRequest(account: String,
                      fileId: String,
                      filePath: String,
                      url: String,
                      method: String,
                      params: [String: String]? = nil,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                     completion: @escaping (_ token: String?, _ uiResponse: NKClientIntegrationUIResponse?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                     completion: @escaping (_ token: String?, _ uiResponse: SCKClientIntegrationUIResponse?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
 
 //        guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
 //              let headers = nkCommonInstance.getStandardHeaders(account: account, options: options) else {
@@ -37,16 +37,16 @@ public extension ScaleCloudKit {
 //        let httpMethod = HTTPMethod(rawValue: method.uppercased())
 //
 //        //        var queryParams: [String: Any] = [:]
-//        typealias pEnum = NKDeclarativeUICapabilities.Params
+//        typealias pEnum = SCKDeclarativeUICapabilities.Params
 //        // Build query params if provided
 //        var queryParams: [String: Any]? = nil
 //        if let params = params {
 //            var qp: [String: Any] = [:]
 //            for (key, value) in params {
 //                switch key {
-//                case NKDeclarativeUICapabilities.Params.fileId.rawValue:
+//                case SCKDeclarativeUICapabilities.Params.fileId.rawValue:
 //                    qp[key] = fileId
-//                case NKDeclarativeUICapabilities.Params.filePath.rawValue:
+//                case SCKDeclarativeUICapabilities.Params.filePath.rawValue:
 //                    qp[key] = filePath
 //                default:
 //                    qp[key] = value
@@ -79,10 +79,10 @@ public extension ScaleCloudKit {
 //        .responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
 //            switch response.result {
 //            case .failure(let error):
-//                let error = NKError(error: error, afResponse: response, responseData: response.data)
+//                let error = SCKError(error: error, afResponse: response, responseData: response.data)
 //                options.queue.async { completion(nil, response, error) }
 //            case .success(let data):
-//                let apppassword = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataAppPassword(data: data)
+//                let apppassword = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).convertDataAppPassword(data: data)
 //                options.queue.async { completion(apppassword, response, .success) }
 //            }
 //        }
@@ -104,16 +104,16 @@ public extension ScaleCloudKit {
                           url: String,
                           method: String,
                           params: [String: String]? = nil,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        uiResponse: NKClientIntegrationUIResponse?,
-        error: NKError
+        uiResponse: SCKClientIntegrationUIResponse?,
+        error: SCKError
     ) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options) else {
-            return (account, nil, NKError.urlError)
+            return (account, nil, SCKError.urlError)
         }
 
         let httpMethod = HTTPMethod(rawValue: method.uppercased())
@@ -123,9 +123,9 @@ public extension ScaleCloudKit {
             var qp: [String: Any] = [:]
             for (key, value) in params {
                 switch key {
-                case NKClientIntegration.Params.fileId.rawValue:
+                case SCKClientIntegration.Params.fileId.rawValue:
                     qp[key] = fileId
-                case NKClientIntegration.Params.filePath.rawValue:
+                case SCKClientIntegration.Params.filePath.rawValue:
                     qp[key] = filePath
                 default:
                     qp[key] = value
@@ -135,11 +135,11 @@ public extension ScaleCloudKit {
         }
 
         let fullURLString = nkSession.urlBase + url
-        let finalURLString = fullURLString.replacingOccurrences(of: "{\(NKClientIntegration.Params.fileId.rawValue)}", with: fileId)
-            .replacingOccurrences(of: "{\(NKClientIntegration.Params.filePath.rawValue)}", with: filePath)
+        let finalURLString = fullURLString.replacingOccurrences(of: "{\(SCKClientIntegration.Params.fileId.rawValue)}", with: fileId)
+            .replacingOccurrences(of: "{\(SCKClientIntegration.Params.filePath.rawValue)}", with: filePath)
 
         guard let finalURL = URL(string: finalURLString) else {
-            return (account, nil, NKError.urlError)
+            return (account, nil, SCKError.urlError)
         }
 
         let taskDescription = options.taskDescription
@@ -159,12 +159,12 @@ public extension ScaleCloudKit {
 
         switch response.result {
         case .failure(let afError):
-            let nkErr = NKError(error: afError, afResponse: response, responseData: response.data)
+            let nkErr = SCKError(error: afError, afResponse: response, responseData: response.data)
             return (account, nil, nkErr)
         case .success(let data):
             do {
                 let decoder = JSONDecoder()
-                let ui = try decoder.decode(NKClientIntegrationUIResponse.self, from: data)
+                let ui = try decoder.decode(SCKClientIntegrationUIResponse.self, from: data)
                 return (account, ui, .success)
             } catch {
                 nkLog(debug: "Client Integration response decoding failed: \(error)")

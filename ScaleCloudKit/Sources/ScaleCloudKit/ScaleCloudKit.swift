@@ -20,10 +20,10 @@ open class ScaleCloudKit: @unchecked Sendable {
 #if !os(watchOS)
     private let reachabilityManager = Alamofire.NetworkReachabilityManager()
 #endif
-    public var nkCommonInstance = NKCommon()
+    public var nkCommonInstance = SCKCommon()
 
-    internal func log(debug message: String, minimumLogLevel: NKLogLevel = .compact) {
-        NKLogFileManager.shared.writeLog(debug: message, minimumLogLevel: minimumLogLevel)
+    internal func log(debug message: String, minimumLogLevel: SCKLogLevel = .compact) {
+        SCKLogFileManager.shared.writeLog(debug: message, minimumLogLevel: minimumLogLevel)
     }
 
     internal lazy var unauthorizedSession: Alamofire.Session = {
@@ -32,7 +32,7 @@ open class ScaleCloudKit: @unchecked Sendable {
 
         return Alamofire.Session(configuration: configuration,
                                  delegate: NextcloudKitSessionDelegate(nkCommonInstance: nkCommonInstance),
-                                 eventMonitors: [NKMonitor(nkCommonInstance: self.nkCommonInstance)])
+                                 eventMonitors: [SCKMonitor(nkCommonInstance: self.nkCommonInstance)])
     }()
 
 #if swift(<6.0)
@@ -91,7 +91,7 @@ open class ScaleCloudKit: @unchecked Sendable {
             return updateSession(account: account, urlBase: urlBase, userId: userId, password: password, userAgent: userAgent)
         }
 
-        let nkSession = NKSession(
+        let nkSession = SCKSession(
             nkCommonInstance: nkCommonInstance,
             urlBase: urlBase,
             user: user,
@@ -108,11 +108,11 @@ open class ScaleCloudKit: @unchecked Sendable {
         nkCommonInstance.nksessions.append(nkSession)
     }
 
-    /// Updates an existing `NKSession` stored in the synchronized array.
+    /// Updates an existing `SCKSession` stored in the synchronized array.
     ///
     /// This method looks up the session by its `account` identifier, applies any non-nil
     /// parameters to mutate the session, and then replaces the stored value using
-    /// `SynchronizedNKSessionArray.replace(account:with:)`.
+    /// `SynchronizedSCKSessionArray.replace(account:with:)`.
     ///
     /// - Parameters:
     ///   - account: The account identifier used to locate the session to update.
@@ -188,12 +188,12 @@ open class ScaleCloudKit: @unchecked Sendable {
     }
 #endif
 
-    /// Evaluates a generic Alamofire response into NKError with simple HTTP-aware rules.
+    /// Evaluates a generic Alamofire response into SCKError with simple HTTP-aware rules.
     /// - Note:
     ///   - Explicit cancellations return `.cancelled`.
     ///   - Any HTTP 2xx is considered success, regardless of body presence.
     ///   - If no HTTP status is available, fall back to Alamofire's `Result`.
-    func evaluateResponse<Data>(_ response: AFDataResponse<Data>) -> NKError {
+    func evaluateResponse<Data>(_ response: AFDataResponse<Data>) -> SCKError {
         // 1) Cancellations take precedence
         if let afError = response.error?.asAFError,
            afError.isExplicitlyCancelledError {
@@ -217,7 +217,7 @@ open class ScaleCloudKit: @unchecked Sendable {
             // No need to special-case inputDataNilOrZeroLength here:
             // - If it was a 2xx, we already returned above.
             // - If it's not 2xx or no status code, it's a real failure for our purposes.
-            return NKError(error: error, afResponse: response, responseData: response.data)
+            return SCKError(error: error, afResponse: response, responseData: response.data)
         }
     }
 }

@@ -36,11 +36,11 @@ public extension ScaleCloudKit {
                 overwrite: Bool = false,
                 autoMkcol: Bool = false,
                 account: String,
-                options: NKRequestOptions = NKRequestOptions(),
+                options: SCKRequestOptions = SCKRequestOptions(),
                 requestHandler: @escaping (_ request: UploadRequest) -> Void = { _ in },
                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
                 progressHandler: @escaping (_ progress: Progress) -> Void = { _ in },
-                completionHandler: @escaping (_ account: String, _ ocId: String?, _ etag: String?, _ date: Date?, _ size: Int64, _ response: AFDataResponse<Data>?, _ nkError: NKError) -> Void) {
+                completionHandler: @escaping (_ account: String, _ ocId: String?, _ etag: String?, _ date: Date?, _ size: Int64, _ response: AFDataResponse<Data>?, _ nkError: SCKError) -> Void) {
         var convertible: URLConvertible?
         var uploadedSize: Int64 = 0
 
@@ -73,7 +73,7 @@ public extension ScaleCloudKit {
 
         // X-NC-WebDAV-Auto-Mkcol
 
-        let request = nkSession.sessionData.upload(fileNameLocalPathUrl, to: url, method: .put, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance), fileManager: .default).validate(statusCode: 200..<300).onURLSessionTaskCreation(perform: { task in
+        let request = nkSession.sessionData.upload(fileNameLocalPathUrl, to: url, method: .put, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance), fileManager: .default).validate(statusCode: 200..<300).onURLSessionTaskCreation(perform: { task in
             task.taskDescription = options.taskDescription
             options.queue.async { taskHandler(task) }
         }) .uploadProgress { progress in
@@ -120,7 +120,7 @@ public extension ScaleCloudKit {
     ///   - date: The server timestamp.
     ///   - size: The size of the uploaded file in bytes.
     ///   - headers: The raw HTTP response headers.
-    ///   - error: The NKError result of the upload.
+    ///   - error: The SCKError result of the upload.
     func uploadAsync(serverUrlFileName: Any,
                      fileNameLocalPath: String,
                      dateCreationFile: Date? = nil,
@@ -128,7 +128,7 @@ public extension ScaleCloudKit {
                      overwrite: Bool = false,
                      autoMkcol: Bool = false,
                      account: String,
-                     options: NKRequestOptions = NKRequestOptions(),
+                     options: SCKRequestOptions = SCKRequestOptions(),
                      requestHandler: @escaping (_ request: UploadRequest) -> Void = { _ in },
                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
                      progressHandler: @escaping (_ progress: Progress) -> Void = { _ in }
@@ -139,7 +139,7 @@ public extension ScaleCloudKit {
         date: Date?,
         size: Int64,
         response: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             upload(serverUrlFileName: serverUrlFileName,
@@ -198,7 +198,7 @@ public extension ScaleCloudKit {
     /// then uploads each chunk sequentially, reporting both per-chunk and
     /// global progress. After successful upload of all chunks, it triggers the
     /// remote assembly (e.g. MOVE of the temporary chunk file/folder to the
-    /// final destination) and returns the final `NKFile` metadata if available.
+    /// final destination) and returns the final `SCKFile` metadata if available.
     ///
     /// - Parameters:
     ///   - directory: Local input directory containing the original file.
@@ -220,9 +220,9 @@ public extension ScaleCloudKit {
     ///   - uploaded: Called after each chunk completes successfully, passing the corresponding chunk descriptor.
     ///   - assembling: Called just before remote assembly (e.g. MOVE from temporary to final path).
     ///
-    /// - Returns: A tuple `(account, file)` where `account` is the account identifier used for the upload and `file` is the final `NKFile` metadata if available, otherwise `nil`.
+    /// - Returns: A tuple `(account, file)` where `account` is the account identifier used for the upload and `file` is the final `SCKFile` metadata if available, otherwise `nil`.
     ///
-    /// - Throws: `NKError` for any failure (including disk preflight errors, network errors, server-side failures, or user cancellations).
+    /// - Throws: `SCKError` for any failure (including disk preflight errors, network errors, server-side failures, or user cancellations).
     func uploadChunkAsync(directory: String,
                           fileChunksOutputDirectory: String? = nil,
                           fileName: String,
@@ -234,24 +234,24 @@ public extension ScaleCloudKit {
                           filesChunk: [(fileName: String, size: Int64)],
                           chunkSize: Int,
                           account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           chunkProgressHandler: @escaping (_ total: Int, _ counter: Int) -> Void = { _, _ in },
                           uploadStart: @escaping (_ filesChunk: [(fileName: String, size: Int64)]) -> Void = { _ in },
                           uploadTaskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
                           uploadProgressHandler: @escaping (_ totalBytesExpected: Int64, _ totalBytes: Int64, _ fractionCompleted: Double) -> Void = { _, _, _ in },
                           uploaded: @escaping (_ fileChunk: (fileName: String, size: Int64)) -> Void = { _ in },
                           assembling: @escaping () -> Void = { }
-    ) async throws -> (account: String, file: NKFile?) {
+    ) async throws -> (account: String, file: SCKFile?) {
         // Resolve session
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account) else {
-            throw NKError.urlError
+            throw SCKError.urlError
         }
 
         // Build endpoints and headers
         let totalFileSize = self.nkCommonInstance.getFileSize(filePath: directory + "/" + fileName)
         let serverUrlChunkFolder = nkSession.urlBase + "/" + nkSession.dav + "/uploads/" + nkSession.userId + "/" + chunkFolder
-        let serverUrlFileName = NKDav.homeURLString(urlBase: nkSession.urlBase, userId: nkSession.userId)
-            + serverUrl.replacingOccurrences(of: NKDav.homeURLStringNoSlash(urlBase: nkSession.urlBase, userId: nkSession.userId), with: "")
+        let serverUrlFileName = SCKDav.homeURLString(urlBase: nkSession.urlBase, userId: nkSession.userId)
+            + serverUrl.replacingOccurrences(of: SCKDav.homeURLStringNoSlash(urlBase: nkSession.urlBase, userId: nkSession.userId), with: "")
             + "/"
             + (destinationFileName ?? fileName)
 
@@ -276,7 +276,7 @@ public extension ScaleCloudKit {
                 // Neither key available: treat as failure
                 throw NSError(domain: "uploadChunkAsync", code: -101, userInfo: [NSLocalizedDescriptionKey: "Unable to determine available disk space."])
             } catch {
-                // Re-throw as NKError to keep uniform error handling
+                // Re-throw as SCKError to keep uniform error handling
                 // (Up to you: you can also return .errorChunkNoEnoughMemory directly)
                 return 0
             }
@@ -286,7 +286,7 @@ public extension ScaleCloudKit {
         #if os(visionOS) || os(iOS) || os(macOS)
         // Require roughly 3x headroom to be safe (chunks + temp + HTTP plumbing)
         if freeDisk < totalFileSize * 3 {
-            throw NKError.errorChunkNoEnoughMemory
+            throw SCKError.errorChunkNoEnoughMemory
         }
         #endif
 
@@ -302,7 +302,7 @@ public extension ScaleCloudKit {
                                               options: options).error
         }
         guard readErr == .success else {
-            throw NKError.errorChunkCreateFolder
+            throw SCKError.errorChunkCreateFolder
         }
 
         let outputDirectory = fileChunksOutputDirectory ?? directory
@@ -320,14 +320,14 @@ public extension ScaleCloudKit {
                     chunkProgressHandler(total, counter)
                 }
             )
-        } catch let error as NKError {
+        } catch let error as SCKError {
             throw error
         }
 
         try Task.checkCancellation()
 
         guard !chunkedFiles.isEmpty else {
-            throw NKError(error: NSError(domain: "chunkedFile", code: -5,
+            throw SCKError(error: NSError(domain: "chunkedFile", code: -5,
                                          userInfo: [NSLocalizedDescriptionKey: "Files empty."]))
         }
 
@@ -349,7 +349,7 @@ public extension ScaleCloudKit {
             let fileNameLocalPath = outputDirectory + "/" + fileChunk.fileName
             let chunkBytesExpected = self.nkCommonInstance.getFileSize(filePath: fileNameLocalPath)
             guard chunkBytesExpected > 0 else {
-                throw NKError(error: NSError(domain: "chunkedFile", code: -6,
+                throw SCKError(error: NSError(domain: "chunkedFile", code: -6,
                                              userInfo: [NSLocalizedDescriptionKey: "File empty."]))
             }
 
@@ -449,14 +449,14 @@ public extension ScaleCloudKit {
 
         try Task.checkCancellation()
 
-        // Read back the final file to return NKFile
+        // Read back the final file to return SCKFile
         let readRes = await readFileOrFolderAsync(serverUrlFileName: serverUrlFileName,
                                                   depth: "0",
                                                   account: account,
                                                   options: options)
 
         guard readRes.error == .success, let file = readRes.files?.first else {
-            throw NKError.errorChunkMoveFile
+            throw SCKError.errorChunkMoveFile
         }
 
         return (account, file)

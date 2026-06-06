@@ -18,15 +18,15 @@ public extension ScaleCloudKit {
     /// - requestHandler: Closure to access the Alamofire `DownloadRequest` (for customization, inspection, etc.).
     /// - taskHandler: Closure to access the underlying `URLSessionTask` (e.g. for progress or cancellation).
     /// - progressHandler: Closure that receives periodic progress updates.
-    /// - completionHandler: Completion closure returning metadata: account, ETag, modification date, content length, headers, AFError, and NKError.
+    /// - completionHandler: Completion closure returning metadata: account, ETag, modification date, content length, headers, AFError, and SCKError.
     func download(serverUrlFileName: Any,
                   fileNameLocalPath: String,
                   account: String,
-                  options: NKRequestOptions = NKRequestOptions(),
+                  options: SCKRequestOptions = SCKRequestOptions(),
                   requestHandler: @escaping (_ request: DownloadRequest) -> Void = { _ in },
                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
                   progressHandler: @escaping (_ progress: Progress) -> Void = { _ in },
-                  completionHandler: @escaping (_ account: String, _ etag: String?, _ date: Date?, _ lenght: Int64, _ headers: [AnyHashable: any Sendable]?, _ afError: AFError?, _ nKError: NKError) -> Void) {
+                  completionHandler: @escaping (_ account: String, _ etag: String?, _ date: Date?, _ lenght: Int64, _ headers: [AnyHashable: any Sendable]?, _ afError: AFError?, _ nKError: SCKError) -> Void) {
         var convertible: URLConvertible?
         if serverUrlFileName is URL {
             convertible = serverUrlFileName as? URLConvertible
@@ -45,14 +45,14 @@ public extension ScaleCloudKit {
         }
         destination = destinationFile
 
-        let request = nkSession.sessionData.download(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance), to: destination).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        let request = nkSession.sessionData.download(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance), to: destination).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             options.queue.async { taskHandler(task) }
         } .downloadProgress { progress in
             options.queue.async { progressHandler(progress) }
         } .response(queue: self.nkCommonInstance.backgroundQueue) { response in
             if let error = response.error {
-                let resultError = NKError(error: error, afResponse: response, responseData: nil)
+                let resultError = SCKError(error: error, afResponse: response, responseData: nil)
                 options.queue.async { completionHandler(account, nil, nil, 0, response.response?.allHeaderFields, error, resultError) }
             } else {
                 var date: Date?
@@ -90,11 +90,11 @@ public extension ScaleCloudKit {
     ///   - requestHandler: Handler for accessing the `DownloadRequest`.
     ///   - taskHandler: Handler for monitoring the `URLSessionTask`.
     ///   - progressHandler: Progress tracking callback.
-    /// - Returns: A tuple with account, etag, date, content length, headers, Alamofire error, and internal NKError.
+    /// - Returns: A tuple with account, etag, date, content length, headers, Alamofire error, and internal SCKError.
     func downloadAsync(serverUrlFileName: Any,
                        fileNameLocalPath: String,
                        account: String,
-                       options: NKRequestOptions = NKRequestOptions(),
+                       options: SCKRequestOptions = SCKRequestOptions(),
                        requestHandler: @escaping (_ request: DownloadRequest) -> Void = { _ in },
                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
                        progressHandler: @escaping (_ progress: Progress) -> Void = { _ in }
@@ -105,7 +105,7 @@ public extension ScaleCloudKit {
         length: Int64,
         headers: [AnyHashable: any Sendable]?,
         afError: AFError?,
-        nkError: NKError
+        nkError: SCKError
     ) {
         await withCheckedContinuation { continuation in
             download(serverUrlFileName: serverUrlFileName,

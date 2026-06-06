@@ -6,6 +6,6 @@ import Foundation
 
 extension Date {
     func formatted(using format: String) -> String {
-        NKLogFileManager.shared.convertDate(self, format: format)
+        SCKLogFileManager.shared.convertDate(self, format: format)
     }
 }

@@ -20,15 +20,15 @@ public extension ScaleCloudKit {
     ///     - account: The Nextcloud account performing the operation.
     ///     - options: Optional request options (e.g. headers, queue).
     ///     - taskHandler: Closure to access the URLSessionTask.
-    ///     - completion: Completion handler returning the account, response, and NKError.
+    ///     - completion: Completion handler returning the account, response, and SCKError.
     ///
     func lockUnlockFile(serverUrlFileName: String,
-                        type: NKLockType? = nil,
+                        type: SCKLockType? = nil,
                         shouldLock: Bool,
                         account: String,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                        completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                        completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         Task {
             guard let url = serverUrlFileName.encodedToUrl else {
                 return options.queue.async {
@@ -46,7 +46,7 @@ public extension ScaleCloudKit {
             }
 
             headers.update(name: "X-User-Lock", value: "1")
-            let capabilities = await NKCapabilities.shared.getCapabilities(for: account)
+            let capabilities = await SCKCapabilities.shared.getCapabilities(for: account)
 
             if capabilities.filesLockTypes, let type {
                 headers.update(name: "X-User-Lock-Type", value: String(type.rawValue))
@@ -54,7 +54,7 @@ public extension ScaleCloudKit {
 
             nkSession
                 .sessionData
-                .request(url, method: method, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+                .request(url, method: method, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
                 .validate(statusCode: 200..<300)
                 .onURLSessionTaskCreation { task in
                 task.taskDescription = options.taskDescription
@@ -62,7 +62,7 @@ public extension ScaleCloudKit {
             }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                 switch response.result {
                     case .failure(let error):
-                        let error = NKError(error: error, afResponse: response, responseData: response.data)
+                        let error = SCKError(error: error, afResponse: response, responseData: response.data)
 
                         options.queue.async {
                             completion(account, response, error)
@@ -88,13 +88,13 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing the account, the server response, and any error encountered.
     ///
-    func lockUnlockFile(serverUrlFileName: String, type: NKLockType? = nil, shouldLock: Bool, account: String, options: NKRequestOptions = NKRequestOptions(), taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async throws -> NKLock? {
+    func lockUnlockFile(serverUrlFileName: String, type: SCKLockType? = nil, shouldLock: Bool, account: String, options: SCKRequestOptions = SCKRequestOptions(), taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async throws -> SCKLock? {
         try await withCheckedThrowingContinuation { continuation in
             lockUnlockFile(serverUrlFileName: serverUrlFileName, type: type, shouldLock: shouldLock, account: account, options: options, taskHandler: taskHandler) { _, responseData, error in
                 switch error {
                     case .success:
                         if let data = responseData?.data,
-                           let lock = NKLock(data: data) {
+                           let lock = SCKLock(data: data) {
                             continuation.resume(returning: lock)
                             return
                         }

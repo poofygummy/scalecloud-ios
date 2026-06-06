@@ -10,12 +10,12 @@ public extension ScaleCloudKit {
     /// - Parameters:
     ///   - account: The account to query.
     ///   - options: Optional request options (defaults to standard).
-    /// - Returns: Tuple with NKError and optional NKTermsOfService.
+    /// - Returns: Tuple with SCKError and optional SCKTermsOfService.
     func getTermsOfService(account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            request: @escaping (DataRequest?) -> Void = { _ in },
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                           completion: @escaping (_ account: String, _ tos: NKTermsOfService?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                           completion: @escaping (_ account: String, _ tos: SCKTermsOfService?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/terms_of_service/terms"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -23,24 +23,24 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        let tosRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        let tosRequest = nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .success(let jsonData):
-                let tos = NKTermsOfService()
+                let tos = SCKTermsOfService()
                 if tos.loadFromJSON(jsonData), let meta = tos.getMeta() {
                     if meta.statuscode == 200 {
                         options.queue.async { completion(account, tos, response, .success) }
                     } else {
-                        options.queue.async { completion(account, tos, response, NKError(errorCode: meta.statuscode, errorDescription: meta.message, responseData: jsonData)) }
+                        options.queue.async { completion(account, tos, response, SCKError(errorCode: meta.statuscode, errorDescription: meta.message, responseData: jsonData)) }
                     }
                 } else {
                     options.queue.async { completion(account, nil, response, .invalidData) }
                 }
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             }
         }
@@ -51,12 +51,12 @@ public extension ScaleCloudKit {
     /// - Parameters:
     ///   - account: The account to query.
     ///   - options: Optional request options (defaults to standard).
-    /// - Returns: Tuple with NKError and optional NKTermsOfService.
+    /// - Returns: Tuple with SCKError and optional SCKTermsOfService.
     func getTermsOfServiceAsync(account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 request: ((DataRequest?) -> Void)? = nil,
                                 taskHandler: ((URLSessionTask) -> Void)? = nil
-    ) async -> (error: NKError, tos: NKTermsOfService?) {
+    ) async -> (error: SCKError, tos: SCKTermsOfService?) {
         await withCheckedContinuation { continuation in
             self.getTermsOfService(
                 account: account,
@@ -74,12 +74,12 @@ public extension ScaleCloudKit {
     ///   - account: The user account.
     ///   - options: Optional request options.
     ///   - taskHandler: Optional URLSession task handler.
-    /// - Returns: NKError and AFDataResponse<Data>?
+    /// - Returns: SCKError and AFDataResponse<Data>?
     func signTermsOfService(termId: String,
                             account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                            completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                            completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/terms_of_service/sign"
         var urlRequest: URLRequest
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
@@ -93,16 +93,16 @@ public extension ScaleCloudKit {
             let parameters = "{\"termId\":\"" + termId + "\"}"
             urlRequest.httpBody = parameters.data(using: .utf8)
         } catch {
-            return options.queue.async { completion(account, nil, NKError(error: error)) }
+            return options.queue.async { completion(account, nil, SCKError(error: error)) }
         }
 
-        nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -116,12 +116,12 @@ public extension ScaleCloudKit {
     ///   - account: The user account.
     ///   - options: Optional request options.
     ///   - taskHandler: Optional URLSession task handler.
-    /// - Returns: NKError and AFDataResponse<Data>?
+    /// - Returns: SCKError and AFDataResponse<Data>?
     func signTermsOfServiceAsync(termId: String,
                                  account: String,
-                                 options: NKRequestOptions = NKRequestOptions(),
+                                 options: SCKRequestOptions = SCKRequestOptions(),
                                  taskHandler: ((URLSessionTask) -> Void)? = nil
-    ) async -> (error: NKError, response: AFDataResponse<Data>?) {
+    ) async -> (error: SCKError, response: AFDataResponse<Data>?) {
         await withCheckedContinuation { continuation in
             self.signTermsOfService(
                 termId: termId,

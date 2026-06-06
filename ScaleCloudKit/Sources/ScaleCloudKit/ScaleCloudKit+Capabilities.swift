@@ -26,9 +26,9 @@ public extension ScaleCloudKit {
     ///   - completion: Callback returning parsed capabilities or an error.
     ///   
     func getCapabilities(account: String,
-                         options: NKRequestOptions = NKRequestOptions(),
+                         options: SCKRequestOptions = SCKRequestOptions(),
                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                         completion: @escaping (_ account: String, _ capabilities: NKCapabilities.Capabilities?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                         completion: @escaping (_ account: String, _ capabilities: SCKCapabilities.Capabilities?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v1.php/cloud/capabilities"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -36,13 +36,13 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success:
                 Task {
@@ -69,11 +69,11 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback for the underlying `URLSessionTask`.
     /// - Returns: A tuple containing account, parsed capabilities, response data, and result error.
     func getCapabilitiesAsync(account: String,
-                              options: NKRequestOptions = NKRequestOptions(),
+                              options: SCKRequestOptions = SCKRequestOptions(),
                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }) async -> (account: String,
-                                                                                                            capabilities: NKCapabilities.Capabilities?,
+                                                                                                            capabilities: SCKCapabilities.Capabilities?,
                                                                                                             responseData: AFDataResponse<Data>?,
-                                                                                                            error: NKError) {
+                                                                                                            error: SCKError) {
         await withUnsafeContinuation { continuation in
             getCapabilities(account: account,
                             options: options,
@@ -89,7 +89,7 @@ public extension ScaleCloudKit {
     ///   - data: The raw JSON data returned from the capabilities endpoint.
     /// - Returns: A fully populated `NCCapabilities.Capabilities` object.
     /// - Throws: An error if decoding fails or data is missing.
-    func setCapabilitiesAsync(account: String, data: Data? = nil) async throws -> NKCapabilities.Capabilities {
+    func setCapabilitiesAsync(account: String, data: Data? = nil) async throws -> SCKCapabilities.Capabilities {
         guard let jsonData = data else {
             throw NSError(domain: "SetCapabilities", code: 0, userInfo: [NSLocalizedDescriptionKey: "Missing JSON data"])
         }
@@ -132,7 +132,7 @@ public extension ScaleCloudKit {
                         let assistant: Assistant?
                         let recommendations: Recommendations?
                         let termsOfService: TermsOfService?
-                        let clientIntegration: NKClientIntegration?
+                        let clientIntegration: SCKClientIntegration?
 
                         enum CodingKeys: String, CodingKey {
                             case downloadLimit = "downloadlimit"
@@ -278,7 +278,7 @@ public extension ScaleCloudKit {
                             let undelete: Bool?
 
                             ///
-                            /// Whether different lock types as defined in ``NKLockType`` are supported or not.
+                            /// Whether different lock types as defined in ``SCKLockType`` are supported or not.
                             ///
                             let lockTypes: Bool?
 
@@ -383,7 +383,7 @@ public extension ScaleCloudKit {
             let ocs: Ocs
         }
 
-        if NKLogFileManager.shared.logLevel >= .normal {
+        if SCKLogFileManager.shared.logLevel >= .normal {
             jsonData.printJson()
         }
 
@@ -396,7 +396,7 @@ public extension ScaleCloudKit {
             print(json)
 
             // Initialize capabilities
-            let capabilities = NKCapabilities.Capabilities()
+            let capabilities = SCKCapabilities.Capabilities()
 
             // Version info
             capabilities.serverVersion = data.version.string
@@ -467,7 +467,7 @@ public extension ScaleCloudKit {
             capabilities.clientIntegration = json.clientIntegration
 
             // Persist capabilities in shared store
-            await NKCapabilities.shared.setCapabilities(for: account, capabilities: capabilities)
+            await SCKCapabilities.shared.setCapabilities(for: account, capabilities: capabilities)
             return capabilities
         } catch {
             nkLog(error: "Could not decode json capabilities: \(error.localizedDescription)")
@@ -478,13 +478,13 @@ public extension ScaleCloudKit {
 
 /// A concurrency-safe store for capabilities associated with Nextcloud accounts.
 actor CapabilitiesStore {
-    private var store: [String: NKCapabilities.Capabilities] = [:]
+    private var store: [String: SCKCapabilities.Capabilities] = [:]
 
-    func get(_ account: String) -> NKCapabilities.Capabilities? {
+    func get(_ account: String) -> SCKCapabilities.Capabilities? {
         return store[account]
     }
 
-    func set(_ account: String, value: NKCapabilities.Capabilities) {
+    func set(_ account: String, value: SCKCapabilities.Capabilities) {
         store[account] = value
     }
 
@@ -496,8 +496,8 @@ actor CapabilitiesStore {
 ///
 /// Singleton container and public API for accessing and caching capabilities for user accounts.
 ///
-final public class NKCapabilities: Sendable {
-    public static let shared = NKCapabilities()
+final public class SCKCapabilities: Sendable {
+    public static let shared = SCKCapabilities()
 
     private let store = CapabilitiesStore()
 
@@ -534,7 +534,7 @@ final public class NKCapabilities: Sendable {
         public var filesUndelete: Bool                              = false
 
         ///
-        /// Whether different lock types as defined in ``NKLockType`` are supported or not.
+        /// Whether different lock types as defined in ``SCKLockType`` are supported or not.
         ///
         public var filesLockTypes: Bool                             = false
 
@@ -562,10 +562,10 @@ final public class NKCapabilities: Sendable {
         public var termsOfService: Bool                             = false
 //        public var declarativeUIEnabled: Bool                       = false
 //        public var declarativeUIContextMenu: [ContextMenuItem]                       = []
-        public var clientIntegration: NKClientIntegration?                    = nil
-        public var directEditingEditors: [NKEditorDetailsEditor]    = []
-        public var directEditingCreators: [NKEditorDetailsCreator]  = []
-        public var directEditingTemplates: [NKEditorTemplate]       = []
+        public var clientIntegration: SCKClientIntegration?                    = nil
+        public var directEditingEditors: [SCKEditorDetailsEditor]    = []
+        public var directEditingCreators: [SCKEditorDetailsCreator]  = []
+        public var directEditingTemplates: [SCKEditorTemplate]       = []
 
         public init() {}
 

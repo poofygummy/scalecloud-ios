@@ -17,15 +17,15 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the subscription.
     /// - options: Optional request configuration (headers, version, etc.).
     /// - taskHandler: Callback to monitor the `URLSessionTask`.
-    /// - completion: Returns the account, device identifier, push signature, public key, response data, and NKError.
+    /// - completion: Returns the account, device identifier, push signature, public key, response data, and SCKError.
     func subscribingPushNotification(serverUrl: String,
                                      pushTokenHash: String,
                                      devicePublicKey: String,
                                      proxyServerUrl: String,
                                      account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                     completion: @escaping (_ account: String, _ deviceIdentifier: String?, _ signature: String?, _ publicKey: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                     completion: @escaping (_ account: String, _ deviceIdentifier: String?, _ signature: String?, _ publicKey: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/notifications/api/v2/push"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -38,24 +38,24 @@ public extension ScaleCloudKit {
             "proxyServer": proxyServerUrl
         ]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, nil, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let deviceIdentifier = json["ocs"]["data"]["deviceIdentifier"].stringValue
                     let signature = json["ocs"]["data"]["signature"].stringValue
                     let publicKey = json["ocs"]["data"]["publicKey"].stringValue
                     options.queue.async { completion(account, deviceIdentifier, signature, publicKey, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, nil, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, nil, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -71,13 +71,13 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Request customization (e.g., queue, headers).
     ///   - taskHandler: Optional URLSession task observer.
-    /// - Returns: A tuple containing the account, device identifier, signature, public key, response data, and NKError.
+    /// - Returns: A tuple containing the account, device identifier, signature, public key, response data, and SCKError.
     func subscribingPushNotificationAsync(serverUrl: String,
                                           pushTokenHash: String,
                                           devicePublicKey: String,
                                           proxyServerUrl: String,
                                           account: String,
-                                          options: NKRequestOptions = NKRequestOptions(),
+                                          options: SCKRequestOptions = SCKRequestOptions(),
                                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
@@ -85,7 +85,7 @@ public extension ScaleCloudKit {
         signature: String?,
         publicKey: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             subscribingPushNotification(serverUrl: serverUrl,
@@ -114,12 +114,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the unsubscription.
     /// - options: Optional request configuration (headers, queue, etc.).
     /// - taskHandler: Callback to monitor the `URLSessionTask`.
-    /// - completion: Returns the account, raw response data, and NKError.
+    /// - completion: Returns the account, raw response data, and SCKError.
     func unsubscribingPushNotification(serverUrl: String,
                                        account: String,
-                                       options: NKRequestOptions = NKRequestOptions(),
+                                       options: SCKRequestOptions = SCKRequestOptions(),
                                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                       completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                       completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/notifications/api/v2/push"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -127,13 +127,13 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -148,15 +148,15 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Request customization (e.g., headers, queue, version).
     ///   - taskHandler: Optional observer for the underlying `URLSessionTask`.
-    /// - Returns: A tuple containing the account, response data, and NKError.
+    /// - Returns: A tuple containing the account, response data, and SCKError.
     func unsubscribingPushNotificationAsync(serverUrl: String,
                                             account: String,
-                                            options: NKRequestOptions = NKRequestOptions(),
+                                            options: SCKRequestOptions = SCKRequestOptions(),
                                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             unsubscribingPushNotification(serverUrl: serverUrl,
@@ -183,16 +183,16 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the subscription.
     /// - options: Optional request customization.
     /// - taskHandler: Callback for tracking the underlying URLSessionTask.
-    /// - completion: Returns the account, raw response data, and NKError.
+    /// - completion: Returns the account, raw response data, and SCKError.
     func subscribingPushProxy(proxyServerUrl: String,
                               pushToken: String,
                               deviceIdentifier: String,
                               signature: String,
                               publicKey: String,
                               account: String,
-                              options: NKRequestOptions = NKRequestOptions(),
+                              options: SCKRequestOptions = SCKRequestOptions(),
                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                              completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                              completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "devices?format=json"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = self.nkCommonInstance.createStandardUrl(serverUrl: proxyServerUrl, endpoint: endpoint),
@@ -207,13 +207,13 @@ public extension ScaleCloudKit {
         ]
         let headers = HTTPHeaders(arrayLiteral: .userAgent(userAgent))
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -232,19 +232,19 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the operation.
     ///   - options: Request customization (headers, queue, etc.).
     ///   - taskHandler: Callback for monitoring the URLSessionTask.
-    /// - Returns: A tuple containing the account, response data, and NKError.
+    /// - Returns: A tuple containing the account, response data, and SCKError.
     func subscribingPushProxyAsync(proxyServerUrl: String,
                                     pushToken: String,
                                     deviceIdentifier: String,
                                     signature: String,
                                     publicKey: String,
                                     account: String,
-                                    options: NKRequestOptions = NKRequestOptions(),
+                                    options: SCKRequestOptions = SCKRequestOptions(),
                                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             subscribingPushProxy(proxyServerUrl: proxyServerUrl,
@@ -274,15 +274,15 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account initiating the request.
     /// - options: Optional configuration for the request (queue, headers, version, etc.).
     /// - taskHandler: Callback triggered when the underlying URLSessionTask is created.
-    /// - completion: Completion handler with account, response data, and NKError result.
+    /// - completion: Completion handler with account, response data, and SCKError result.
     func unsubscribingPushProxy(proxyServerUrl: String,
                                 deviceIdentifier: String,
                                 signature: String,
                                 publicKey: String,
                                 account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "devices"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = self.nkCommonInstance.createStandardUrl(serverUrl: proxyServerUrl, endpoint: endpoint),
@@ -296,13 +296,13 @@ public extension ScaleCloudKit {
         ]
         let headers = HTTPHeaders(arrayLiteral: .userAgent(userAgent))
 
-        nkSession.sessionData.request(url, method: .delete, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -320,18 +320,18 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the unsubscription.
     ///   - options: Optional configuration for headers, queue, etc.
     ///   - taskHandler: Optional callback for monitoring the URLSessionTask.
-    /// - Returns: A tuple with the account, the raw AF response data, and an NKError result.
+    /// - Returns: A tuple with the account, the raw AF response data, and an SCKError result.
     func unsubscribingPushProxyAsync(proxyServerUrl: String,
                                      deviceIdentifier: String,
                                      signature: String,
                                      publicKey: String,
                                      account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             unsubscribingPushProxy(proxyServerUrl: proxyServerUrl,

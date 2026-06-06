@@ -16,13 +16,13 @@ public extension ScaleCloudKit {
     ///   - options: Optional request options.
     ///   - taskHandler: Callback for the underlying URL session task.
     func getTags(account: String,
-                 options: NKRequestOptions = NKRequestOptions(),
+                 options: SCKRequestOptions = SCKRequestOptions(),
                  taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        tags: [NKTag]?,
+        tags: [SCKTag]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               var headers = nkCommonInstance.getStandardHeaders(account: account, options: options, accept: "application/xml") else {
@@ -49,19 +49,19 @@ public extension ScaleCloudKit {
         var urlRequest: URLRequest
         do {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
-            urlRequest.httpBody = NKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodySystemTags.data(using: .utf8)
+            urlRequest.httpBody = SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodySystemTags.data(using: .utf8)
             urlRequest.timeoutInterval = options.timeout
         } catch {
             return (
                 account: account,
                 tags: nil,
                 responseData: nil,
-                error: NKError(error: error)
+                error: SCKError(error: error)
             )
         }
 
         return await withCheckedContinuation { continuation in
-            nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
                 .validate(statusCode: 200..<300)
                 .onURLSessionTaskCreation { task in
                     task.taskDescription = options.taskDescription
@@ -70,7 +70,7 @@ public extension ScaleCloudKit {
                 .responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
                     switch response.result {
                     case .failure(let error):
-                        let error = NKError(error: error, afResponse: response, responseData: response.data)
+                        let error = SCKError(error: error, afResponse: response, responseData: response.data)
                         continuation.resume(returning: (
                             account: account,
                             tags: nil,
@@ -86,7 +86,7 @@ public extension ScaleCloudKit {
                                 error: .invalidData
                             ))
                         }
-                        let tags = NKTag.parse(xmlData: xmlData)
+                        let tags = SCKTag.parse(xmlData: xmlData)
                         continuation.resume(returning: (
                             account: account,
                             tags: tags,
@@ -107,12 +107,12 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback for the underlying URL session task.
     func createTag(name: String,
                    account: String,
-                   options: NKRequestOptions = NKRequestOptions(),
+                   options: SCKRequestOptions = SCKRequestOptions(),
                    taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/json", accept: "application/json"),
@@ -134,12 +134,12 @@ public extension ScaleCloudKit {
             return (
                 account: account,
                 responseData: nil,
-                error: NKError(error: error)
+                error: SCKError(error: error)
             )
         }
 
         return await withCheckedContinuation { continuation in
-            nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
                 .validate(statusCode: 200..<300)
                 .onURLSessionTaskCreation { task in
                     task.taskDescription = options.taskDescription
@@ -167,12 +167,12 @@ public extension ScaleCloudKit {
     func addTagToFile(tagId: String,
                       fileId: String,
                       account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/json", accept: "application/json"),
@@ -193,12 +193,12 @@ public extension ScaleCloudKit {
             return (
                 account: account,
                 responseData: nil,
-                error: NKError(error: error)
+                error: SCKError(error: error)
             )
         }
 
         return await withCheckedContinuation { continuation in
-            nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
                 .validate(statusCode: 200..<300)
                 .onURLSessionTaskCreation { task in
                     task.taskDescription = options.taskDescription
@@ -226,12 +226,12 @@ public extension ScaleCloudKit {
     func removeTagFromFile(tagId: String,
                            fileId: String,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/json", accept: "application/json"),
@@ -251,12 +251,12 @@ public extension ScaleCloudKit {
             return (
                 account: account,
                 responseData: nil,
-                error: NKError(error: error)
+                error: SCKError(error: error)
             )
         }
 
         return await withCheckedContinuation { continuation in
-            nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
                 .validate(statusCode: 200..<300)
                 .onURLSessionTaskCreation { task in
                     task.taskDescription = options.taskDescription
@@ -284,12 +284,12 @@ public extension ScaleCloudKit {
     func updateTagColor(tagId: String,
                         color: String?,
                         account: String,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options, contentType: "application/xml", accept: "application/xml"),
@@ -307,7 +307,7 @@ public extension ScaleCloudKit {
             try urlRequest = URLRequest(url: url, method: method, headers: headers)
             let requestColor = davTagColorValue(color)
             let body = NSString(
-                format: NKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodySystemTagSetColor as NSString,
+                format: SCKDataFileXML(nkCommonInstance: self.nkCommonInstance).requestBodySystemTagSetColor as NSString,
                 requestColor
             ) as String
             urlRequest.httpBody = body.data(using: .utf8)
@@ -316,12 +316,12 @@ public extension ScaleCloudKit {
             return (
                 account: account,
                 responseData: nil,
-                error: NKError(error: error)
+                error: SCKError(error: error)
             )
         }
 
         return await withCheckedContinuation { continuation in
-            nkSession.sessionData.request(urlRequest, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance))
+            nkSession.sessionData.request(urlRequest, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance))
                 .validate(statusCode: 200..<300)
                 .onURLSessionTaskCreation { task in
                     task.taskDescription = options.taskDescription

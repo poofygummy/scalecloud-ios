@@ -30,6 +30,6 @@ extension String {
     }
 
     func parsedDate(using format: String) -> Date? {
-        NKLogFileManager.shared.convertDate(self, format: format)
+        SCKLogFileManager.shared.convertDate(self, format: format)
     }
 }

@@ -16,13 +16,13 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the operation.
     ///   - options: Optional request options (default is empty).
     ///   - taskHandler: Closure to access the `URLSessionTask` (default is no-op).
-    ///   - completion: Completion handler returning the account, raw response, and any NKError.
+    ///   - completion: Completion handler returning the account, raw response, and any SCKError.
     func markE2EEFolder(fileId: String,
                         delete: Bool,
                         account: String,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                        completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                        completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -35,21 +35,21 @@ public extension ScaleCloudKit {
         }
         let method: HTTPMethod = delete ? .delete : .put
 
-        nkSession.sessionData.request(url, method: method, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: method, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     options.queue.async { completion(account, response, .success) }
                 } else {
-                    options.queue.async { completion(account, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -62,16 +62,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used for the request.
     ///   - options: Request configuration and context.
     ///   - taskHandler: Optional monitoring of the underlying URLSessionTask.
-    /// - Returns: A tuple with account, responseData and NKError.
+    /// - Returns: A tuple with account, responseData and SCKError.
     func markE2EEFolderAsync(fileId: String,
                              delete: Bool,
                              account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             markE2EEFolder(fileId: fileId,
@@ -100,15 +100,15 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Optional request options (default is empty).
     ///   - taskHandler: Closure to access the `URLSessionTask` (default is no-op).
-    ///   - completion: Completion handler returning the account, updated E2EE token, raw response, and any NKError.
+    ///   - completion: Completion handler returning the account, updated E2EE token, raw response, and any SCKError.
     func lockE2EEFolder(fileId: String,
                         e2eToken: String?,
                         e2eCounter: String?,
                         method: String,
                         account: String,
-                        options: NKRequestOptions = NKRequestOptions(),
+                        options: SCKRequestOptions = SCKRequestOptions(),
                         taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                        completion: @escaping (_ account: String, _ e2eToken: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                        completion: @escaping (_ account: String, _ e2eToken: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -130,22 +130,22 @@ public extension ScaleCloudKit {
             headers.update(name: "X-NC-E2EE-COUNTER", value: e2eCounter)
         }
 
-        nkSession.sessionData.request(url, method: method, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: method, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let e2eToken = json["ocs"]["data"]["e2e-token"].string
                     options.queue.async { completion(account, e2eToken, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -160,19 +160,19 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used for the request.
     ///   - options: Request configuration and context.
     ///   - taskHandler: Optional monitoring of the underlying URLSessionTask.
-    /// - Returns: A tuple with account, returned e2eToken, responseData and NKError.
+    /// - Returns: A tuple with account, returned e2eToken, responseData and SCKError.
     func lockE2EEFolderAsync(fileId: String,
                              e2eToken: String?,
                              e2eCounter: String?,
                              method: String,
                              account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         e2eToken: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             lockE2EEFolder(fileId: fileId,
@@ -203,13 +203,13 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Optional request options (includes version, queue, task description, etc.).
     ///   - taskHandler: Closure to access the URLSessionTask for progress or control.
-    ///   - completion: Completion handler returning the account, metadata string, signature string, response, and NKError.
+    ///   - completion: Completion handler returning the account, metadata string, signature string, response, and SCKError.
     func getE2EEMetadata(fileId: String,
                          e2eToken: String?,
                          account: String,
-                         options: NKRequestOptions = NKRequestOptions(),
+                         options: SCKRequestOptions = SCKRequestOptions(),
                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                         completion: @escaping (_ account: String, _ e2eMetadata: String?, _ signature: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                         completion: @escaping (_ account: String, _ e2eMetadata: String?, _ signature: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -225,17 +225,17 @@ public extension ScaleCloudKit {
             parameters["e2e-token"] = e2eToken
         }
 
-        nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let e2eMetadata = json["ocs"]["data"]["meta-data"].string
                     let signature = response.response?.allHeaderFields.first {
@@ -243,7 +243,7 @@ public extension ScaleCloudKit {
                     }?.value as? String
                     options.queue.async { completion(account, e2eMetadata, signature, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -260,14 +260,14 @@ public extension ScaleCloudKit {
     func getE2EEMetadataAsync(fileId: String,
                               e2eToken: String?,
                               account: String,
-                              options: NKRequestOptions = NKRequestOptions(),
+                              options: SCKRequestOptions = SCKRequestOptions(),
                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         e2eMetadata: String?,
         signature: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getE2EEMetadata(fileId: fileId,
@@ -299,16 +299,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Optional request options (includes version, queue, etc.).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, stored metadata (if any), response, and NKError.
+    ///   - completion: Completion handler returning the account, stored metadata (if any), response, and SCKError.
     func putE2EEMetadata(fileId: String,
                          e2eToken: String,
                          e2eMetadata: String?,
                          signature: String?,
                          method: String,
                          account: String,
-                         options: NKRequestOptions = NKRequestOptions(),
+                         options: SCKRequestOptions = SCKRequestOptions(),
                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                         completion: @escaping (_ account: String, _ metadata: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                         completion: @escaping (_ account: String, _ metadata: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -330,22 +330,22 @@ public extension ScaleCloudKit {
             headers.update(name: "X-NC-E2EE-SIGNATURE", value: signature)
         }
 
-        nkSession.sessionData.request(url, method: method, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: method, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 return options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let metadata = json["ocs"]["data"]["meta-data"].string
                     options.queue.async { completion(account, metadata, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -368,13 +368,13 @@ public extension ScaleCloudKit {
                               signature: String?,
                               method: String,
                               account: String,
-                              options: NKRequestOptions = NKRequestOptions(),
+                              options: SCKRequestOptions = SCKRequestOptions(),
                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         metadata: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             putE2EEMetadata(fileId: fileId,
@@ -406,12 +406,12 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Optional request options (includes version, task description, queue, etc.).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, the certificate string, the certificate user (if applicable), the raw response, and any NKError.
+    ///   - completion: Completion handler returning the account, the certificate string, the certificate user (if applicable), the raw response, and any SCKError.
     func getE2EECertificate(user: String? = nil,
                             account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                            completion: @escaping (_ account: String, _ certificate: String?, _ certificateUser: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                            completion: @escaping (_ account: String, _ certificate: String?, _ certificateUser: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
 
         var version = "v1"
         if let optionsVesion = options.version {
@@ -432,17 +432,17 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let key = json["ocs"]["data"]["public-keys"][nkSession.userId].stringValue
                     if let user = user {
@@ -452,7 +452,7 @@ public extension ScaleCloudKit {
                         options.queue.async { completion(account, key, nil, response, .success) }
                     }
                 } else {
-                    options.queue.async { completion(account, nil, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -469,14 +469,14 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing account, current user’s certificate, optional target user’s certificate, response data, and an error if any.
     func getE2EECertificateAsync(user: String? = nil,
                                  account: String,
-                                 options: NKRequestOptions = NKRequestOptions(),
+                                 options: SCKRequestOptions = SCKRequestOptions(),
                                  taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         certificate: String?,
         certificateUser: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getE2EECertificate(user: user,
@@ -502,11 +502,11 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account requesting the private key.
     ///   - options: Optional request options (includes version, queue, etc.).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, private key string, raw response, and NKError.
+    ///   - completion: Completion handler returning the account, private key string, raw response, and SCKError.
     func getE2EEPrivateKey(account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                           completion: @escaping (_ account: String, _ privateKey: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                           completion: @escaping (_ account: String, _ privateKey: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -518,22 +518,22 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                    let error = NKError(error: error, afResponse: response, responseData: response.data)
+                    let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let key = json["ocs"]["data"]["private-key"].stringValue
                     options.queue.async { completion(account, key, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -546,13 +546,13 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Optional callback for task creation.
     /// - Returns: A tuple containing the account, the private key string (if available), the response, and the error.
     func getE2EEPrivateKeyAsync(account: String,
-                                options: NKRequestOptions = NKRequestOptions(),
+                                options: SCKRequestOptions = SCKRequestOptions(),
                                 taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         privateKey: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getE2EEPrivateKey(account: account,
@@ -576,11 +576,11 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Optional request options (includes version, queue, etc.).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, public key string, raw response, and NKError.
+    ///   - completion: Completion handler returning the account, public key string, raw response, and SCKError.
     func getE2EEPublicKey(account: String,
-                          options: NKRequestOptions = NKRequestOptions(),
+                          options: SCKRequestOptions = SCKRequestOptions(),
                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                          completion: @escaping (_ account: String, _ publicKey: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                          completion: @escaping (_ account: String, _ publicKey: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -592,22 +592,22 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let key = json["ocs"]["data"]["public-key"].stringValue
                     options.queue.async { completion(account, key, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -618,15 +618,15 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used for the request.
     ///   - options: Optional request configuration (API version, headers, etc.).
     ///   - taskHandler: Optional monitoring of the underlying URLSessionTask.
-    /// - Returns: A tuple with account, publicKey string, AFDataResponse, and NKError.
+    /// - Returns: A tuple with account, publicKey string, AFDataResponse, and SCKError.
     func getE2EEPublicKeyAsync(account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         publicKey: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getE2EEPublicKey(account: account,
@@ -651,12 +651,12 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the request.
     ///   - options: Optional request options (e.g., version, queue, headers).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, signed certificate string, response, and NKError.
+    ///   - completion: Completion handler returning the account, signed certificate string, response, and SCKError.
     func signE2EECertificate(certificate: String,
                              account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                             completion: @escaping (_ account: String, _ certificate: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                             completion: @escaping (_ account: String, _ certificate: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -669,23 +669,23 @@ public extension ScaleCloudKit {
         }
         let parameters = ["csr": certificate]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let key = json["ocs"]["data"]["public-key"].stringValue
                     print(key)
                     options.queue.async { completion(account, key, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -700,13 +700,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing the account, signed certificate, response data, and error.
     func signE2EECertificateAsync(certificate: String,
                                   account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         certificate: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             signE2EECertificate(certificate: certificate,
@@ -732,12 +732,12 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account performing the operation.
     ///   - options: Optional request options (versioning, queue dispatch, headers, etc.).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, stored private key (as echoed back), response, and NKError.
+    ///   - completion: Completion handler returning the account, stored private key (as echoed back), response, and SCKError.
     func storeE2EEPrivateKey(privateKey: String,
                              account: String,
-                             options: NKRequestOptions = NKRequestOptions(),
+                             options: SCKRequestOptions = SCKRequestOptions(),
                              taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                             completion: @escaping (_ account: String, _ privateKey: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                             completion: @escaping (_ account: String, _ privateKey: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -750,22 +750,22 @@ public extension ScaleCloudKit {
         }
         let parameters = ["privateKey": privateKey]
 
-        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if 200..<300 ~= statusCode {
                     let key = json["ocs"]["data"]["private-key"].stringValue
                     options.queue.async { completion(account, key, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -780,13 +780,13 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple containing the account, echoed private key, response data, and error.
     func storeE2EEPrivateKeyAsync(privateKey: String,
                                   account: String,
-                                  options: NKRequestOptions = NKRequestOptions(),
+                                  options: SCKRequestOptions = SCKRequestOptions(),
                                   taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         privateKey: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             storeE2EEPrivateKey(privateKey: privateKey,
@@ -811,11 +811,11 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account requesting the deletion of the certificate.
     ///   - options: Optional request options (e.g., version, dispatch queue, headers).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, raw response, and NKError.
+    ///   - completion: Completion handler returning the account, raw response, and SCKError.
     func deleteE2EECertificate(account: String,
-                               options: NKRequestOptions = NKRequestOptions(),
+                               options: SCKRequestOptions = SCKRequestOptions(),
                                taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                               completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                               completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -826,13 +826,13 @@ public extension ScaleCloudKit {
               let headers = nkCommonInstance.getStandardHeaders(account: account, options: options) else {
             return options.queue.async { completion(account, nil, .urlError) }
         }
-        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -847,12 +847,12 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Optional monitoring of the URLSessionTask.
     /// - Returns: A tuple containing the account, response data, and error.
     func deleteE2EECertificateAsync(account: String,
-                                    options: NKRequestOptions = NKRequestOptions(),
+                                    options: SCKRequestOptions = SCKRequestOptions(),
                                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             deleteE2EECertificate(account: account,
@@ -875,11 +875,11 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account requesting the deletion of its private key.
     ///   - options: Optional request options (API version, dispatch queue, headers).
     ///   - taskHandler: Closure to access the URLSessionTask.
-    ///   - completion: Completion handler returning the account, raw response, and NKError.
+    ///   - completion: Completion handler returning the account, raw response, and SCKError.
     func deleteE2EEPrivateKey(account: String,
-                              options: NKRequestOptions = NKRequestOptions(),
+                              options: SCKRequestOptions = SCKRequestOptions(),
                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                              completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                              completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var version = "v1"
         if let optionsVesion = options.version {
             version = optionsVesion
@@ -891,13 +891,13 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success:
                 options.queue.async { completion(account, response, .success) }
@@ -912,12 +912,12 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Optional monitoring of the URLSessionTask.
     /// - Returns: A tuple containing the account, response data, and error.
     func deleteE2EEPrivateKeyAsync(account: String,
-                                   options: NKRequestOptions = NKRequestOptions(),
+                                   options: SCKRequestOptions = SCKRequestOptions(),
                                    taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             deleteE2EEPrivateKey(account: account,

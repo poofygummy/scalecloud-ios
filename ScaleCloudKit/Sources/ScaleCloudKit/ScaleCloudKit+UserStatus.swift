@@ -25,12 +25,12 @@ public extension ScaleCloudKit {
     ///     - statusIsUserDefined: Indicates if the status was set manually by the user.
     ///     - userId: The actual user ID returned by the server.
     ///     - responseData: Raw response data from the server.
-    ///     - error: Result as `NKError`.
+    ///     - error: Result as `SCKError`.
     func getUserStatus(userId: String? = nil,
                        account: String,
-                       options: NKRequestOptions = NKRequestOptions(),
+                       options: SCKRequestOptions = SCKRequestOptions(),
                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                       completion: @escaping (_ account: String, _ clearAt: Date?, _ icon: String?, _ message: String?, _ messageId: String?, _ messageIsPredefined: Bool, _ status: String?, _ statusIsUserDefined: Bool, _ userId: String?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                       completion: @escaping (_ account: String, _ clearAt: Date?, _ icon: String?, _ message: String?, _ messageId: String?, _ messageIsPredefined: Bool, _ status: String?, _ statusIsUserDefined: Bool, _ userId: String?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         var endpoint = "ocs/v2.php/apps/user_status/api/v1/user_status"
         if let userId = userId {
             endpoint = "ocs/v2.php/apps/user_status/api/v1/user_status/\(userId)"
@@ -41,17 +41,17 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, nil, nil, false, nil, false, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, nil, nil, nil, false, nil, false, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if statusCode == 200 {
 
                     var clearAt: Date?
@@ -68,7 +68,7 @@ public extension ScaleCloudKit {
 
                     options.queue.async { completion(account, clearAt, icon, message, messageId, messageIsPredefined, status, statusIsUserDefined, userId, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, nil, nil, nil, false, nil, false, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, nil, nil, nil, false, nil, false, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -80,7 +80,7 @@ public extension ScaleCloudKit {
     /// - Returns: A tuple with explicitly named values describing the user status.
     func getUserStatusAsync(userId: String? = nil,
                             account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
@@ -93,7 +93,7 @@ public extension ScaleCloudKit {
         statusIsUserDefined: Bool,
         userId: String?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getUserStatus(userId: userId,
@@ -125,12 +125,12 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the operation.
     /// - options: Optional request configuration.
     /// - taskHandler: Callback for the underlying `URLSessionTask`.
-    /// - completion: Returns the account, the raw response data, and any resulting NKError.
+    /// - completion: Returns the account, the raw response data, and any resulting SCKError.
     func setUserStatus(status: String,
                        account: String,
-                       options: NKRequestOptions = NKRequestOptions(),
+                       options: SCKRequestOptions = SCKRequestOptions(),
                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                       completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                       completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/user_status/api/v1/user_status/status"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -141,21 +141,21 @@ public extension ScaleCloudKit {
             "statusType": String(status)
         ]
 
-        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if statusCode == 200 {
                     options.queue.async { completion(account, response, .success) }
                 } else {
-                    options.queue.async { completion(account, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -164,15 +164,15 @@ public extension ScaleCloudKit {
     /// Asynchronously sets the current user status on the Nextcloud server.
     ///
     /// - Parameters: Same as the sync version.
-    /// - Returns: A tuple with the account, responseData, and NKError.
+    /// - Returns: A tuple with the account, responseData, and SCKError.
     func setUserStatusAsync(status: String,
                             account: String,
-                            options: NKRequestOptions = NKRequestOptions(),
+                            options: SCKRequestOptions = SCKRequestOptions(),
                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             setUserStatus(status: status,
@@ -199,13 +199,13 @@ public extension ScaleCloudKit {
     ///   - completion: Completion handler called with:
     ///     - account: The account used in the operation.
     ///     - responseData: The raw server response.
-    ///     - error: A `NKError` indicating success or failure.
+    ///     - error: A `SCKError` indicating success or failure.
     func setCustomMessagePredefined(messageId: String,
                                     clearAt: Double,
                                     account: String,
-                                    options: NKRequestOptions = NKRequestOptions(),
+                                    options: SCKRequestOptions = SCKRequestOptions(),
                                     taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                    completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                    completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/user_status/api/v1/user_status/message/predefined"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -219,22 +219,22 @@ public extension ScaleCloudKit {
             parameters["clearAt"] = String(clearAt)
         }
 
-        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
 
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if statusCode == 200 {
                     options.queue.async { completion(account, response, .success) }
                 } else {
-                    options.queue.async { completion(account, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -248,16 +248,16 @@ public extension ScaleCloudKit {
     /// - account: The Nextcloud account performing the operation.
     /// - options: Optional request configuration (headers, queue, etc.).
     /// - taskHandler: Callback for monitoring the underlying URLSessionTask.
-    /// - Returns: A tuple containing the account identifier, the raw response, and any resulting NKError.
+    /// - Returns: A tuple containing the account identifier, the raw response, and any resulting SCKError.
     func setCustomMessagePredefinedAsync(messageId: String,
                                          clearAt: Double,
                                          account: String,
-                                         options: NKRequestOptions = NKRequestOptions(),
+                                         options: SCKRequestOptions = SCKRequestOptions(),
                                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             setCustomMessagePredefined(messageId: messageId,
@@ -286,14 +286,14 @@ public extension ScaleCloudKit {
     /// - completion: Completion handler returning:
     ///     - account: The account identifier used.
     ///     - responseData: The raw Alamofire response data (if any).
-    ///     - error: An `NKError` indicating success or failure.
+    ///     - error: An `SCKError` indicating success or failure.
     func setCustomMessageUserDefined(statusIcon: String?,
                                      message: String,
                                      clearAt: Double,
                                      account: String,
-                                     options: NKRequestOptions = NKRequestOptions(),
+                                     options: SCKRequestOptions = SCKRequestOptions(),
                                      taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                     completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                     completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/user_status/api/v1/user_status/message/custom"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -310,22 +310,22 @@ public extension ScaleCloudKit {
             parameters["clearAt"] = String(clearAt)
         }
 
-        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .put, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
 
                 if statusCode == 200 {
                     options.queue.async { completion(account, response, .success) }
                 } else {
-                    options.queue.async { completion(account, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -341,17 +341,17 @@ public extension ScaleCloudKit {
     /// - options: Request options such as headers, task description, queue.
     /// - taskHandler: Callback for URLSessionTask monitoring.
     ///
-    /// Returns: A tuple containing account, responseData, and any resulting NKError.
+    /// Returns: A tuple containing account, responseData, and any resulting SCKError.
     func setCustomMessageUserDefinedAsync(statusIcon: String?,
                                           message: String,
                                           clearAt: Double,
                                           account: String,
-                                          options: NKRequestOptions = NKRequestOptions(),
+                                          options: SCKRequestOptions = SCKRequestOptions(),
                                           taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             setCustomMessageUserDefined(statusIcon: statusIcon,
@@ -378,11 +378,11 @@ public extension ScaleCloudKit {
     /// - completion: Completion handler returning:
     ///     - account: The account identifier used.
     ///     - responseData: The raw Alamofire response object, if available.
-    ///     - error: An `NKError` representing the result of the operation (success or failure).
+    ///     - error: An `SCKError` representing the result of the operation (success or failure).
     func clearMessage(account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                      completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                      completion: @escaping (_ account: String, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/user_status/api/v1/user_status/message"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -390,22 +390,22 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .delete, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
 
                 if statusCode == 200 {
                     options.queue.async { completion(account, response, .success) }
                 } else {
-                    options.queue.async { completion(account, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -415,20 +415,20 @@ public extension ScaleCloudKit {
     ///
     /// Parameters:
     /// - account: The Nextcloud account identifier whose status message will be cleared.
-    /// - options: Optional `NKRequestOptions` to customize the request (e.g., headers, queue).
+    /// - options: Optional `SCKRequestOptions` to customize the request (e.g., headers, queue).
     /// - taskHandler: Callback triggered upon creation of the `URLSessionTask`.
     ///
     /// Returns: A tuple containing:
     /// - account: The account identifier used for the operation.
     /// - responseData: The raw `AFDataResponse<Data>` object returned by Alamofire.
-    /// - error: The resulting `NKError`, either `.success` or a failure case.
+    /// - error: The resulting `SCKError`, either `.success` or a failure case.
     func clearMessageAsync(account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             clearMessage(account: account,
@@ -447,17 +447,17 @@ public extension ScaleCloudKit {
     ///
     /// - Parameters:
     ///   - account: The Nextcloud account identifier performing the request.
-    ///   - options: Optional `NKRequestOptions` to customize the request (e.g., custom headers, queue).
+    ///   - options: Optional `SCKRequestOptions` to customize the request (e.g., custom headers, queue).
     ///   - taskHandler: Callback triggered when the `URLSessionTask` is created.
     ///   - completion: Completion handler returning:
     ///     - account: The account identifier used for the request.
-    ///     - userStatuses: An optional array of predefined `NKUserStatus` objects.
+    ///     - userStatuses: An optional array of predefined `SCKUserStatus` objects.
     ///     - responseData: Raw `AFDataResponse<Data>` from Alamofire.
-    ///     - error: Resulting `NKError` describing success or failure.
+    ///     - error: Resulting `SCKError` describing success or failure.
     func getUserStatusPredefinedStatuses(account: String,
-                                         options: NKRequestOptions = NKRequestOptions(),
+                                         options: SCKRequestOptions = SCKRequestOptions(),
                                          taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                         completion: @escaping (_ account: String, _ userStatuses: [NKUserStatus]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                         completion: @escaping (_ account: String, _ userStatuses: [SCKUserStatus]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/user_status/api/v1/predefined_statuses"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -465,22 +465,22 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
-                var userStatuses: [NKUserStatus] = []
+                var userStatuses: [SCKUserStatus] = []
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
                 if statusCode == 200 {
                     let ocsdata = json["ocs"]["data"]
                     for (_, subJson): (String, JSON) in ocsdata {
-                        let userStatus = NKUserStatus()
+                        let userStatus = SCKUserStatus()
 
                         if let value = subJson["clearAt"]["time"].int {
                             userStatus.clearAtTime = String(value)
@@ -496,7 +496,7 @@ public extension ScaleCloudKit {
                     }
                     options.queue.async { completion(account, userStatuses, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -514,17 +514,17 @@ public extension ScaleCloudKit {
     ///
     /// Returns: A tuple containing:
     /// - account: The account used for the request.
-    /// - userStatuses: An optional array of `NKUserStatus` representing the predefined statuses.
+    /// - userStatuses: An optional array of `SCKUserStatus` representing the predefined statuses.
     /// - responseData: The raw HTTP response returned from the server.
-    /// - error: The result of the request as an `NKError` object.
+    /// - error: The result of the request as an `SCKError` object.
     func getUserStatusPredefinedStatusesAsync(account: String,
-                                              options: NKRequestOptions = NKRequestOptions(),
+                                              options: SCKRequestOptions = SCKRequestOptions(),
                                               taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        userStatuses: [NKUserStatus]?,
+        userStatuses: [SCKUserStatus]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getUserStatusPredefinedStatuses(account: account,
@@ -550,15 +550,15 @@ public extension ScaleCloudKit {
     ///   - taskHandler: Callback invoked with the `URLSessionTask` when the request is created.
     ///   - completion: Completion handler called with:
     ///     - account: The account used in the operation.
-    ///     - userStatuses: An array of `NKUserStatus` objects, or `nil` if an error occurred.
+    ///     - userStatuses: An array of `SCKUserStatus` objects, or `nil` if an error occurred.
     ///     - responseData: The raw server response.
-    ///     - error: A `NKError` indicating success or failure.
+    ///     - error: A `SCKError` indicating success or failure.
     func getUserStatusRetrieveStatuses(limit: Int,
                                        offset: Int,
                                        account: String,
-                                       options: NKRequestOptions = NKRequestOptions(),
+                                       options: SCKRequestOptions = SCKRequestOptions(),
                                        taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                                       completion: @escaping (_ account: String, _ userStatuses: [NKUserStatus]?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                                       completion: @escaping (_ account: String, _ userStatuses: [SCKUserStatus]?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/apps/user_status/api/v1/statuses"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -570,22 +570,22 @@ public extension ScaleCloudKit {
             "offset": String(offset)
         ]
 
-        nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
-                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? NKError.internalError
-                var userStatuses: [NKUserStatus] = []
+                let statusCode = json["ocs"]["meta"]["statuscode"].int ?? SCKError.internalError
+                var userStatuses: [SCKUserStatus] = []
                 if statusCode == 200 {
                     let ocsdata = json["ocs"]["data"]
                     for (_, subJson): (String, JSON) in ocsdata {
-                        let userStatus = NKUserStatus()
+                        let userStatus = SCKUserStatus()
                         if let value = subJson["clearAt"].double {
                             if value > 0 {
                                 userStatus.clearAt = Date(timeIntervalSince1970: value)
@@ -599,7 +599,7 @@ public extension ScaleCloudKit {
                     }
                     options.queue.async { completion(account, userStatuses, response, .success) }
                 } else {
-                    options.queue.async { completion(account, nil, response, NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
+                    options.queue.async { completion(account, nil, response, SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)) }
                 }
             }
         }
@@ -616,19 +616,19 @@ public extension ScaleCloudKit {
     ///
     /// - Returns: A tuple containing:
     ///   - account: The account used for the request.
-    ///   - userStatuses: An array of `NKUserStatus` objects, or `nil` if an error occurred.
+    ///   - userStatuses: An array of `SCKUserStatus` objects, or `nil` if an error occurred.
     ///   - responseData: The raw server response.
-    ///   - error: A `NKError` describing the result.
+    ///   - error: A `SCKError` describing the result.
     func getUserStatusRetrieveStatusesAsync(limit: Int,
                                             offset: Int,
                                             account: String,
-                                            options: NKRequestOptions = NKRequestOptions(),
+                                            options: SCKRequestOptions = SCKRequestOptions(),
                                             taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        userStatuses: [NKUserStatus]?,
+        userStatuses: [SCKUserStatus]?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getUserStatusRetrieveStatuses(limit: limit,

@@ -13,12 +13,12 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used to perform the request.
     ///   - options: Optional request options for customizing the API call.
     ///   - taskHandler: Closure for observing the underlying `URLSessionTask`.
-    ///   - completion: Completion handler returning the account, the `NKHovercard` result, raw response data, and any error encountered.
+    ///   - completion: Completion handler returning the account, the `SCKHovercard` result, raw response data, and any error encountered.
     func getHovercard(for userId: String,
                       account: String,
-                      options: NKRequestOptions = NKRequestOptions(),
+                      options: SCKRequestOptions = SCKRequestOptions(),
                       taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in },
-                      completion: @escaping (_ account: String, _ result: NKHovercard?, _ responseData: AFDataResponse<Data>?, _ error: NKError) -> Void) {
+                      completion: @escaping (_ account: String, _ result: SCKHovercard?, _ responseData: AFDataResponse<Data>?, _ error: SCKError) -> Void) {
         let endpoint = "ocs/v2.php/hovercard/v1/\(userId)"
         guard let nkSession = nkCommonInstance.nksessions.session(forAccount: account),
               let url = nkCommonInstance.createStandardUrl(serverUrl: nkSession.urlBase, endpoint: endpoint),
@@ -26,21 +26,21 @@ public extension ScaleCloudKit {
             return options.queue.async { completion(account, nil, nil, .urlError) }
         }
 
-        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: NKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
+        nkSession.sessionData.request(url, method: .get, encoding: URLEncoding.default, headers: headers, interceptor: SCKInterceptor(nkCommonInstance: nkCommonInstance)).validate(statusCode: 200..<300).onURLSessionTaskCreation { task in
             task.taskDescription = options.taskDescription
             taskHandler(task)
         }.responseData(queue: self.nkCommonInstance.backgroundQueue) { response in
             switch response.result {
             case .failure(let error):
-                let error = NKError(error: error, afResponse: response, responseData: response.data)
+                let error = SCKError(error: error, afResponse: response, responseData: response.data)
                 options.queue.async { completion(account, nil, response, error) }
             case .success(let jsonData):
                 let json = JSON(jsonData)
                 let data = json["ocs"]["data"]
                 guard json["ocs"]["meta"]["statuscode"].int == 200,
-                      let result = NKHovercard(jsonData: data)
+                      let result = SCKHovercard(jsonData: data)
                 else {
-                    let error = NKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
+                    let error = SCKError(rootJson: json, fallbackStatusCode: response.response?.statusCode)
                     options.queue.async { completion(account, nil, response, error) }
                     return
                 }
@@ -55,16 +55,16 @@ public extension ScaleCloudKit {
     ///   - account: The Nextcloud account used to perform the request.
     ///   - options: Optional request options for customizing the API call.
     ///   - taskHandler: Closure for observing the underlying `URLSessionTask`.
-    /// - Returns: A tuple containing the account, the `NKHovercard` result, raw response data, and any error encountered.
+    /// - Returns: A tuple containing the account, the `SCKHovercard` result, raw response data, and any error encountered.
     func getHovercardAsync(for userId: String,
                            account: String,
-                           options: NKRequestOptions = NKRequestOptions(),
+                           options: SCKRequestOptions = SCKRequestOptions(),
                            taskHandler: @escaping (_ task: URLSessionTask) -> Void = { _ in }
     ) async -> (
         account: String,
-        result: NKHovercard?,
+        result: SCKHovercard?,
         responseData: AFDataResponse<Data>?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             getHovercard(for: userId,
@@ -82,7 +82,7 @@ public extension ScaleCloudKit {
     }
 }
 
-public class NKHovercard: NSObject {
+public class SCKHovercard: NSObject {
     public let userId, displayName: String
     public let actions: [Action]
 

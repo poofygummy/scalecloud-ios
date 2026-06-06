@@ -9,35 +9,35 @@ public final class FileNameValidator: Sendable {
     private let forbiddenFileNameBasenames: [String]
     private let forbiddenFileNameCharacters: [String]
     private let forbiddenFileNameExtensions: [String]
-    private let capabilities: NKCapabilities.Capabilities
+    private let capabilities: SCKCapabilities.Capabilities
 
-    public func fileEmptyNameError() -> NKError {
-        NKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: NSLocalizedString("_file_name_empty_", value: "File name cannot be empty.", comment: ""))
+    public func fileEmptyNameError() -> SCKError {
+        SCKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: NSLocalizedString("_file_name_empty_", value: "File name cannot be empty.", comment: ""))
     }
 
-    public func fileWithSpaceError() -> NKError {
-        NKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: NSLocalizedString("_file_name_validator_error_space_", value: "Name must not contain spaces at the beginning or end.", comment: ""))
+    public func fileWithSpaceError() -> SCKError {
+        SCKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: NSLocalizedString("_file_name_validator_error_space_", value: "Name must not contain spaces at the beginning or end.", comment: ""))
     }
 
-    public func fileReservedNameError(templateString: String) -> NKError {
+    public func fileReservedNameError(templateString: String) -> SCKError {
         let errorMessageTemplate = NSLocalizedString("_file_name_validator_error_reserved_name_", value: "\"%@\" is a forbidden name.", comment: "")
         let errorMessage = String(format: errorMessageTemplate, templateString)
-        return NKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: errorMessage)
+        return SCKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: errorMessage)
     }
 
-    public func fileForbiddenFileExtensionError(templateString: String) -> NKError {
+    public func fileForbiddenFileExtensionError(templateString: String) -> SCKError {
         let errorMessageTemplate = NSLocalizedString("_file_name_validator_error_forbidden_file_extension_", value: ".\"%@\" is a forbidden file extension.", comment: "")
         let errorMessage = String(format: errorMessageTemplate, templateString)
-        return NKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: errorMessage)
+        return SCKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: errorMessage)
     }
 
-    public func fileInvalidCharacterError(templateString: String) -> NKError {
+    public func fileInvalidCharacterError(templateString: String) -> SCKError {
         let errorMessageTemplate = NSLocalizedString("_file_name_validator_error_invalid_character_", value: "Name contains an invalid character: \"%@\".", comment: "")
         let errorMessage = String(format: errorMessageTemplate, templateString)
-        return NKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: errorMessage)
+        return SCKError(errorCode: NSURLErrorCannotCreateFile, errorDescription: errorMessage)
     }
 
-    public init(capabilities: NKCapabilities.Capabilities) {
+    public init(capabilities: SCKCapabilities.Capabilities) {
         self.forbiddenFileNames = capabilities.forbiddenFileNames.map { $0.uppercased() }
         self.forbiddenFileNameBasenames = capabilities.forbiddenFileNameBasenames.map { $0.uppercased() }
         self.forbiddenFileNameCharacters = capabilities.forbiddenFileNameCharacters
@@ -45,7 +45,7 @@ public final class FileNameValidator: Sendable {
         self.capabilities = capabilities
     }
 
-    public func checkFileName(_ filename: String) -> NKError? {
+    public func checkFileName(_ filename: String) -> SCKError? {
         if !capabilities.shouldEnforceWindowsCompatibleFilenames {
             return nil
         }
@@ -89,7 +89,7 @@ public final class FileNameValidator: Sendable {
         return !name.isEmpty && name.first == "."
     }
 
-    private func checkInvalidCharacters(string: String, regex: NSRegularExpression) -> NKError? {
+    private func checkInvalidCharacters(string: String, regex: NSRegularExpression) -> SCKError? {
         for char in string {
             let charAsString = String(char)
             let range = NSRange(location: 0, length: charAsString.utf16.count)

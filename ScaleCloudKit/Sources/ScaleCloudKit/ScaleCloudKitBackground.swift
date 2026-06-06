@@ -4,10 +4,10 @@
 
 import Foundation
 
-public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDelegate, URLSessionDownloadDelegate {
-    let nkCommonInstance: NKCommon
+public final class SCKBackground: NSObject, URLSessionTaskDelegate, URLSessionDelegate, URLSessionDownloadDelegate {
+    let nkCommonInstance: SCKCommon
 
-    public init(nkCommonInstance: NKCommon) {
+    public init(nkCommonInstance: SCKCommon) {
         self.nkCommonInstance = nkCommonInstance
         super.init()
     }
@@ -24,13 +24,13 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
     ///
     /// - Returns: A tuple containing:
     ///   - URLSessionDownloadTask?: The download task if created successfully.
-    ///   - error: An `NKError` indicating success or failure in starting the download.
+    ///   - error: An `SCKError` indicating success or failure in starting the download.
     public func download(serverUrlFileName: Any,
                          fileNameLocalPath: String,
                          taskDescription: String? = nil,
                          account: String,
                          automaticResume: Bool = true,
-                         sessionIdentifier: String) -> (URLSessionDownloadTask?, error: NKError) {
+                         sessionIdentifier: String) -> (URLSessionDownloadTask?, error: SCKError) {
         var url: URL?
         var downloadSession: URLSession?
         let groupDefaults = UserDefaults(suiteName: ScaleCloudKit.shared.nkCommonInstance.groupIdentifier)
@@ -92,7 +92,7 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
     ///
     /// - Returns: A tuple containing:
     ///   - downloadTask: The `URLSessionDownloadTask?` if successfully created.
-    ///   - error: The `NKError` result.
+    ///   - error: The `SCKError` result.
     public func downloadAsync(serverUrlFileName: Any,
                               fileNameLocalPath: String,
                               taskDescription: String? = nil,
@@ -100,7 +100,7 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
                               automaticResume: Bool = true,
                               sessionIdentifier: String) async -> (
         downloadTask: URLSessionDownloadTask?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let (task, error) = download(serverUrlFileName: serverUrlFileName,
@@ -130,7 +130,7 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
     ///
     /// - Returns: A tuple containing:
     ///   - URLSessionUploadTask?: The upload task if created successfully.
-    ///   - error: An `NKError` indicating success or failure in starting the upload.
+    ///   - error: An `SCKError` indicating success or failure in starting the upload.
     public func upload(serverUrlFileName: Any,
                        fileNameLocalPath: String,
                        dateCreationFile: Date?,
@@ -140,7 +140,7 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
                        autoMkcol: Bool = false,
                        account: String,
                        automaticResume: Bool = true,
-                       sessionIdentifier: String) -> (URLSessionUploadTask?, error: NKError) {
+                       sessionIdentifier: String) -> (URLSessionUploadTask?, error: SCKError) {
         var url: URL?
         var uploadSession: URLSession?
         let groupDefaults = UserDefaults(suiteName: ScaleCloudKit.shared.nkCommonInstance.groupIdentifier)
@@ -223,7 +223,7 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
     ///
     /// - Returns: A tuple containing:
     ///   - uploadTask: The `URLSessionUploadTask?` if successfully created.
-    ///   - error: The `NKError` result.
+    ///   - error: The `SCKError` result.
     public func uploadAsync(serverUrlFileName: Any,
                             fileNameLocalPath: String,
                             dateCreationFile: Date?,
@@ -235,7 +235,7 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
                             automaticResume: Bool = true,
                             sessionIdentifier: String) async -> (
         uploadTask: URLSessionUploadTask?,
-        error: NKError
+        error: SCKError
     ) {
         await withCheckedContinuation { continuation in
             let (task, error) = upload(serverUrlFileName: serverUrlFileName,
@@ -285,19 +285,19 @@ public final class NKBackground: NSObject, URLSessionTaskDelegate, URLSessionDel
             fileName = (url as NSString).lastPathComponent
             serverUrl = url.replacingOccurrences(of: "/" + fileName, with: "")
         }
-        var nkError: NKError = .success
+        var nkError: SCKError = .success
 
         if let response = (task.response as? HTTPURLResponse) {
             if response.statusCode >= 200 && response.statusCode < 300 {
                 if let error = error {
-                    nkError = NKError(error: error)
+                    nkError = SCKError(error: error)
                 }
             } else {
-                nkError = NKError(httpResponse: response)
+                nkError = SCKError(httpResponse: response)
             }
         } else {
             if let error = error {
-                nkError = NKError(error: error)
+                nkError = SCKError(error: error)
             }
         }
 
