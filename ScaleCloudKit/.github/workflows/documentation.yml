@@ -40,13 +40,13 @@ jobs:
           <head>
             <meta charset="utf-8">
             <title>ScaleCloudKit Documentation</title>
-            <meta http-equiv="refresh" content="0; url=./documentation/nextcloudkit/">
-            <link rel="canonical" href="./documentation/nextcloudkit/">
+            <meta http-equiv="refresh" content="0; url=./documentation/scalecloudkit/">
+            <link rel="canonical" href="./documentation/scalecloudkit/">
           </head>
           <body>
-            <p>Redirecting to <a href="./documentation/nextcloudkit/">ScaleCloudKit Documentation</a>...</p>
+            <p>Redirecting to <a href="./documentation/scalecloudkit/">ScaleCloudKit Documentation</a>...</p>
             <script>
-              window.location.href = "./documentation/nextcloudkit/";
+              window.location.href = "./documentation/scalecloudkit/";
             </script>
           </body>
           </html>

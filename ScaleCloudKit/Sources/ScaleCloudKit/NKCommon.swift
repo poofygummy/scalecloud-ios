@@ -57,8 +57,8 @@ public struct NKCommon: Sendable {
     public let rootFileName: String = ".__NC_ROOT__"
 
     // Foreground
-    public let identifierSessionDownload: String = "com.nextcloud.nextcloudkit.session.download"
-    public let identifierSessionUpload: String = "com.nextcloud.nextcloudkit.session.upload"
+    public let identifierSessionDownload: String = "com.nextcloud.scalecloudkit.session.download"
+    public let identifierSessionUpload: String = "com.nextcloud.scalecloudkit.session.upload"
     // Background
     public let identifierSessionDownloadBackground: String = "com.nextcloud.session.downloadbackground"
     public let identifierSessionDownloadBackgroundExt: String = "com.nextcloud.session.downloadextension"
@@ -70,8 +70,8 @@ public struct NKCommon: Sendable {
     public let rootQueue = DispatchQueue(label: "com.nextcloud.session.rootQueue")
     public let requestQueue = DispatchQueue(label: "com.nextcloud.session.requestQueue")
     public let serializationQueue = DispatchQueue(label: "com.nextcloud.session.serializationQueue")
-    public let backgroundQueue = DispatchQueue(label: "com.nextcloud.nextcloudkit.backgroundqueue", qos: .background, attributes: .concurrent)
-    private let logQueue = DispatchQueue(label: "com.nextcloud.nextcloudkit.queuelog", attributes: .concurrent )
+    public let backgroundQueue = DispatchQueue(label: "com.nextcloud.scalecloudkit.backgroundqueue", qos: .background, attributes: .concurrent)
+    private let logQueue = DispatchQueue(label: "com.nextcloud.scalecloudkit.queuelog", attributes: .concurrent )
 
     public let headerAccount = "X-NC-Account"
     public let headerCheckInterceptor = "X-NC-CheckInterceptor"
