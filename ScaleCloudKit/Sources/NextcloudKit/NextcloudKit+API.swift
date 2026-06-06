@@ -30,7 +30,7 @@ public class NKNotifications: NSObject {
     public var user = ""
 }
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Checks if the specified server URL is reachable and returns the raw HTTP response.
     /// Used to verify the availability and responsiveness of a Nextcloud server.
     ///

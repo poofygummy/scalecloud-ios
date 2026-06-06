@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Marks or unmarks a folder as End-to-End Encrypted (E2EE) for a given Nextcloud account.
     /// Depending on the `delete` flag, this function either enables or disables the E2EE status for the folder.
     ///

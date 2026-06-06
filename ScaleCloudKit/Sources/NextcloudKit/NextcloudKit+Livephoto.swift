@@ -5,7 +5,7 @@
 import Foundation
 import Alamofire
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Associates a Live Photo video file with a photo on the server.
     ///
     /// Parameters:

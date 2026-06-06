@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 version = 1
-SPDX-PackageName = "NextcloudKit"
+SPDX-PackageName = "ScaleCloudKit"
 SPDX-PackageSupplier = "2024 Nextcloud GmbH and Nextcloud contributors"
-SPDX-PackageDownloadLocation = "https://github.com/nextcloud/NextcloudKit"
+SPDX-PackageDownloadLocation = "https://github.com/nextcloud/ScaleCloudKit"
 
 [[annotations]]
-path = ["NextcloudKit.png", "NextcloudKit.pxd", "NextcloudKit.svg"]
+path = ["ScaleCloudKit.png", "ScaleCloudKit.pxd", "ScaleCloudKit.svg"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2024 Nextcloud GmbH"
 SPDX-License-Identifier = "LicenseRef-NextcloudTrademarks"

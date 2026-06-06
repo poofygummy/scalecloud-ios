@@ -5,7 +5,7 @@
 import Foundation
 import Alamofire
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Retrieves all comments associated with a specific file from the server.
     /// This is typically used in collaboration features to display user discussions or annotations.
     ///

@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Retrieves the list of dashboard widgets available for the specified Nextcloud account.
     /// This typically calls the dashboard API endpoint and returns a list of `NCCDashboardWidget` items.
     ///

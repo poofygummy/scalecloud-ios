@@ -4,7 +4,7 @@
 
 import XCTest
 import Alamofire
-@testable import NextcloudKit
+@testable import ScaleCloudKit
 
 final class ShareIntegrationTests: BaseIntegrationXCTestCase {
 //    func test_createShare_withNote_shouldCreateShare() throws {
@@ -14,9 +14,9 @@ final class ShareIntegrationTests: BaseIntegrationXCTestCase {
 //        let serverUrl = "\(TestConstants.server)/remote.php/dav/files/\(TestConstants.username)"
 //        let serverUrlFileName = "\(serverUrl)/\(folderName)"
 //
-//        NextcloudKit.shared.appendSession(account: TestConstants.account, urlBase: TestConstants.server, user: TestConstants.username, userId: TestConstants.username, password: TestConstants.password, userAgent: "", nextcloudVersion: 0, groupIdentifier: "")
+//        ScaleCloudKit.shared.appendSession(account: TestConstants.account, urlBase: TestConstants.server, user: TestConstants.username, userId: TestConstants.username, password: TestConstants.password, userAgent: "", nextcloudVersion: 0, groupIdentifier: "")
 //
-//        NextcloudKit.shared.createFolder(serverUrlFileName: serverUrlFileName, account: TestConstants.account) { account, ocId, date, _, error in
+//        ScaleCloudKit.shared.createFolder(serverUrlFileName: serverUrlFileName, account: TestConstants.account) { account, ocId, date, _, error in
 //            XCTAssertEqual(TestConstants.account, account)
 //
 //            XCTAssertEqual(NKError.success.errorCode, error.errorCode)
@@ -26,7 +26,7 @@ final class ShareIntegrationTests: BaseIntegrationXCTestCase {
 //
 //            let note = "Test note"
 //
-//            NextcloudKit.shared.createShare(path: folderName, shareType: 0, shareWith: "nextcloud", note: note, account: "") { account, share, data, error in
+//            ScaleCloudKit.shared.createShare(path: folderName, shareType: 0, shareWith: "nextcloud", note: note, account: "") { account, share, data, error in
 //                defer { expectation.fulfill() }
 //
 //                XCTAssertEqual(TestConstants.account, account)

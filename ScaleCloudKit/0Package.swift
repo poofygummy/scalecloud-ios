@@ -8,7 +8,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "NextcloudKit",
+    name: "ScaleCloudKit",
     platforms: [
         .iOS(.v14),
         .macOS(.v11),
@@ -18,8 +18,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "NextcloudKit",
-            targets: ["NextcloudKit"]),
+            name: "ScaleCloudKit",
+            targets: ["ScaleCloudKit"]),
     ],
     dependencies: [
         .package(url: "https://github.com/WeTransfer/Mocker.git", .upToNextMajor(from: "3.0.2")),
@@ -29,7 +29,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "NextcloudKit",
+            name: "ScaleCloudKit",
             dependencies: ["Alamofire", "SwiftyJSON", "SwiftyXMLParser", "ScaleCloudGo"]),
         .binaryTarget(
             name: "ScaleCloudGo",
@@ -37,12 +37,12 @@ let package = Package(
         ),
         .testTarget(
             name: "NextcloudKitUnitTests",
-            dependencies: ["NextcloudKit", "Mocker"],
+            dependencies: ["ScaleCloudKit", "Mocker"],
             resources: [
                 .process("Resources")
             ]),
         .testTarget(
             name: "NextcloudKitIntegrationTests",
-            dependencies: ["NextcloudKit", "Mocker"])
+            dependencies: ["ScaleCloudKit", "Mocker"])
     ]
 )

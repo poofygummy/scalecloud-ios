@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Retrieves the list of supported text processing task types from the server.
     /// These types define the kinds of operations (e.g., summarization, translation) supported by the assistant API.
     ///

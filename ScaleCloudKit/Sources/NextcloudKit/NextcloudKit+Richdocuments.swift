@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Requests a URL for editing or viewing a file via the Richdocuments (Collabora/OnlyOffice) app.
     ///
     /// Parameters:

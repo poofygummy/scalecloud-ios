@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     ///
     /// Sends a WebDAV `LOCK` or `UNLOCK` request for a file on the server, depending on the `shouldLock` flag.
     /// This is used to prevent or release concurrent edits on a file.

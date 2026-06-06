@@ -4,7 +4,7 @@
 
 import Foundation
 
-// Public logging helpers for apps using the NextcloudKit library.
+// Public logging helpers for apps using the ScaleCloudKit library.
 // These functions internally use `NKLogFileManager.shared`.
 
 @inlinable

@@ -55,7 +55,7 @@ public class NKShareParameter: NSObject {
     }
 }
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     func readShares(parameters: NKShareParameter,
                     account: String,
                     options: NKRequestOptions = NKRequestOptions(),

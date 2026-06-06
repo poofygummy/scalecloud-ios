@@ -5,18 +5,18 @@
 import XCTest
 import Foundation
 import Alamofire
-import NextcloudKit
+import ScaleCloudKit
 
 class BaseXCTestCase: XCTestCase {
     var appToken = ""
-    var ncKit: NextcloudKit!
+    var ncKit: ScaleCloudKit!
 
     func setupAppToken() async {
         let expectation = expectation(description: "Should get app token")
 #if swift(<6.0)
-        ncKit = NextcloudKit.shared
+        ncKit = ScaleCloudKit.shared
 #else
-        ncKit = NextcloudKit()
+        ncKit = ScaleCloudKit()
 #endif
 
         ncKit.getAppPassword(url: TestConstants.server, user: TestConstants.username, password: TestConstants.password) { token, _, error in

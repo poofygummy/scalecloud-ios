@@ -24,14 +24,14 @@ jobs:
       - name: Build documentation
         run: |
           xcodebuild docbuild \
-            -scheme NextcloudKit \
+            -scheme ScaleCloudKit \
             -destination 'platform=macOS' \
             -skipPackagePluginValidation \
             -derivedDataPath ./DerivedData
           $(xcrun --find docc) process-archive \
-            transform-for-static-hosting ./DerivedData/Build/Products/Debug/NextcloudKit.doccarchive \
+            transform-for-static-hosting ./DerivedData/Build/Products/Debug/ScaleCloudKit.doccarchive \
             --output-path ./docs \
-            --hosting-base-path /NextcloudKit
+            --hosting-base-path /ScaleCloudKit
       - name: Create root redirect
         run: |
           cat > ./docs/index.html << 'EOF'
@@ -39,12 +39,12 @@ jobs:
           <html>
           <head>
             <meta charset="utf-8">
-            <title>NextcloudKit Documentation</title>
+            <title>ScaleCloudKit Documentation</title>
             <meta http-equiv="refresh" content="0; url=./documentation/nextcloudkit/">
             <link rel="canonical" href="./documentation/nextcloudkit/">
           </head>
           <body>
-            <p>Redirecting to <a href="./documentation/nextcloudkit/">NextcloudKit Documentation</a>...</p>
+            <p>Redirecting to <a href="./documentation/nextcloudkit/">ScaleCloudKit Documentation</a>...</p>
             <script>
               window.location.href = "./documentation/nextcloudkit/";
             </script>

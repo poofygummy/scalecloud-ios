@@ -5,7 +5,7 @@
 import Foundation
 import Alamofire
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     private var systemTagsPath: String { "/remote.php/dav/systemtags/" }
     private var systemTagRelationsFilesPath: String { "/remote.php/dav/systemtags-relations/files/" }
 

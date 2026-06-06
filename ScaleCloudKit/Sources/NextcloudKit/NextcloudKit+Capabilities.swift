@@ -14,7 +14,7 @@ import Alamofire
 //  The capabilities endpoint returns server and feature flags, which are parsed,
 //  cached, and made accessible for feature checks throughout the app.
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
 
     ///
     /// Retrieves the capabilities of the Nextcloud server for the given account.

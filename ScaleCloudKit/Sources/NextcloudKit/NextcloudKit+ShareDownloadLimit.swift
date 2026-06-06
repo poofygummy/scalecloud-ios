@@ -6,7 +6,7 @@ import Alamofire
 import Foundation
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     private func makeEndpoint(with token: String) -> String {
         "ocs/v2.php/apps/files_downloadlimit/api/v1/\(token)/limit"
     }

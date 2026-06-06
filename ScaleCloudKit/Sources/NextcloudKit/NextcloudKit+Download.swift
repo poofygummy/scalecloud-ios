@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// Downloads a remote file and stores it at a local path for the specified Nextcloud account.
     /// It provides detailed progress, headers, and metadata such as ETag, last modified date, and content length.
     ///

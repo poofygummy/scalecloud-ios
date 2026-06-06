@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     // MARK: - App Password / Onetime
 
     /// Retrieves an app password (token) for the given user credentials and server URL.

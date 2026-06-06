@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import XCTest
-@testable import NextcloudKit
+@testable import ScaleCloudKit
 
 class BaseIntegrationXCTestCase: BaseXCTestCase {
     internal var randomInt: Int {

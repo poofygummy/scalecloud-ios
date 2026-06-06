@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Testing
-@testable import NextcloudKit
+@testable import ScaleCloudKit
 
 /// Behavior:
 /// - For Nextcloud 32 and newer, WCF enforcement depends on the `windowsCompatibleFilenamesEnabled` flag

@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
 
 
     /// Performs a unified search using multiple providers and returns results asynchronously.

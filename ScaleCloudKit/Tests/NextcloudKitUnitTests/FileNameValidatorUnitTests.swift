@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Testing
-@testable import NextcloudKit
+@testable import ScaleCloudKit
 
 @Suite(.serialized)
 struct FileNameValidatorUnitTests {

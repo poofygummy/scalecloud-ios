@@ -6,7 +6,7 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 
-public extension NextcloudKit {
+public extension ScaleCloudKit {
     /// - Parameters:
     ///   - account: The account to query.
     ///   - options: Optional request options (defaults to standard).
