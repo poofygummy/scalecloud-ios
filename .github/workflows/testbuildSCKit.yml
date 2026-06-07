@@ -30,26 +30,25 @@ jobs:
           xcrun ruby -i -pe '$_.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/, "IPHONEOS_DEPLOYMENT_TARGET = 14.0;\n\t\t\t\tFRAMEWORK_SEARCH_PATHS = \"$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt/**\";\n")' \
             ScaleCloudKit.xcodeproj/project.pbxproj
 
-      - name: Build
+      - name: Build and extract framework
         run: |
           cd ScaleCloudKit
-          xcodebuild archive \
+          mkdir -p prebuilt
+          xcodebuild build \
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/Kit.xcarchive"
-
-      - name: Extract framework from archive
-        run: |
-          mkdir -p ScaleCloudKit/prebuilt
-          # Framework is in IntermediateBuildFilesPath/UninstalledProducts for framework archives
-          FW=$(find ScaleCloudKit/build/Kit.xcarchive -type d -name "ScaleCloudKit.framework" -path "*/UninstalledProducts/*" | head -1)
+            -derivedDataPath build \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+          
+          # Copy framework from build products
+          FW=$(find build/Build/Products -type d -name "ScaleCloudKit.framework" | head -1)
           if [ -z "$FW" ]; then
-            echo "ERROR: ScaleCloudKit.framework not found. Checking archive structure:"
-            ls -R ScaleCloudKit/build/Kit.xcarchive/ | head -50
+            echo "ERROR: ScaleCloudKit.framework not found in build products"
+            find build -name "*.framework" -o -name "*.a"
             exit 1
           fi
           echo "Found framework at: $FW"
-          cp -R "$FW" ScaleCloudKit/prebuilt/
+          cp -R "$FW" prebuilt/
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
