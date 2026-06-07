@@ -14,6 +14,8 @@
 # with upstream without mass-renaming imports in the App layer.
 
 name: ScaleCloudKit
+options:
+  xcodeVersion: "15.4"
 packages:
   Alamofire:
     url: https://github.com/Alamofire/Alamofire.git
