@@ -80,6 +80,8 @@ jobs:
         if: inputs.layer == 'kit'
         run: |
           echo "Using prebuilt ScaleCloudGo from ScaleCloudGo/prebuilt/"
+          # Remove existing prebuilt so we actually build it fresh
+          rm -rf ScaleCloudKit/prebuilt
           tuist install
           tuist generate ScaleCloudKit
           cd ScaleCloudKit
@@ -98,6 +100,8 @@ jobs:
         if: inputs.layer == 'app'
         run: |
           echo "Using prebuilt dependencies from ScaleCloudGo/prebuilt/ and ScaleCloudKit/prebuilt/"
+          # Remove existing prebuilt so we actually build it fresh
+          rm -rf ScaleCloudApp/prebuilt
           tuist install
           tuist generate ScaleCloudApp
           cd ScaleCloudApp
@@ -116,6 +120,8 @@ jobs:
         if: inputs.layer == 'wrap'
         run: |
           echo "Using all prebuilt dependencies from their respective directories"
+          # Remove existing prebuilt so we actually build it fresh
+          rm -rf ScaleCloudWrap/prebuilt
           tuist install
           tuist generate ScaleCloudWrap
           cd ScaleCloudWrap
