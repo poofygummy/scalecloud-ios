@@ -80,7 +80,6 @@ jobs:
         if: inputs.layer == 'kit'
         run: |
           echo "Using prebuilt ScaleCloudGo from ScaleCloudGo/prebuilt/"
-          tuist install
           tuist generate ScaleCloudKit
           cd ScaleCloudKit
           xcodebuild build \
@@ -98,7 +97,6 @@ jobs:
         if: inputs.layer == 'app'
         run: |
           echo "Using prebuilt dependencies from ScaleCloudGo/prebuilt/ and ScaleCloudKit/prebuilt/"
-          tuist install
           tuist generate ScaleCloudApp
           cd ScaleCloudApp
           xcodebuild build \
@@ -116,7 +114,6 @@ jobs:
         if: inputs.layer == 'wrap'
         run: |
           echo "Using all prebuilt dependencies from their respective directories"
-          tuist install
           tuist generate ScaleCloudWrap
           cd ScaleCloudWrap
           xcodebuild build \
