@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "ScaleCloud",
+    name: "ScaleCloudKit",
     platforms: [
         .iOS(.v14)
     ],

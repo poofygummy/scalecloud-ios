@@ -1,4 +1,4 @@
-name: Build ScaleCloud
+name: Build Selected Layer (Standalone)
 
 on:
   workflow_dispatch:
@@ -16,58 +16,144 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-14
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: Setup Go environment (only for go layer)
+        if: inputs.layer == 'go'
         uses: actions/setup-go@v5
         with:
           go-version: '1.26'
-          cache-dependency-path: ScaleCloudGo/go.sum
+          cache-dependency-path: 'ScaleCloudGo/go.sum'
 
-      - name: Install Tuist via mise
-        uses: jdx/mise-action@v2
-
-      - name: Install Go Tools and tuist
-        run: | 
+      - name: Install gomobile (only for go layer)
+        if: inputs.layer == 'go'
+        run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          export PATH="$PATH:$(go env GOPATH)/bin"
+          go install golang.org/x/mobile/cmd/gobind@latest
           gomobile init
 
-      - name: Generate Workspace
-        run: |
-          tuist install
-          tuist generate
+      - name: Set Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      - name: Determine scheme
-        id: scheme
+      - name: Install Tuist
         run: |
-          case "${{ inputs.layer }}" in
-            go)    echo "scheme=ScaleCloudGo" >> $GITHUB_OUTPUT ;;
-            kit)   echo "scheme=ScaleCloudKit" >> $GITHUB_OUTPUT ;;
-            app)   echo "scheme=ScaleCloudApp" >> $GITHUB_OUTPUT ;;
-            wrap)  echo "scheme=ScaleCloudWrap" >> $GITHUB_OUTPUT ;;
-          esac
+          curl -Ls https://install.tuist.io | bash
 
-      - name: Build
+      - name: Verify prebuilt dependencies exist
         run: |
-          xcodebuild build \
-            -workspace ScaleCloud.xcworkspace \
-            -scheme "${{ steps.scheme.outputs.scheme }}" \
+          echo "Checking for prebuilt dependencies..."
+          if [ "${{ inputs.layer }}" == "kit" ]; then
+            if [ ! -d "ScaleCloudGo/prebuilt" ]; then
+              echo "ERROR: ScaleCloudGo/prebuilt not found!"
+              echo "Please build and commit ScaleCloudGo first."
+              exit 1
+            fi
+            echo "✓ Found prebuilt ScaleCloudGo"
+          elif [ "${{ inputs.layer }}" == "app" ]; then
+            if [ ! -d "ScaleCloudGo/prebuilt" ] || [ ! -d "ScaleCloudKit/prebuilt" ]; then
+              echo "ERROR: prebuilt dependencies not found!"
+              echo "Please build and commit ScaleCloudGo and ScaleCloudKit first."
+              exit 1
+            fi
+            echo "✓ Found prebuilt ScaleCloudGo and ScaleCloudKit"
+          elif [ "${{ inputs.layer }}" == "wrap" ]; then
+            if [ ! -d "ScaleCloudGo/prebuilt" ] || [ ! -d "ScaleCloudKit/prebuilt" ] || [ ! -d "ScaleCloudApp/prebuilt" ]; then
+              echo "ERROR: prebuilt dependencies not found!"
+              echo "Please build and commit all lower layers first."
+              exit 1
+            fi
+            echo "✓ Found all prebuilt dependencies"
+          fi
+
+      - name: Build ScaleCloudGo
+        if: inputs.layer == 'go'
+        working-directory: ScaleCloudGo
+        run: |
+          echo "Building ScaleCloudGo framework..."
+          mkdir -p prebuilt
+          gomobile bind -target=ios -o prebuilt/ScaleCloudGo.xcframework .
+
+      - name: Build ScaleCloudKit
+        if: inputs.layer == 'kit'
+        run: |
+          echo "Using prebuilt ScaleCloudGo from ScaleCloudGo/prebuilt/"
+          tuist generate ScaleCloudKit
+          cd ScaleCloudKit
+          xcodebuild archive \
+            -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath .build \
-            -configuration Release \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=NO
+            -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
+          echo "Copying build output to ScaleCloudKit/prebuilt/"
+          mkdir -p prebuilt
+          cp -R build/ScaleCloudKit.xcarchive prebuilt/
 
-      - name: Upload artifact
+      - name: Build ScaleCloudApp
+        if: inputs.layer == 'app'
+        run: |
+          echo "Using prebuilt dependencies from ScaleCloudGo/prebuilt/ and ScaleCloudKit/prebuilt/"
+          tuist generate ScaleCloudApp
+          cd ScaleCloudApp
+          xcodebuild archive \
+            -scheme ScaleCloudApp \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/ScaleCloudApp.xcarchive"
+          echo "Copying build output to ScaleCloudApp/prebuilt/"
+          mkdir -p prebuilt
+          cp -R build/ScaleCloudApp.xcarchive prebuilt/
+
+      - name: Build ScaleCloudWrap
+        if: inputs.layer == 'wrap'
+        run: |
+          echo "Using all prebuilt dependencies from their respective directories"
+          tuist generate ScaleCloudWrap
+          cd ScaleCloudWrap
+          xcodebuild archive \
+            -scheme ScaleCloudWrap \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/ScaleCloudWrap.xcarchive"
+          echo "Copying build output to ScaleCloudWrap/prebuilt/"
+          mkdir -p prebuilt
+          cp -R build/ScaleCloudWrap.xcarchive prebuilt/
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.scheme.outputs.scheme }}-binaries
-          path: .build/Build/Products/Release-iphoneos/*.framework
-          if-no-files-found: error
-          retention-days: 1
-          
+          name: ${{ inputs.layer }}-build
+          path: |
+            ScaleCloudGo/prebuilt/
+            ScaleCloudKit/prebuilt/
+            ScaleCloudApp/prebuilt/
+            ScaleCloudWrap/prebuilt/
+          retention-days: 7
+
+      - name: Display commit instructions
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "Build completed for layer: ${{ inputs.layer }}"
+          echo "=========================================="
+          echo ""
+          echo "To commit this prebuilt artifact:"
+          echo "1. Download the '${{ inputs.layer }}-build' artifact from GitHub Actions"
+          echo "2. Extract it to your local repo root"
+          if [ "${{ inputs.layer }}" == "go" ]; then
+            echo "3. The prebuilt files will be in: ScaleCloudGo/prebuilt/"
+          elif [ "${{ inputs.layer }}" == "kit" ]; then
+            echo "3. The prebuilt files will be in: ScaleCloudKit/prebuilt/"
+          elif [ "${{ inputs.layer }}" == "app" ]; then
+            echo "3. The prebuilt files will be in: ScaleCloudApp/prebuilt/"
+          else
+            echo "3. The prebuilt files will be in: ScaleCloudWrap/prebuilt/"
+          fi
+          echo "4. git add ScaleCloud*/prebuilt/"
+          echo "5. git commit -m 'Update prebuilt ${{ inputs.layer }} layer'"
+          echo "6. git push"
+          echo ""
+          echo "Once committed, you can build the next layer up."
+          echo ""

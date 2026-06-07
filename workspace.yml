@@ -1,6 +1,0 @@
-name: ScaleCloud
-projects:
-  - ScaleCloudWrap/project.yml
-  - ScaleCloudApp/project.yml
-  - ScaleCloudKit/project.yml
-  - ScaleCloudGo/project.yml
