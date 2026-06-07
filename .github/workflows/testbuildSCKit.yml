@@ -41,11 +41,11 @@ jobs:
       - name: Extract framework to prebuilt/
         run: |
           mkdir -p ScaleCloudKit/prebuilt
-          echo "Looking for NextcloudKit.framework in archive:"
+          echo "Looking for ScaleCloudKit.framework in archive:"
           find ScaleCloudKit/build/Kit.xcarchive -type d -name '*.framework'
-          FW=$(find ScaleCloudKit/build/Kit.xcarchive -type d -name 'NextcloudKit.framework' | head -1)
+          FW=$(find ScaleCloudKit/build/Kit.xcarchive -type d -name 'ScaleCloudKit.framework' | head -1)
           if [ -z "$FW" ]; then
-            echo "ERROR: NextcloudKit.framework not found in archive"
+            echo "ERROR: ScaleCloudKit.framework not found in archive"
             exit 1
           fi
           echo "Copying $FW to ScaleCloudKit/prebuilt/"
