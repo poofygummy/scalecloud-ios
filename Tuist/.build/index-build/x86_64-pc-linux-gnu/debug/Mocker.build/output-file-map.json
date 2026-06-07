@@ -1,0 +1,41 @@
+{
+  "": {
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/master.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/Tuist/.build/index-build/checkouts/Mocker/Sources/Mocker/Mock+DataType.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock+DataType.d",
+    "object": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock+DataType.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock+DataType~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock+DataType.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/Tuist/.build/index-build/checkouts/Mocker/Sources/Mocker/Mock.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock.d",
+    "object": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mock.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/Tuist/.build/index-build/checkouts/Mocker/Sources/Mocker/Mocker.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mocker.d",
+    "object": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mocker.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mocker~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/Mocker.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/Tuist/.build/index-build/checkouts/Mocker/Sources/Mocker/MockingURLProtocol.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/MockingURLProtocol.d",
+    "object": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/MockingURLProtocol.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/MockingURLProtocol~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/MockingURLProtocol.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/Tuist/.build/index-build/checkouts/Mocker/Sources/Mocker/OnRequestHandler.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/OnRequestHandler.d",
+    "object": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/OnRequestHandler.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/OnRequestHandler~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/OnRequestHandler.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/Tuist/.build/index-build/checkouts/Mocker/Sources/Mocker/XCTest+Mocker.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/XCTest+Mocker.d",
+    "object": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/XCTest+Mocker.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/XCTest+Mocker~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/Tuist/.build/index-build/x86_64-pc-linux-gnu/debug/Mocker.build/XCTest+Mocker.swiftdeps"
+  }
+}

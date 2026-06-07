@@ -41,33 +41,6 @@ jobs:
       - name: Install Tuist via mise
         uses: jdx/mise-action@v2
 
-      - name: Configure workspace for selected layer
-        run: |
-          # Temporarily modify Workspace.swift to only include projects up to the selected layer
-          case "${{ inputs.layer }}" in
-            go)
-              cat > Workspace.swift << 'EOF'
-import ProjectDescription
-let workspace = Workspace(name: "ScaleCloud", projects: ["ScaleCloudGo"])
-EOF
-              ;;
-            kit)
-              cat > Workspace.swift << 'EOF'
-import ProjectDescription
-let workspace = Workspace(name: "ScaleCloud", projects: ["ScaleCloudGo", "ScaleCloudKit"])
-EOF
-              ;;
-            app)
-              cat > Workspace.swift << 'EOF'
-import ProjectDescription
-let workspace = Workspace(name: "ScaleCloud", projects: ["ScaleCloudGo", "ScaleCloudKit", "ScaleCloudApp"])
-EOF
-              ;;
-            wrap)
-              # Use all projects for wrap
-              ;;
-          esac
-
       - name: Verify prebuilt dependencies exist
         run: |
           echo "Checking for prebuilt dependencies..."

@@ -1,0 +1,81 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "alamofire",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/Alamofire/Alamofire",
+          "name" : "Alamofire"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "7595cbcf59809f9977c5f6378500de2ad73b7ddb",
+            "version" : "5.12.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Alamofire"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "mocker",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/WeTransfer/Mocker.git",
+          "name" : "Mocker"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "95fa785c751f6bc40c49e112d433c3acf8417a97",
+            "version" : "3.0.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Mocker"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swiftyjson",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/SwiftyJSON/SwiftyJSON",
+          "name" : "SwiftyJSON"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "af76cf3ef710b6ca5f8c05f3a31307d44a3c5828",
+            "version" : "5.0.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "SwiftyJSON"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swiftyxmlparser",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/yahoojapan/SwiftyXMLParser",
+          "name" : "SwiftyXMLParser"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "d7a1d23f04c86c1cd2e8f19247dd15d74e0ea8be",
+            "version" : "5.6.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "SwiftyXMLParser"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}
