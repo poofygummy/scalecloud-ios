@@ -1,0 +1,4 @@
+framework module ScaleCloudKit {
+  header "ScaleCloudKit-Swift.h"
+  requires objc
+}
