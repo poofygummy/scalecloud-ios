@@ -1,0 +1,15 @@
+# Tuist build artifacts
+Tuist/.build/
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+.build/
+DerivedData/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
