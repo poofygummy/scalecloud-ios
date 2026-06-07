@@ -15,7 +15,7 @@ let project = Project(
             deploymentTargets: .iOS("14.0"),
             sources: ["Sources/**"],
             dependencies: [
-                .xcframework(path: "../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework"),
+                .project(target: "ScaleCloudGo", path: "../ScaleCloudGo"),
                 .external(name: "Alamofire"),
                 .external(name: "SwiftyJSON"),
                 .external(name: "SwiftyXMLParser")
