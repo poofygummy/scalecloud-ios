@@ -1,0 +1,48 @@
+name: Build ScaleCloudGo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+    
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: 'ScaleCloudGo/go.sum'
+
+      - name: Provision tools
+        run: |
+          brew install xcodegen
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          gomobile init
+
+      - name: Set Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+
+      - name: Build ScaleCloudGo
+        working-directory: ScaleCloudGo
+        run: |
+          xcodegen generate
+          xcodebuild archive \
+            -scheme ScaleCloudGo \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/ScaleCloudGo.xcarchive"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudGo-xcarchive
+          path: ScaleCloudGo/build/ScaleCloudGo.xcarchive
+          retention-days: 1
+

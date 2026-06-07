@@ -2,6 +2,12 @@ name: Build ScaleCloudGo
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_prebuilt:
+        description: 'Publish a clean prebuilt artifact (ScaleCloudGo-prebuilt) for Kit/App downstream layers'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   build:
@@ -39,10 +45,43 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath "$PWD/build/ScaleCloudGo.xcarchive"
 
-      - name: Upload artifact
+      - name: Upload xcarchive artifact
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudGo-xcarchive
           path: ScaleCloudGo/build/ScaleCloudGo.xcarchive
+          retention-days: 1
+
+      # This step materializes a layout-identical tree that a downstream job can download
+      # into its ScaleCloudGo/prebuilt/ (or ScaleCloudKit/../ScaleCloudGo/prebuilt/) and
+      # satisfy both xcodegen projectReferences and any go-build-phase prebuilt guards.
+      - name: Stage prebuilt tree for downstream layers
+        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+        run: |
+          mkdir -p ScaleCloudGo/prebuilt
+          # Extract the gomobile-produced framework(s) from the archive payload into the
+          # conventional prebuilt layout expected by ScaleCloudKit (and documented in prebuilt/README.md).
+          # gomobile bind for a single-arch target produces a .framework; xcodebuild archive nests it.
+          # We copy the best candidate so the resulting artifact, when unpacked, lands at:
+          #   ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework  (or .framework) identically to git checkouts.
+          ARCH_ROOT="ScaleCloudGo/build/ScaleCloudGo.xcarchive"
+          CANDIDATE=$(find "$ARCH_ROOT" -type d \( -name 'ScaleCloudGo.framework' -o -name 'ScaleCloudGo.xcframework' \) 2>/dev/null | head -1 || true)
+          if [ -n "$CANDIDATE" ]; then
+            DST="ScaleCloudGo/prebuilt/$(basename "$CANDIDATE")"
+            rm -rf "$DST"
+            cp -a "$CANDIDATE" "$DST"
+            echo "Staged prebuilt from archive: $CANDIDATE -> $DST"
+            ls -lR "$DST" | head -20
+          else
+            echo "No ScaleCloudGo framework found in archive; falling back to any built Products dir"
+            find ScaleCloudGo/build -type d -name 'ScaleCloudGo*' -print | head -10
+          fi
+
+      - name: Upload prebuilt artifact (for individual Kit/App builds)
+        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudGo-prebuilt
+          path: ScaleCloudGo/prebuilt/
           retention-days: 1
 

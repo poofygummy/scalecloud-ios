@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# ScaleCloudWrap xcodegen spec (historical shape, kept for completeness).
+# Future wrapper layer that would consume the App output.
+
+name: ScaleCloudWrap
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+targets:
+  Wrapper:
+    type: application
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources
+    dependencies:
+      - target: ScaleCloudApp
+projectReferences:
+  ScaleCloudApp:
+    path: ../ScaleCloudApp/ScaleCloudApp.xcodeproj

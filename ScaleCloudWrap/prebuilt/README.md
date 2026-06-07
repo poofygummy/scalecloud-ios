@@ -1,49 +1,30 @@
-# ScaleCloudWrap Prebuilt Archive
+# ScaleCloudWrap Prebuilt
 
-This directory contains the precompiled ScaleCloudWrap.xcarchive.
+Top (optional) distribution / embedding wrapper layer. It can take a fully-built App (ScaleCloudApp) artifact as its input.
 
-## Contents
+## CI independent usage
 
-```
-ScaleCloudWrap.xcarchive/
-├── Info.plist
-├── Products/
-└── dSYMs/
-```
+Workflow: **Build ScaleCloudWrap** (testbuildSCWrap.yml)
 
-## How to Build
+Optional inputs:
+- `app_run_id`: run ID of a previous "Build ScaleCloudApp" that published `ScaleCloudApp-prebuilt`. The Wrap job will fetch it and stage under `ScaleCloudApp/prebuilt/`.
+- With an App artifact present the workflow can avoid regenerating Go, Kit, and the entire iOSClient/ tree.
 
-**Prerequisites**: All lower layers must have prebuilt artifacts:
-- `ScaleCloudGo/prebuilt/`
-- `ScaleCloudKit/prebuilt/`
-- `ScaleCloudApp/prebuilt/`
+## Expected handoff layout
 
-Run the GitHub Actions workflow:
-- Workflow: `testbuild.yml`
-- Layer: `wrap`
+After a download-artifact + materialize step (or a manual copy), the tree should contain whatever the Wrap target embeds — typically an .app bundle or xcarchive Products tree from the App layer.
 
-Or build locally:
-```bash
-tuist generate ScaleCloudWrap
-cd ScaleCloudWrap
-xcodebuild archive \
-  -scheme ScaleCloudWrap \
-  -destination 'generic/platform=iOS' \
-  -archivePath "$PWD/prebuilt/ScaleCloudWrap.xcarchive"
-```
+**There is no supported local build for this layer.**
 
-## Dependencies
+Wrap exists to take a fully-built App artifact (produced by the App workflow) as its input. The only place the Wrap target is generated and archived is inside the official **Build ScaleCloudWrap** GitHub Actions workflow (`testbuildSCWrap.yml`).
 
-- Requires: `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework`
-- Requires: `ScaleCloudKit/prebuilt/ScaleCloudKit.xcarchive`
-- Requires: `ScaleCloudApp/prebuilt/ScaleCloudApp.xcarchive`
+You materialize an App prebuilt (by supplying an `app_run_id` to the Wrap dispatch, or by manually unpacking a prior `ScaleCloudApp-prebuilt` artifact under `ScaleCloudApp/prebuilt/`) and then dispatch Wrap.
 
-## Used By
+The small `ScaleCloudWrap/project.yml` is only ever interpreted inside that GitHub job.
 
-This is the top layer - nothing depends on it.
+## When to rebuild
 
-## When to Rebuild
+- After any change in Wrap sources, or
+- When shipping a new App (or any lower layer that affects the embedded payload).
 
-Rebuild when you modify:
-- Any source files in `ScaleCloudWrap/`
-- Or when any lower layer is rebuilt
+Nothing upstream of this layer exists in the Nextcloud ecosystem; this is a pure ScaleCloud packaging detail.

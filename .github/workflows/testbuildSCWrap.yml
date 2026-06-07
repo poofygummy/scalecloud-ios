@@ -2,6 +2,16 @@ name: Build ScaleCloudWrap
 
 on:
   workflow_dispatch:
+    inputs:
+      app_run_id:
+        description: 'GitHub run-id of a prior "Build ScaleCloudApp" workflow that published ScaleCloudApp-prebuilt (or the xcarchive). Leave empty to rebuild the full App layer.'
+        required: false
+        type: string
+      publish_prebuilt:
+        description: 'Publish final Wrap artifact'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   build:
@@ -14,7 +24,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # --- Optional individual-layer handoff ---
+      # If an app_run_id is supplied we download the App-layer artifact (prebuilt or xcarchive)
+      # and stage it under ScaleCloudApp/prebuilt (or a Wrap-local staging area). The Wrap
+      # layer can then embed or reference the already-built App output without re-running
+      # sources that belong to the (large) transplanted iOSClient+Brand surface or any of
+      # the lower layers.
+      - name: Download and materialize ScaleCloudApp prebuilt from prior run
+        if: ${{ github.event.inputs.app_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.inputs.app_run_id }}
+          name: ScaleCloudApp-prebuilt
+          path: ScaleCloudApp/prebuilt-download
+      - name: Place downloaded App artifact for Wrap consumption
+        if: ${{ github.event.inputs.app_run_id != '' }}
+        run: |
+          mkdir -p ScaleCloudApp/prebuilt
+          rsync -a ScaleCloudApp/prebuilt-download/ ScaleCloudApp/prebuilt/ || cp -a ScaleCloudApp/prebuilt-download/. ScaleCloudApp/prebuilt/
+          ls -lR ScaleCloudApp/prebuilt/ | head -20
+          echo "ScaleCloudApp artifact materialized for Wrap from run ${{ github.event.inputs.app_run_id }}"
+
       - name: Set up Go
+        if: ${{ github.event.inputs.app_run_id == '' }}
         uses: actions/setup-go@v5
         with:
           go-version: '1.26'
@@ -23,23 +55,29 @@ jobs:
       - name: Provision tools
         run: |
           brew install xcodegen
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          go install golang.org/x/mobile/cmd/gobind@latest
-          gomobile init
+          if [ "${{ github.event.inputs.app_run_id }}" = "" ]; then
+            go install golang.org/x/mobile/cmd/gomobile@latest
+            go install golang.org/x/mobile/cmd/gobind@latest
+            gomobile init
+          fi
 
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      # Generate full chain bottom-up (project refs + workspace will resolve deps)
+      # Generate full chain bottom-up (project refs + workspace will resolve deps).
+      # When the App prebuilt was supplied these are cheap or skipped.
       - name: Generate ScaleCloudGo project
+        if: ${{ github.event.inputs.app_run_id == '' }}
         working-directory: ScaleCloudGo
         run: xcodegen generate
 
       - name: Generate ScaleCloudKit project
+        if: ${{ github.event.inputs.app_run_id == '' }}
         working-directory: ScaleCloudKit
         run: xcodegen generate
 
       - name: Generate ScaleCloudApp project
+        if: ${{ github.event.inputs.app_run_id == '' }}
         working-directory: ScaleCloudApp
         run: xcodegen generate
 
@@ -60,5 +98,13 @@ jobs:
         with:
           name: ScaleCloudWrap-xcarchive
           path: ScaleCloudWrap/build/ScaleCloudWrap.xcarchive
+          retention-days: 1
+
+      - name: Upload Wrap prebuilt/final artifact
+        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudWrap-prebuilt
+          path: ScaleCloudWrap/build/
           retention-days: 1
           

@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# ScaleCloudKit xcodegen spec (restored/adapted).
+# External package pins are taken from upstream nextcloud/NextcloudKit Package.swift
+# (read-only reference clone) to keep the declaration surface maximally compatible
+# with the upstream NextcloudKit contract. The actual sources under ScaleCloudKit/Sources
+# contain the ScaleCloud fork (proxy integration etc.).
+#
+# IMPORTANT FOR PREBUILT HANDOFF: the PRODUCT_NAME and PRODUCT_MODULE_NAME are forced
+# to 'NextcloudKit' so that the archived framework directory is NextcloudKit.framework
+# and the Swift module seen by importers (including the transplanted upstream sources
+# in iOSClient/ and Brand/) remains "NextcloudKit".  This preserves source compatibility
+# with upstream without mass-renaming imports in the App layer.
+
+name: ScaleCloudKit
+packages:
+  Alamofire:
+    url: https://github.com/Alamofire/Alamofire.git
+    from: 5.10.2
+  SwiftyJSON:
+    url: https://github.com/SwiftyJSON/SwiftyJSON.git
+    from: 5.0.2
+  SwiftyXMLParser:
+    url: https://github.com/yahoojapan/SwiftyXMLParser.git
+    from: 5.6.0
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+targets:
+  ScaleCloudKit:
+    type: framework
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources
+    settings:
+      base:
+        DEFINES_MODULE: "YES"
+        PRODUCT_NAME: NextcloudKit
+        PRODUCT_MODULE_NAME: NextcloudKit
+    dependencies:
+      - target: ScaleCloudGo/ScaleCloudGo
+      - package: Alamofire
+      - package: SwiftyJSON
+      - package: SwiftyXMLParser
+projectReferences:
+  ScaleCloudGo:
+    path: ../ScaleCloudGo/ScaleCloudGo.xcodeproj

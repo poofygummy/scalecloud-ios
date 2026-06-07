@@ -384,26 +384,18 @@ private func isTailscaleAddress(_ urlString: String) -> Bool {
 
 **Reason**: Allows customization of NextcloudKit fork for proxy integration.
 
-### Tuist Project Management
+### Project Management (Historical note)
 
-The project uses Tuist for workspace generation with a 4-layer structure:
+An earlier iteration of the tree used Tuist (`Project.swift` + `Workspace.swift`) for workspace generation. That generator surface, the associated aggregator workflows, and the `Project.swift` files themselves have been archived under `tuistbackup/` for rollback and archaeology.
 
-```
-ScaleCloudGo (Go framework)
-    ↓
-ScaleCloudKit (Swift framework - NextcloudKit fork)
-    ↓
-ScaleCloudApp (iOS app)
-    ↓
-ScaleCloudWrap (future wrapper layer)
-```
+The active build discipline (see `BUILD_WORKFLOW.md`) is:
+- Four thin per-layer GitHub workflows only (`testbuildSCGo.yml`, `testbuildSCKit.yml`, `testbuildSCApp.yml`, `testbuildSCWrap.yml`).
+- The authoritative description of the App layer is the narrow-edit copy of the upstream `nextcloud/ios` `Nextcloud.xcodeproj` under `ScaleCloudApp/ScaleCloudApp.xcodeproj/`.
+- Go and Kit layers continue to have lightweight `project.yml` files used exclusively inside their GitHub jobs.
+- All generation (`xcodegen`, `gomobile`, `xcodebuild`) happens only on GitHub-hosted runners as part of one of the four canonical `workflow_dispatch` jobs.
+- Higher layers consume lower-layer outputs by receiving a prior run id (the job does `actions/download-artifact` + materializes the tree under `<layer>/prebuilt/`) or by checking out a committed prebuilt tree.
 
-Each layer has:
-- `Project.swift` - Tuist project definition
-- `prebuilt/` - Directory for precompiled artifacts
-- Post-build scripts that use prebuilt dependencies when available
-
-See `BUILD_WORKFLOW.md` for CI/CD setup.
+`BUILD_WORKFLOW.md` is the current source of truth for dispatch, artifact handoff, and credit-saving independent layer builds. The Golden Rule ("we only execute any build steps as GitHub workflows, ever") governs all tooling.
 
 ## Key Design Decisions
 
