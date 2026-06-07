@@ -2,196 +2,51 @@ name: Build ScaleCloudKit
 
 on:
   workflow_dispatch:
-    inputs:
-      publish_prebuilt:
-        description: 'Publish a clean prebuilt artifact (ScaleCloudKit-prebuilt) for App/Wrap downstream layers'
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   build:
     runs-on: macos-14
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Verify ScaleCloudGo prebuilt is present (human must have downloaded the artifact and placed it under ScaleCloudGo/prebuilt/)
+      - name: Check Go prebuilt exists
         run: |
-          if [ ! -d "ScaleCloudGo/prebuilt" ] || [ -z "$(ls -A ScaleCloudGo/prebuilt 2>/dev/null || true)" ]; then
-            echo "ERROR: ScaleCloudGo/prebuilt/ is empty or missing."
-            echo "You must download the 'ScaleCloudGo-prebuilt' artifact from a prior successful 'Build ScaleCloudGo' run,"
-            echo "and unpack it so that ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework (or .framework) exists in the tree before dispatching this Kit build."
-            echo "This is pure data movement — the workflow never cross-downloads artifacts from other runs."
+          if [ ! -d "ScaleCloudGo/prebuilt" ]; then
+            echo "ERROR: ScaleCloudGo/prebuilt/ missing. Download ScaleCloudGo-prebuilt artifact first."
             exit 1
           fi
-          echo "✓ Found ScaleCloudGo prebuilt in tree (will be wired as a direct framework reference + search path; no Go projectReference, no Go target, no gomobile will be used for this Kit build)"
 
-      - name: Provision tools (xcodegen only — no Go or gomobile needed when prebuilt is supplied)
+      - name: Generate Xcode project with xcodegen
         run: |
           brew install xcodegen
+          cd ScaleCloudKit
+          # Modify project.yml to link prebuilt Go instead of source Go
+          sed '/target: ScaleCloudGo/d' project.yml > /tmp/kit.yml
+          sed -i.bak '/projectReferences:/,/path: ..\ScaleCloudGo/d' /tmp/kit.yml
+          xcodegen generate --spec /tmp/kit.yml
+          
+          # Add Go prebuilt as framework search path
+          xcrun ruby -i -pe '$_.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/, "IPHONEOS_DEPLOYMENT_TARGET = 14.0;\n\t\t\t\tFRAMEWORK_SEARCH_PATHS = \"$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt/**\";\n")' \
+            ScaleCloudKit.xcodeproj/project.pbxproj
 
-      - name: Set Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
-
-      # The human has placed a prebuilt Go framework (or xcframework) under ScaleCloudGo/prebuilt/.
-      # We must make the generated ScaleCloudKit project consume that prebuilt *as a framework reference*
-      # (exactly like the adapted ScaleCloudApp.xcodeproj consumes the prebuilt ScaleCloudKit.framework).
-      #
-      # The project.yml still declares:
-      #   dependencies:
-      #     - target: ScaleCloudGo/ScaleCloudGo
-      #   projectReferences:
-      #     ScaleCloudGo: { path: ../ScaleCloudGo/ScaleCloudGo.xcodeproj }
-      #
-      # If we leave those, xcodebuild schedules the Go target (which would want gomobile) or the
-      # Kit Swift compiler emits "no such module 'ScaleCloudGo'" because the module is expected
-      # to come from that source target in the graph (see the exact failure the user pasted).
-      #
-      # So we:
-      # - generate from a temp spec that has the Go dep + projectReferences block removed,
-      # - inject a direct PBXFileReference + PBXBuildFile to the on-disk prebuilt the human placed,
-      # - splice it into Frameworks phase,
-      # - add FRAMEWORK_SEARCH_PATHS so `import ScaleCloudGo` resolves from the binary,
-      # - hard-assert the final pbxproj contains zero occurrences of "ScaleCloudGo.xcodeproj".
-      - name: Generate a temporary project spec with the Go target dependency and projectReference removed (prebuilt-Go path)
+      - name: Build
         run: |
-          python3 - << 'PY'
-          import re, pathlib
-          txt = pathlib.Path("ScaleCloudKit/project.yml").read_text()
-          txt = re.sub(r'^\s*-\s*target:\s*ScaleCloudGo/.*$', '', txt, flags=re.MULTILINE)
-          txt = re.sub(r'^projectReferences:\s*\n(\s+ScaleCloudGo:.*\n)+', '', txt, flags=re.MULTILINE)
-          txt = re.sub(r'\n{3,}', '\n\n', txt)
-          pathlib.Path("/tmp/ScaleCloudKit-prebuilt-go.yml").write_text(txt)
-          print("Wrote temp spec with Go references stripped:")
-          print(pathlib.Path("/tmp/ScaleCloudKit-prebuilt-go.yml").read_text())
-          PY
-
-      - name: Generate ScaleCloudKit project from the stripped spec (this guarantees no Go xcodeproj reference can exist)
-        run: xcodegen generate --spec /tmp/ScaleCloudKit-prebuilt-go.yml
-
-      - name: Guard - the generated project must contain absolutely zero references to ScaleCloudGo.xcodeproj
-        run: |
-          if grep -q 'ScaleCloudGo\.xcodeproj' ScaleCloudKit/ScaleCloudKit.xcodeproj/project.pbxproj; then
-            echo "FATAL: 'ScaleCloudGo.xcodeproj' still present after generation from the stripped spec."
-            echo "This is exactly what produces 'no such module ScaleCloudGo' or pulls the Go target into the build graph."
-            exit 1
-          fi
-          echo "Good: generated ScaleCloudKit.xcodeproj has zero references to the Go xcodeproj (prebuilt path)"
-
-      - name: Locate the Go prebuilt that the human placed and inject it as a direct classic framework reference + search path
-        run: |
-          set -euo pipefail
-          BASE="ScaleCloudGo/prebuilt"
-
-          # Prefer the device (ios-arm64) slice that the Go workflow produces inside the xcframework.
-          FW=""
-          if [ -d "$BASE/ScaleCloudGo.xcframework/ios-arm64/ScaleCloudGo.framework" ]; then
-            FW="$BASE/ScaleCloudGo.xcframework/ios-arm64/ScaleCloudGo.framework"
-          elif [ -d "$BASE/ScaleCloudGo.xcframework" ]; then
-            FW=$(find "$BASE/ScaleCloudGo.xcframework" -type d -name 'ScaleCloudGo.framework' | head -1 || true)
-          elif [ -d "$BASE/ScaleCloudGo.framework" ]; then
-            FW="$BASE/ScaleCloudGo.framework"
-          fi
-
-          if [ -z "${FW:-}" ] || [ ! -d "$FW" ]; then
-            echo "ERROR: could not find a usable ScaleCloudGo.framework inside the prebuilt tree"
-            find "$BASE" -type d -name '*ScaleCloudGo*' 2>/dev/null | head -20
-            exit 1
-          fi
-
-          # Relative path as seen from ScaleCloudKit/ScaleCloudKit.xcodeproj
-          REL="../${FW#ScaleCloudGo/}"
-
-          echo "Wiring Go prebuilt as a direct linked framework (like the App layer does for the Kit prebuilt):"
-          echo "  on disk : $FW"
-          echo "  pbx path: $REL"
-
-          python3 - << 'PY'
-import re, sys, pathlib
-rel = sys.argv[1]
-p = pathlib.Path("ScaleCloudKit/ScaleCloudKit.xcodeproj/project.pbxproj")
-t = p.read_text()
-
-fid = "GOPREBUILTGO0000FILE0000001"
-bid = "GOPREBUILTGO0000BLD0000001"
-
-fr = f'\t\t{fid} /* ScaleCloudGo.framework */ = {{isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScaleCloudGo.framework; path = "{rel}"; sourceTree = "<group>"; }};\n'
-t = re.sub(r'(Begin PBXFileReference section \*/\n)', r'\1' + fr, t, count=1)
-
-br = f'\t\t{bid} /* ScaleCloudGo.framework in Frameworks */ = {{isa = PBXBuildFile; fileRef = {fid} /* ScaleCloudGo.framework */; }};\n'
-t = re.sub(r'(Begin PBXBuildFile section \*/\n)', r'\1' + br, t, count=1)
-
-def splice(m):
-    b = m.group(0)
-    if bid in b: return b
-    return re.sub(r'(\n\t\t\t\);)', f'\n\t\t\t\t{bid} /* ScaleCloudGo.framework in Frameworks */,\n\t\t\t);', b, count=1)
-t = re.sub(r'/\* Frameworks \*/\s*=\s*\{\s*isa = PBXFrameworksBuildPhase;[^}]*?\bfiles = \([^;]*?\);\s*\}[^}]*?\};', splice, t, flags=re.DOTALL)
-
-fps = 'FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt";'
-def inj(m):
-    b = m.group(0)
-    if "FRAMEWORK_SEARCH_PATHS" in b: return b
-    return re.sub(r'(PRODUCT_MODULE_NAME = NextcloudKit;)\n', r'\1\n\t\t\t\t' + fps + '\n', b, count=1)
-t = re.sub(r'/\* (Debug|Release) \*/\s*=\s*\{[^}]*?PRODUCT_MODULE_NAME = NextcloudKit;[^}]*?\n\t\t\};', inj, t, flags=re.DOTALL)
-
-p.write_text(t)
-print("Injected direct prebuilt Go framework reference + search path.")
-PY
-          "$REL"
-
-      - name: Final hard guard immediately before the archive step (must still have zero Go xcodeproj refs)
-        run: |
-          if grep -q 'ScaleCloudGo\.xcodeproj' ScaleCloudKit/ScaleCloudKit.xcodeproj/project.pbxproj; then
-            echo "FATAL: 'ScaleCloudGo.xcodeproj' is present right before xcodebuild."
-            echo "This is the direct cause of 'no such module ScaleCloudGo' when a Go prebuilt was supplied."
-            exit 1
-          fi
-          echo "Guard passed. 'import ScaleCloudGo' will resolve from the preplaced binary framework on disk."
-
-      - name: Build ScaleCloudKit (uses only the human-placed Go prebuilt; no projectReference, no Go target, no gomobile in this job)
-        run: |
+          cd ScaleCloudKit
           xcodebuild archive \
-            -project ScaleCloudKit/ScaleCloudKit.xcodeproj \
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
+            -archivePath build/Kit.xcarchive
 
-      - name: Upload xcarchive artifact (optional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ScaleCloudKit-xcarchive
-          path: ScaleCloudKit/build/ScaleCloudKit.xcarchive
-          retention-days: 1
-
-      # Stage a clean prebuilt tree (NextcloudKit.framework layout) into ScaleCloudKit/prebuilt/
-      # so that the uploaded artifact, when a human downloads + unpacks it, lands ready for
-      # the App layer's ScaleCloudApp/ScaleCloudApp.xcodeproj to find at ../ScaleCloudKit/prebuilt/NextcloudKit.framework
-      - name: Stage NextcloudKit-prebuilt tree for downstream layers
-        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+      - name: Extract framework to prebuilt/
         run: |
           mkdir -p ScaleCloudKit/prebuilt
-          ARCH_ROOT="ScaleCloudKit/build/ScaleCloudKit.xcarchive"
-          CANDIDATE=$(find "$ARCH_ROOT" -type d \( -name 'NextcloudKit.framework' -o -name 'ScaleCloudKit.framework' \) 2>/dev/null | head -1 || true)
-          if [ -n "$CANDIDATE" ]; then
-            DST="ScaleCloudKit/prebuilt/$(basename "$CANDIDATE")"
-            rm -rf "$DST"
-            cp -a "$CANDIDATE" "$DST"
-            echo "Staged prebuilt: $CANDIDATE -> $DST"
-            ls -lR "$DST" | head -20
-          else
-            echo "Searching for the built framework in any Products dir..."
-            find . -path '*ScaleCloudKit*' -name '*.framework' -type d 2>/dev/null | head -5
-          fi
+          FW=$(find ScaleCloudKit/build/Kit.xcarchive -name 'NextcloudKit.framework' | head -1)
+          cp -r "$FW" ScaleCloudKit/prebuilt/
 
-      - name: Upload prebuilt artifact (human downloads this and manually extracts the contents into ScaleCloudKit/prebuilt/ in their clone before the next dispatch)
-        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+      - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudKit-prebuilt
           path: ScaleCloudKit/prebuilt/
-          retention-days: 1
+          retention-days: 7
           

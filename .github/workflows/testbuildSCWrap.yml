@@ -2,78 +2,38 @@ name: Build ScaleCloudWrap
 
 on:
   workflow_dispatch:
-    inputs:
-      publish_prebuilt:
-        description: 'Publish final Wrap artifact'
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   build:
     runs-on: macos-14
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
-    
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Verify ScaleCloudApp prebuilt payload is present (human unpacks the App artifact into ScaleCloudApp/prebuilt/ before this dispatch)
+      - name: Check App prebuilt exists
         run: |
-          if [ ! -d "ScaleCloudApp/prebuilt" ] || [ -z "$(ls -A ScaleCloudApp/prebuilt 2>/dev/null || true)" ]; then
-            echo "ERROR: ScaleCloudApp/prebuilt/ is empty or missing."
-            echo "Download the 'ScaleCloudApp-prebuilt' artifact (or the xcarchive) from a prior 'Build ScaleCloudApp' run."
-            echo "Unpack it so the expected app payload (or the layout the Wrap target embeds) is under ScaleCloudApp/prebuilt/."
-            echo "The Wrap workflow only performs data movement via human; it never issues download-artifact against other run ids."
+          if [ ! -d "ScaleCloudApp/prebuilt" ]; then
+            echo "ERROR: ScaleCloudApp/prebuilt/ missing. Download ScaleCloudApp-prebuilt artifact first."
             exit 1
           fi
-          echo "✓ ScaleCloudApp prebuilt present for Wrap embedding. No lower-layer toolchains will be installed."
 
-      - name: Provision tools
+      - name: Generate project with xcodegen
         run: |
           brew install xcodegen
+          cd ScaleCloudWrap
+          xcodegen generate
 
-      - name: Set Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
-
-      # The lower project generations are optional / for any reference consumers.
-      # Wrap itself only needs its own project + the pre-placed App payload in the tree.
-      - name: Generate lower-layer projects (metadata only)
-        working-directory: ScaleCloudGo
-        run: xcodegen generate || true
-      - name: Generate ScaleCloudKit project
-        working-directory: ScaleCloudKit
-        run: xcodegen generate || true
-      - name: Generate ScaleCloudApp project
-        working-directory: ScaleCloudApp
-        run: xcodegen generate || true
-
-      - name: Generate ScaleCloudWrap project
-        working-directory: ScaleCloudWrap
-        run: xcodegen generate
-
-      - name: Build ScaleCloudWrap (embedding the App payload that was placed under ScaleCloudApp/prebuilt/ by the human)
-        working-directory: ScaleCloudWrap
+      - name: Build
         run: |
+          cd ScaleCloudWrap
           xcodebuild archive \
             -scheme ScaleCloudWrap \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/ScaleCloudWrap.xcarchive"
+            -archivePath build/Wrap.xcarchive
 
-      - name: Upload artifact (optional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ScaleCloudWrap-xcarchive
-          path: ScaleCloudWrap/build/ScaleCloudWrap.xcarchive
-          retention-days: 1
-
-      - name: Upload Wrap prebuilt/final artifact (human unpacks as needed for distribution)
-        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+      - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudWrap-prebuilt
           path: ScaleCloudWrap/build/
-          retention-days: 1
+          retention-days: 7
           

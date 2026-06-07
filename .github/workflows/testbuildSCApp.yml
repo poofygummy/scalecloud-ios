@@ -2,85 +2,41 @@ name: Build ScaleCloudApp
 
 on:
   workflow_dispatch:
-    inputs:
-      publish_prebuilt:
-        description: 'Publish a clean ScaleCloudApp build artifact for Wrap or ad-hoc distribution'
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   build:
     runs-on: macos-14
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
     steps:
-    
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Verify ScaleCloudKit prebuilt is present (human must download the artifact and place it under ScaleCloudKit/prebuilt/)
+      - name: Check Kit prebuilt exists
         run: |
-          if [ ! -d "ScaleCloudKit/prebuilt" ] || [ -z "$(ls -A ScaleCloudKit/prebuilt 2>/dev/null || true)" ]; then
-            echo "ERROR: ScaleCloudKit/prebuilt/ is empty or missing."
-            echo "You must download the 'ScaleCloudKit-prebuilt' artifact from a prior successful 'Build ScaleCloudKit' run,"
-            echo "and unpack it so that ScaleCloudKit/prebuilt/NextcloudKit.framework exists before dispatching this App build."
-            echo "The ScaleCloudApp/ScaleCloudApp.xcodeproj (adapted pbxproj) references it via PBXFileReference + FRAMEWORK_SEARCH_PATHS."
-            echo "This is pure data movement by the human — the workflow never auto-downloads artifacts from other runs via run-id."
+          if [ ! -d "ScaleCloudKit/prebuilt" ]; then
+            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Download ScaleCloudKit-prebuilt artifact first."
             exit 1
           fi
-          echo "✓ Found ScaleCloudKit prebuilt (NextcloudKit.framework) in tree; App will link against it. No Go/Kit toolchains installed."
 
-      - name: Provision tools (xcodegen only as needed; the App layer build prefers the committed adapted .xcodeproj)
+      - name: Download GoogleService-Info.plist
+        run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
+
+      - name: Generate project with xcodegen
         run: |
           brew install xcodegen
+          cd ScaleCloudApp
+          xcodegen generate
 
-      - name: Set Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
-
-      # We still generate the Kit/Go xcodegen projects if their .xcodeproj do not already exist in the tree
-      # (the App's pbxproj does not depend on them, but some reference or quick paths might).
-      # If the prebuilts are present we never install Go or gomobile.
-      - name: Generate lower projects (cheap metadata only; prebuilts already satisfy linkage)
-        working-directory: ScaleCloudGo
-        run: xcodegen generate || true
-      - name: Generate ScaleCloudKit project
-        working-directory: ScaleCloudKit
-        run: xcodegen generate || true
-
-      - name: Generate ScaleCloudApp project (secondary; primary build uses the adapted ScaleCloudApp.xcodeproj)
-        working-directory: ScaleCloudApp
-        run: xcodegen generate || true
-
-      - name: Build ScaleCloudApp (using the adapted upstream-derived .xcodeproj that already knows about the prebuilt Kit)
-        working-directory: ScaleCloudApp
+      - name: Build
         run: |
-          if [ -f ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj ]; then
-            xcodebuild archive \
-              -project ScaleCloudApp/ScaleCloudApp.xcodeproj \
-              -scheme Nextcloud \
-              -destination 'generic/platform=iOS' \
-              -archivePath "$PWD/build/ScaleCloudApp.xcarchive"
-          else
-            xcodebuild archive \
-              -scheme ScaleCloudApp \
-              -destination 'generic/platform=iOS' \
-              -archivePath "$PWD/build/ScaleCloudApp.xcarchive"
-          fi
+          cd ScaleCloudApp
+          xcodebuild archive \
+            -scheme ScaleCloudApp \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/App.xcarchive
 
-      - name: Upload xcarchive artifact (optional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ScaleCloudApp-xcarchive
-          path: ScaleCloudApp/build/ScaleCloudApp.xcarchive
-          retention-days: 1
-
-      - name: Upload prebuilt-style app artifact (for Wrap or distribution — human downloads and manually unpacks the payload into ScaleCloudApp/prebuilt/ before dispatching Wrap or future App rebuilds)
-        if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
+      - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudApp-prebuilt
-          path: ScaleCloudApp/build/ScaleCloudApp.xcarchive
-          retention-days: 1
+          path: ScaleCloudApp/build/
+          retention-days: 7
 
