@@ -41,9 +41,8 @@ jobs:
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      - name: Install Tuist
-        run: |
-          curl -Ls https://install.tuist.io | bash
+      - name: Install Tuist via mise
+        uses: jdx/mise-action@v2
 
       - name: Verify prebuilt dependencies exist
         run: |
@@ -73,9 +72,10 @@ jobs:
 
       - name: Build ScaleCloudGo
         if: inputs.layer == 'go'
-        working-directory: ScaleCloudGo
         run: |
           echo "Building ScaleCloudGo framework..."
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          cd ScaleCloudGo
           mkdir -p prebuilt
           gomobile bind -target=ios -o prebuilt/ScaleCloudGo.xcframework .
 
@@ -83,43 +83,55 @@ jobs:
         if: inputs.layer == 'kit'
         run: |
           echo "Using prebuilt ScaleCloudGo from ScaleCloudGo/prebuilt/"
-          tuist generate ScaleCloudKit
-          cd ScaleCloudKit
-          xcodebuild archive \
+          tuist install
+          tuist generate
+          xcodebuild build \
+            -workspace ScaleCloud.xcworkspace \
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/ScaleCloudKit.xcarchive"
+            -derivedDataPath .build \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO
           echo "Copying build output to ScaleCloudKit/prebuilt/"
-          mkdir -p prebuilt
-          cp -R build/ScaleCloudKit.xcarchive prebuilt/
+          mkdir -p ScaleCloudKit/prebuilt
+          cp -R .build/Build/Products/Release-iphoneos/ScaleCloudKit.framework ScaleCloudKit/prebuilt/
 
       - name: Build ScaleCloudApp
         if: inputs.layer == 'app'
         run: |
           echo "Using prebuilt dependencies from ScaleCloudGo/prebuilt/ and ScaleCloudKit/prebuilt/"
-          tuist generate ScaleCloudApp
-          cd ScaleCloudApp
-          xcodebuild archive \
+          tuist install
+          tuist generate
+          xcodebuild build \
+            -workspace ScaleCloud.xcworkspace \
             -scheme ScaleCloudApp \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/ScaleCloudApp.xcarchive"
+            -derivedDataPath .build \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO
           echo "Copying build output to ScaleCloudApp/prebuilt/"
-          mkdir -p prebuilt
-          cp -R build/ScaleCloudApp.xcarchive prebuilt/
+          mkdir -p ScaleCloudApp/prebuilt
+          cp -R .build/Build/Products/Release-iphoneos/ScaleCloudApp.app ScaleCloudApp/prebuilt/
 
       - name: Build ScaleCloudWrap
         if: inputs.layer == 'wrap'
         run: |
           echo "Using all prebuilt dependencies from their respective directories"
-          tuist generate ScaleCloudWrap
-          cd ScaleCloudWrap
-          xcodebuild archive \
+          tuist install
+          tuist generate
+          xcodebuild build \
+            -workspace ScaleCloud.xcworkspace \
             -scheme ScaleCloudWrap \
             -destination 'generic/platform=iOS' \
-            -archivePath "$PWD/build/ScaleCloudWrap.xcarchive"
+            -derivedDataPath .build \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO
           echo "Copying build output to ScaleCloudWrap/prebuilt/"
-          mkdir -p prebuilt
-          cp -R build/ScaleCloudWrap.xcarchive prebuilt/
+          mkdir -p ScaleCloudWrap/prebuilt
+          cp -R .build/Build/Products/Release-iphoneos/ScaleCloudWrap.* ScaleCloudWrap/prebuilt/
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
