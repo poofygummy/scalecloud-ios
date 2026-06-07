@@ -1,0 +1,11 @@
+framework module ScaleCloudKit {
+  umbrella header "ScaleCloudKit.h"
+  export *
+
+  module * { export * }
+}
+
+module ScaleCloudKit.Swift {
+  header "ScaleCloudKit-Swift.h"
+  requires objc
+}
