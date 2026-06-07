@@ -30,10 +30,16 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/Wrap.xcarchive
 
+      - name: Extract app from archive
+        run: |
+          mkdir -p ScaleCloudWrap/prebuilt
+          # Copy the entire xcarchive for apps
+          cp -R ScaleCloudWrap/build/Wrap.xcarchive ScaleCloudWrap/prebuilt/
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudWrap-prebuilt
-          path: ScaleCloudWrap/build/Wrap.xcarchive
+          path: ScaleCloudWrap/prebuilt/
           retention-days: 7
           

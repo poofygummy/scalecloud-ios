@@ -38,10 +38,24 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/Kit.xcarchive
 
+      - name: Extract framework from archive
+        run: |
+          mkdir -p ScaleCloudKit/prebuilt
+          # Framework is in the IntermediateBuildFilesPath/UninstalledProducts for framework archives
+          FW=$(find ScaleCloudKit/build/Kit.xcarchive -path "*/IntermediateBuildFilesPath/UninstalledProducts/*/ScaleCloudKit.framework" | head -1)
+          if [ -z "$FW" ]; then
+            echo "ERROR: ScaleCloudKit.framework not found in expected location"
+            echo "Archive structure:"
+            find ScaleCloudKit/build/Kit.xcarchive -name "*.framework" | head -20
+            exit 1
+          fi
+          echo "Found framework at: $FW"
+          cp -R "$FW" ScaleCloudKit/prebuilt/
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudKit-prebuilt
-          path: ScaleCloudKit/build/Kit.xcarchive
+          path: ScaleCloudKit/prebuilt/
           retention-days: 7
           

@@ -33,10 +33,16 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/App.xcarchive
 
+      - name: Extract app from archive
+        run: |
+          mkdir -p ScaleCloudApp/prebuilt
+          # Copy the entire xcarchive for apps
+          cp -R ScaleCloudApp/build/App.xcarchive ScaleCloudApp/prebuilt/
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudApp-prebuilt
-          path: ScaleCloudApp/build/App.xcarchive
+          path: ScaleCloudApp/prebuilt/
           retention-days: 7
 
