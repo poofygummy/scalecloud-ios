@@ -19,6 +19,9 @@ jobs:
       - name: Download GoogleService-Info.plist
         run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
 
+      - name: Set Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+
       - name: Generate project with xcodegen
         run: |
           brew install xcodegen
