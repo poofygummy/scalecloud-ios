@@ -9,10 +9,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Kit prebuilt exists
+      - name: Check prebuilt exists
         run: |
+          if [ ! -d "ScaleCloudGo/prebuilt" ]; then
+            echo "ERROR: ScaleCloudGo/prebuilt/ missing. Run ScaleCloudGo workflow first."
+            exit 1
+          fi
           if [ ! -d "ScaleCloudKit/prebuilt" ]; then
-            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Download ScaleCloudKit-prebuilt artifact first."
+            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run ScaleCloudKit workflow first."
             exit 1
           fi
 
@@ -23,7 +27,15 @@ jobs:
         run: |
           brew install xcodegen
           cd ScaleCloudApp
-          xcodegen generate
+          # Modify project.yml to remove ScaleCloudKit dependency and project reference
+          sed '/target: ScaleCloudKit/d' project.yml > project_temp.yml
+          sed -i.bak '/projectReferences:/,/path: ..\/ScaleCloudKit/d' project_temp.yml
+          xcodegen generate --spec project_temp.yml
+          rm project_temp.yml project_temp.yml.bak
+          
+          # Add Kit prebuilt as framework search path
+          xcrun ruby -i -pe '$_.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/, "IPHONEOS_DEPLOYMENT_TARGET = 14.0;\n\t\t\t\tFRAMEWORK_SEARCH_PATHS = \"$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt/**\";\n")' \
+            ScaleCloudApp.xcodeproj/project.pbxproj
 
       - name: Build
         run: |
