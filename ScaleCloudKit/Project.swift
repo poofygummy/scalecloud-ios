@@ -14,6 +14,25 @@ let project = Project(
             bundleId: "com.scalecloud.ScaleCloudKit",
             deploymentTargets: .iOS("14.0"),
             sources: ["Sources/**"],
+            scripts: [
+                .post(
+                    script: """
+PREBUILT_FRAMEWORK="$PROJECT_DIR/prebuilt/ScaleCloudKit.framework"
+TARGET_FRAMEWORK="$BUILT_PRODUCTS_DIR/ScaleCloudKit.framework"
+
+# If prebuilt exists, use it instead of the just-built version
+if [ -d "$PREBUILT_FRAMEWORK" ]; then
+    echo "Using prebuilt ScaleCloudKit.framework"
+    rm -rf "$TARGET_FRAMEWORK"
+    cp -R "$PREBUILT_FRAMEWORK" "$TARGET_FRAMEWORK"
+    echo "Replaced with prebuilt framework"
+else
+    echo "Using freshly built ScaleCloudKit.framework"
+fi
+""",
+                    name: "Use Prebuilt Framework If Available"
+                )
+            ],
             dependencies: [
                 .project(target: "ScaleCloudGo", path: "../ScaleCloudGo"),
                 .external(name: "Alamofire"),
