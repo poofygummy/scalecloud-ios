@@ -38,23 +38,10 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/Kit.xcarchive
 
-      - name: Extract framework to prebuilt/
-        run: |
-          mkdir -p ScaleCloudKit/prebuilt
-          echo "Looking for ScaleCloudKit.framework in archive:"
-          find ScaleCloudKit/build/Kit.xcarchive -type d -name '*.framework'
-          FW=$(find ScaleCloudKit/build/Kit.xcarchive -type d -name 'ScaleCloudKit.framework' | head -1)
-          if [ -z "$FW" ]; then
-            echo "ERROR: ScaleCloudKit.framework not found in archive"
-            exit 1
-          fi
-          echo "Copying $FW to ScaleCloudKit/prebuilt/"
-          cp -r "$FW" ScaleCloudKit/prebuilt/
-
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudKit-prebuilt
-          path: ScaleCloudKit/prebuilt/
+          path: ScaleCloudKit/build/Kit.xcarchive
           retention-days: 7
           
