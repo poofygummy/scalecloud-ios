@@ -3,10 +3,6 @@ name: Build ScaleCloudApp
 on:
   workflow_dispatch:
     inputs:
-      kit_run_id:
-        description: 'GitHub run-id of a prior "Build ScaleCloudKit" workflow that published ScaleCloudKit-prebuilt (NextcloudKit.framework). Leave empty to regenerate the chain in this run.'
-        required: false
-        type: string
       publish_prebuilt:
         description: 'Publish a clean ScaleCloudApp build artifact for Wrap or ad-hoc distribution'
         required: false
@@ -24,77 +20,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- Optional individual-layer handoff: download ScaleCloudKit prebuilt artifact ---
-      # Placing the artifact contents under ScaleCloudKit/prebuilt/ lets the adapted
-      # ScaleCloudApp/ScaleCloudApp.xcodeproj consume it via:
-      #   - PBXFileReference path = ../ScaleCloudKit/prebuilt/NextcloudKit.framework
-      #   - FRAMEWORK_SEARCH_PATHS = .../ScaleCloudKit/prebuilt
-      # No Go sources or NextcloudKit SPM package resolution are required when this is present.
-      - name: Download and materialize ScaleCloudKit prebuilt from prior run
-        if: ${{ github.event.inputs.kit_run_id != '' }}
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.inputs.kit_run_id }}
-          name: ScaleCloudKit-prebuilt
-          path: ScaleCloudKit/prebuilt-download
-      - name: Place downloaded Kit prebuilt into repo tree (prebuilt/NextcloudKit.framework)
-        if: ${{ github.event.inputs.kit_run_id != '' }}
+      - name: Verify ScaleCloudKit prebuilt is present (human must download the artifact and place it under ScaleCloudKit/prebuilt/)
         run: |
-          mkdir -p ScaleCloudKit/prebuilt
-          rsync -a ScaleCloudKit/prebuilt-download/ ScaleCloudKit/prebuilt/ || cp -a ScaleCloudKit/prebuilt-download/. ScaleCloudKit/prebuilt/
-          # The App pbxproj expects the directory "NextcloudKit.framework" (name chosen to keep
-          # import compatibility with the many dozens of "import NextcloudKit" statements inherited
-          # from upstream nextcloud/ios without any source changes in iOSClient/ or Brand/).
-          ls -lR ScaleCloudKit/prebuilt/ | head -30
-          echo "ScaleCloudKit prebuilt materialized from run ${{ github.event.inputs.kit_run_id }}"
+          if [ ! -d "ScaleCloudKit/prebuilt" ] || [ -z "$(ls -A ScaleCloudKit/prebuilt 2>/dev/null || true)" ]; then
+            echo "ERROR: ScaleCloudKit/prebuilt/ is empty or missing."
+            echo "You must download the 'ScaleCloudKit-prebuilt' artifact from a prior successful 'Build ScaleCloudKit' run,"
+            echo "and unpack it so that ScaleCloudKit/prebuilt/NextcloudKit.framework exists before dispatching this App build."
+            echo "The ScaleCloudApp/ScaleCloudApp.xcodeproj (adapted pbxproj) references it via PBXFileReference + FRAMEWORK_SEARCH_PATHS."
+            echo "This is pure data movement by the human — the workflow never auto-downloads artifacts from other runs via run-id."
+            exit 1
+          fi
+          echo "✓ Found ScaleCloudKit prebuilt (NextcloudKit.framework) in tree; App will link against it. No Go/Kit toolchains installed."
 
-      - name: Set up Go
-        # Only strictly required when we are rebuilding the Go layer (kit_run_id was not supplied).
-        if: ${{ github.event.inputs.kit_run_id == '' }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.26'
-          cache-dependency-path: 'ScaleCloudGo/go.sum'
-
-      - name: Provision tools
+      - name: Provision tools (xcodegen only as needed; the App layer build prefers the committed adapted .xcodeproj)
         run: |
           brew install xcodegen
-          # gomobile is only needed if we are asked to rebuild Go inside this run.
-          if [ "${{ github.event.inputs.kit_run_id }}" = "" ]; then
-            go install golang.org/x/mobile/cmd/gomobile@latest
-            go install golang.org/x/mobile/cmd/gobind@latest
-            gomobile init
-          fi
 
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      # Generate prerequisites in order (project refs will chain).
-      # When a prebuilt was materialized above these steps are essentially no-ops or
-      # serve only to produce the small project metadata for any tooling that still
-      # walks the xcodegen graph; the real linkage for the App target is the edited
-      # ScaleCloudApp.xcodeproj (upstream pbxproj + our narrow prebuilt swap edits).
-      - name: Generate ScaleCloudGo project
-        if: ${{ github.event.inputs.kit_run_id == '' }}
+      # We still generate the Kit/Go xcodegen projects if their .xcodeproj do not already exist in the tree
+      # (the App's pbxproj does not depend on them, but some reference or quick paths might).
+      # If the prebuilts are present we never install Go or gomobile.
+      - name: Generate lower projects (cheap metadata only; prebuilts already satisfy linkage)
         working-directory: ScaleCloudGo
-        run: xcodegen generate
-
+        run: xcodegen generate || true
       - name: Generate ScaleCloudKit project
-        if: ${{ github.event.inputs.kit_run_id == '' }}
         working-directory: ScaleCloudKit
-        run: xcodegen generate
+        run: xcodegen generate || true
 
-      - name: Generate ScaleCloudApp project
+      - name: Generate ScaleCloudApp project (secondary; primary build uses the adapted ScaleCloudApp.xcodeproj)
         working-directory: ScaleCloudApp
-        run: xcodegen generate
+        run: xcodegen generate || true
 
-      - name: Build ScaleCloudApp
+      - name: Build ScaleCloudApp (using the adapted upstream-derived .xcodeproj that already knows about the prebuilt Kit)
         working-directory: ScaleCloudApp
         run: |
-          # Prefer the explicit project when it exists (the adapted upstream pbxproj).
-          # This is the maximally-compatible path: the pbxproj already carries the
-          # full dep surface (RealmSwift, MobileVLCKit, LucidBanner, etc.) that the old
-          # Tuist Project.swift glob approach could not express without duplication.
           if [ -f ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj ]; then
             xcodebuild archive \
               -project ScaleCloudApp/ScaleCloudApp.xcodeproj \
@@ -115,7 +76,7 @@ jobs:
           path: ScaleCloudApp/build/ScaleCloudApp.xcarchive
           retention-days: 1
 
-      - name: Upload prebuilt-style app artifact (for Wrap or distribution)
+      - name: Upload prebuilt-style app artifact (for Wrap or distribution — human downloads and manually unpacks the payload into ScaleCloudApp/prebuilt/ before dispatching Wrap or future App rebuilds)
         if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
         uses: actions/upload-artifact@v4
         with:

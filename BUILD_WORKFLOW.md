@@ -3,13 +3,13 @@
 > **GOLDEN RULE (Hard Rule)**: All build, generation, and compilation steps in this repository are executed **exclusively inside GitHub Actions workflows**.
 > `xcodegen`, `xcodebuild`, `gomobile`, `tuist generate` / `tuist build`, or any equivalent commands are **never** run from developer workstations, agent shells, or local terminals — not for reproduction, not for "just checking", not even with prebuilts present.
 > The only supported way to produce a layer artifact is to dispatch one of the four canonical workflows (`testbuildSCGo.yml`, `testbuildSCKit.yml`, `testbuildSCApp.yml`, `testbuildSCWrap.yml`) on GitHub via `workflow_dispatch` (or a calling workflow).
-> Humans obtain prior-layer outputs the same way workflows do (Actions artifact download + unpack into the next layer's `prebuilt/` directory) so that the *subsequent official dispatch* can see the dependency.
+> Humans obtain prior-layer outputs by going to the GitHub Actions run page of a prior layer, downloading the `*-prebuilt` artifact from the Artifacts section, and manually unpacking it into the appropriate `<layer>/prebuilt/` directory in their clone. Only after that manual data-movement step do they dispatch the next layer's workflow. The workflows themselves never perform cross-run artifact downloads.
 
 ## Overview
 
 To save GitHub Actions credits, we build each layer **independently** with smart prebuilt dependency detection. Each layer stores its prebuilt artifacts in its own `prebuilt/` subdirectory.
 
-The current supported mechanism is the four per-layer GitHub workflows under `.github/workflows/` (the `testbuildSC*.yml` family). A higher layer normally consumes a prior layer's output by receiving that workflow run's artifact id as a `*_run_id` input (or by a human / scheduler placing an already-produced `*-prebuilt` tree under the appropriate `prebuilt/` folder before dispatch).
+The current supported mechanism is the four per-layer GitHub workflows under `.github/workflows/` (the `testbuildSC*.yml` family). A higher layer consumes a prior layer's output only when a human has already downloaded the prior `*-prebuilt` artifact from the GitHub UI and manually unpacked its contents under the appropriate `<layer>/prebuilt/` directory in the clone before dispatching the higher workflow. The workflows themselves perform no cross-run artifact fetching.
 
 This document describes the overall layered prebuilt model and the discipline around artifacts and rebuild ordering. The precise "how to build this exact layer right now" instructions live inside the four workflow definitions themselves.
 
@@ -58,24 +58,26 @@ ScaleCloudWrap (顶层 - Top layer)
 
 The Go/Kit layers use `xcodegen project.yml` with `projectReferences` pointing at the lower layer's `.xcodeproj`. The App layer (authoritative source) uses the adapted `ScaleCloudApp.xcodeproj` which contains an explicit `PBXFileReference` + `PBXBuildFile` to `../ScaleCloudKit/prebuilt/NextcloudKit.framework` plus augmented `FRAMEWORK_SEARCH_PATHS`.
 
-When a higher layer's workflow receives a `*_run_id`:
-1. It downloads the prior `*-prebuilt` artifact.
-2. It materializes the contents under the conventional path (e.g. `ScaleCloudKit/prebuilt/NextcloudKit.framework`).
-3. The generation step (`xcodegen generate` for Go/Kit, or simply opening the edited pbxproj for App) sees the framework in the exact location the project description expects.
-4. The build proceeds exactly as if the prebuilt had been a committed tree inside the repo.
+You (a human) obtain prior-layer outputs the same way every layer build has always worked:
+- After a successful dispatch you go to the GitHub Actions run page → Artifacts.
+- Download the relevant `*-prebuilt` zip.
+- Unpack it locally into your clone so the contents land under the expected directory, e.g. `ScaleCloudKit/prebuilt/NextcloudKit.framework` (or `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework`, etc.).
+- Then (and only then) you dispatch the next layer's workflow.
+The workflow itself does **no** cross-run artifact downloads. It simply checks that the required prebuilt tree is already sitting in the repo checkout when the job starts. If it is not there, the job fails fast with a clear instruction.
 
 ### Current Supported Build Process (GitHub Actions only)
 
 All generation and compilation happens **inside** the dispatched GitHub workflow for that layer.
 
-Typical flow for an independent layer build:
+The supported flow for an independent layer build (the only supported flow):
 
-1. (Optional but normal) Supply the `*_run_id` input from the immediately preceding layer's successful run (for example, pass a `kit_run_id` when dispatching the App workflow).
-2. The workflow job checks out the repo, downloads the named `*-prebuilt` artifact from the prior run (via `actions/download-artifact`), and materializes its contents verbatim under the expected `prebuilt/` directory in the tree (e.g. `ScaleCloudKit/prebuilt/NextcloudKit.framework`).
-3. The job then runs the layer-specific generation + archive step (`xcodegen generate` and/or direct use of the adapted `ScaleCloudApp.xcodeproj`, `xcodebuild archive`, etc.) on the GitHub-hosted macOS runner. The prebuilt tree that was just unpacked is seen exactly as a committed prebuilt would be (via `projectReferences`, `FRAMEWORK_SEARCH_PATHS`, and explicit file references inside the project).
-4. On success the workflow uploads both an archive artifact and a clean `*-prebuilt` artifact for the next layer to consume.
+1. Dispatch the bottom-most layer you need (or use a prior committed prebuilt tree).
+2. After it succeeds, go to that run in the GitHub UI, download the `*-prebuilt` artifact.
+3. Unpack the artifact contents into your clone so they sit under the correct `<Layer>/prebuilt/` directory (the exact layout the next layer's project reference / pbxproj / search paths expect).
+4. Dispatch the next higher layer workflow. That job will verify the prebuilt(s) are present and, if they are, will run only its own generation + compile step. It will never reach out to previous runs itself.
+5. Repeat.
 
-The only place these generator / compiler invocations are defined and authorized is inside the four `testbuildSC*.yml` workflow files. There are no sanctioned local equivalents.
+The only place any generation or compilation code runs is inside one of the four `testbuildSC*.yml` workflow jobs after you have manually arranged the prebuilts in the tree. There are no sanctioned local equivalents and no automatic cross-workflow artifact fetching inside the jobs.
 
 ## Build Order (IMPORTANT!)
 
@@ -86,45 +88,46 @@ You **must** build from bottom to top:
 **Via GitHub Actions (the only supported path)**:
 1. Go to **Actions** tab
 2. Select **"Build ScaleCloudGo"** (file: `testbuildSCGo.yml`)
-3. Click **"Run workflow"** (workflow_dispatch)
-4. (Optional) If you already have a prior Go run, you do **not** supply anything — Go is the bottom layer.
-5. Click **"Run workflow"**
+3. Click **"Run workflow"** (workflow_dispatch). There are no inputs for prior layers (Go is the root).
+4. Click **"Run workflow"**
 
 **What it builds**: Go framework with Tailscale proxy using `gomobile bind -target=ios` (the ONLY workflow permitted to install Go + gomobile)
 
 **Output**: 
-- `ScaleCloudGo-prebuilt` artifact (unpacked form ready for Kit/App)
+- `ScaleCloudGo-prebuilt` artifact
 - `ScaleCloudGo-xcarchive` (for records)
 
-**Output location inside repo tree (when materialized)**: `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/`
+The prebuilt artifact, once you manually download it from the run's Artifacts and unpack it into your clone, produces the tree under `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/` (or .framework) that higher layers expect to find.
 
-**Requirements inside the job**: Go 1.26 + gomobile (installed once by this workflow)
-
-To commit the prebuilt for long-term use (or for developers who do not want to rely on artifact expiry):
-1. After success, download the `ScaleCloudGo-prebuilt` artifact from the run.
-2. Unpack so its contents land under `ScaleCloudGo/prebuilt/`.
-3. `git add ScaleCloudGo/prebuilt/ && git commit -m "prebuilt: ScaleCloudGo from <run>" && git push`
-
-Higher layers will then see the tree on normal checkout OR they can pass the produced `go_run_id` to their own dispatch (the consuming SC* workflow will do the `download-artifact + materialize` step for you).
+To make a lower layer permanently available without having to keep re-downloading artifacts:
+1. After the run succeeds, download the `ScaleCloudGo-prebuilt` artifact.
+2. Unpack it so the files end up under `ScaleCloudGo/prebuilt/` in your working copy.
+3. Commit and push:
+   ```bash
+   git add ScaleCloudGo/prebuilt/
+   git commit -m "prebuilt: ScaleCloudGo from run <id>"
+   git push
+   ```
+Any later dispatch of Kit/App/Wrap (on a checkout that contains this tree) will see the prebuilt and skip Go work. The workflows themselves never perform artifact downloads across runs.
 
 ### 2. Build ScaleCloudKit (Second - Requires Go)
 
 **Prerequisites**: ✅ `ScaleCloudGo/prebuilt/` must exist (committed and pushed)
 
-**Via GitHub Actions (independent layer; only Go toolchain cost if you provide a `go_run_id`)**:
+**Via GitHub Actions (independent layer build)**:
 1. Go to **Actions** tab
 2. Select **"Build ScaleCloudKit"** (file: `testbuildSCKit.yml`)
 3. Click **"Run workflow"**
-4. (Recommended) Paste the run ID of a prior successful **Build ScaleCloudGo** into the `go_run_id` input.
-5. Click **"Run workflow"**
+   - Before doing this you **must** have already downloaded the `ScaleCloudGo-prebuilt` artifact from a prior Go run (or have it committed) and unpacked it so that `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework` (or .framework) exists in the tree.
+4. Click **"Run workflow"**
 
-**What it builds**: Fork of NextcloudKit (module name kept as `NextcloudKit` for `import` compatibility with transplanted iOSClient/Brand sources) linked against a ScaleCloudGo prebuilt. No Go toolchain is installed when `go_run_id` is supplied.
+**What it builds**: Fork of NextcloudKit (module name kept as `NextcloudKit` for `import` compatibility with transplanted iOSClient/Brand sources) that links against whatever ScaleCloudGo prebuilt it finds under `ScaleCloudGo/prebuilt/`.
 
 **Output**:
 - `ScaleCloudKit-prebuilt` (contains `NextcloudKit.framework`)
 - `ScaleCloudKit-xcarchive`
 
-**When materialized by the next layer or by hand**: `ScaleCloudKit/prebuilt/NextcloudKit.framework/`
+The workflow job itself will refuse to run (fast error) if it does not see the Go prebuilt already placed in the tree. It does not reach out to other workflow runs.
 
 Key point: the xcodegen project for Kit (`project.yml`) pins exactly the same Alamofire/SwiftyJSON/SwiftyXMLParser versions as upstream NextcloudKit's `Package.swift`, and declares the Go layer via `projectReferences`.
 
@@ -138,10 +141,12 @@ Key point: the xcodegen project for Kit (`project.yml`) pins exactly the same Al
 1. Go to **Actions** tab
 2. Select **"Build ScaleCloudApp"** (file: `testbuildSCApp.yml`)
 3. Click **"Run workflow"**
-4. (Recommended) Supply `kit_run_id` (and transitively `go_run_id` if you have it) from prior successful builds.
-5. Click **"Run workflow"**
+   - Before dispatching you **must** have manually placed the outputs of the two lower layers into the tree:
+     - `ScaleCloudGo/prebuilt/...` (from a previous Go run's prebuilt artifact)
+     - `ScaleCloudKit/prebuilt/NextcloudKit.framework` (from a previous Kit run's prebuilt artifact)
+4. Click **"Run workflow"**
 
-**What it builds**: The complete iOS application (all iOSClient/ + Brand/ sources + assets + entitlements) linked against the prebuilt `NextcloudKit.framework` (ScaleCloudKit). Dozens of third-party libraries (RealmSwift, LucidBanner, MobileVLCKit, etc.) are declared exactly as they are in the upstream `nextcloud/ios` project; only the NextcloudKit reference and a couple of search-path/root adjustments were edited.
+**What it builds**: The complete iOS application (all iOSClient/ + Brand/ sources + assets + entitlements) linked against the prebuilt `NextcloudKit.framework` (ScaleCloudKit) that you placed at `ScaleCloudKit/prebuilt/`. Dozens of third-party libraries (RealmSwift, LucidBanner, MobileVLCKit, etc.) are declared exactly as they are in the upstream `nextcloud/ios` project; only the NextcloudKit reference and a couple of search-path/root adjustments were edited.
 
 **Output**:
 - `ScaleCloudApp-prebuilt`
@@ -149,7 +154,7 @@ Key point: the xcodegen project for Kit (`project.yml`) pins exactly the same Al
 
 **Authoritative project description**: `ScaleCloudApp/ScaleCloudApp.xcodeproj/` (a narrow-edit copy of `nextcloud/ios/Nextcloud.xcodeproj`). The thin secondary `project.yml` is only used for quick projectReference consumers.
 
-A consuming Wrap dispatch or a human doing data movement unpacks the artifact so that the tree contains the expected payload under `ScaleCloudApp/prebuilt/`.
+When you want to feed this to Wrap (or re-use it later), you download the `ScaleCloudApp-prebuilt` artifact from the run and unpack it into `ScaleCloudApp/prebuilt/` in your clone by hand.
 
 ### 4. Build ScaleCloudWrap (Last - Requires All)
 
@@ -162,10 +167,10 @@ A consuming Wrap dispatch or a human doing data movement unpacks the artifact so
 1. Go to **Actions** tab
 2. Select **"Build ScaleCloudWrap"** (file: `testbuildSCWrap.yml`)
 3. Click **"Run workflow"**
-4. (Recommended) Supply `app_run_id` (and the transitive lower run ids if you have them).
-5. Click **"Run workflow"**
+   - Before dispatching you must manually ensure the App payload you want to wrap is present: unpack a prior `ScaleCloudApp-prebuilt` artifact (or a committed tree) so that the expected app bundle / xcarchive products tree is under `ScaleCloudApp/prebuilt/`.
+4. Click **"Run workflow"**
 
-**What it builds**: The optional top wrapper / distribution layer. It consumes a fully-produced App payload (`.app` or equivalent from the xcarchive) placed under `ScaleCloudApp/prebuilt/` via the normal download+materialize step or by a prior human unpack of a committed prebuilt.
+**What it builds**: The optional top wrapper / distribution layer. It consumes whatever App payload you have already placed for it under `ScaleCloudApp/prebuilt/`.
 
 **Output**: `ScaleCloudWrap-prebuilt` (and its xcarchive). The contents depend on what the Wrap target embeds; it is the final deliverable for most external distribution flows.
 
@@ -219,24 +224,25 @@ You changed the iOS app UI:
 
 ## Credit and Time Savings via Independent Layer Builds
 
-Because each layer is built by its own dedicated GitHub workflow, and higher layers normally receive a prior layer's output via an artifact download step (or a pre-committed `prebuilt/` tree), most dispatches do **not** need to reinstall or re-execute the toolchains of layers below them.
+Because each layer is its own tiny GitHub workflow and higher layers only ever look at pre-placed trees under `*/prebuilt/`, most dispatches do **not** pay for toolchains or compilation of layers below them.
 
-Typical savings:
-- A documentation-only or Brand-asset change in the App layer can be built by dispatching the App workflow while giving it a `kit_run_id` (and transitively a `go_run_id`). The Go and Kit toolchains are never installed on that runner.
-- A change that only touches `ScaleCloudKit/Sources/` can dispatch the Kit workflow (providing only a `go_run_id`). The full Go + gomobile work is skipped.
-- Only changes that actually touch the Go/Tailscale bridge require dispatching the Go workflow (the sole workflow that pays the "install Go 1.26 + gomobile" cost).
+Typical pattern for savings:
+- You already ran Go once. You download its `ScaleCloudGo-prebuilt` artifact once and unpack it (or commit it). Future Kit, App, and Wrap dispatches on clean checkouts that contain that tree, or after you manually unpack it again, never install Go or run gomobile.
+- You change only something in `ScaleCloudKit/Sources/`. You make sure a Go prebuilt tree is sitting in `ScaleCloudGo/prebuilt/`, then dispatch only the Kit workflow. Go work is skipped entirely.
+- You only touch Brand assets or iOSClient UI, App layer sources, etc. You manually ensure both lower prebuilts are in their `prebuilt/` directories, dispatch only the App workflow. Go + Kit toolchains and compilation are never executed on that runner.
 
-The four SC* workflows are deliberately factored so that the common happy path (provide the prior run id) skips the lower toolchain installation and build steps entirely.
+The cost control comes from the human doing the minimal data-movement step (one download + unzip into the right prebuilt dir) between independent dispatches, instead of every build re-executing the entire chain.
 
 ## Local / Workstation Usage (Data Movement Only)
 
-You may obtain artifacts produced by prior workflow runs (either by downloading them from the Actions "Artifacts" section of a run, or by letting a higher-layer workflow do the `actions/download-artifact` step for you).
+The only thing you ever do on your machine is move artifacts around:
+- After a workflow run succeeds, go to its Artifacts section and download the `*-prebuilt` zip you care about.
+- Unzip it into your clone so that the extracted tree ends up under the correct `<Layer>/prebuilt/` directory (e.g. the zip contains a `ScaleCloudKit/prebuilt/NextcloudKit.framework` layout; after unzip `ScaleCloudKit/prebuilt/NextcloudKit.framework` must exist in the root of your checkout).
+- Then dispatch the next higher workflow. That dispatch only verifies the prebuilts are already there.
 
-You may unpack those artifacts into the appropriate `prebuilt/` directory in a local clone. This is purely a data-movement / input-preparation step so that the *next* GitHub dispatch of the consuming layer's workflow will see a usable prebuilt.
+**You do not run any generation or compilation commands on your machine.** There are no supported `tuist`, `xcodegen`, `xcodebuild`, or `gomobile` reproduction steps. All actual build work is executed exclusively on GitHub-hosted runners inside the four canonical `testbuildSC*.yml` jobs.
 
-**You do not run any generation or compilation commands on your machine.** There are no supported `tuist`, `xcodegen`, `xcodebuild`, or `gomobile` reproduction steps. All such work is executed exclusively on GitHub-hosted runners as part of the four canonical workflows.
-
-If you need a refreshed artifact for a layer, dispatch that layer's workflow on GitHub (supplying prior run ids as needed). The resulting `*-prebuilt` artifact is the artifact of record.
+If you need a fresh artifact for a layer, dispatch that layer's workflow (after manually arranging any lower prebuilts it needs). The `*-prebuilt` artifact it publishes is the only authoritative output.
 
 ## Git LFS (Recommended for Large Repos)
 
@@ -267,7 +273,7 @@ Please build and commit ScaleCloudKit first.
 
 This surfaces inside a GitHub Actions run when the layer's declared external packages (from its `project.yml` or the adapted `project.pbxproj`) were not resolved by the job before compilation. The workflows that need SPM packages normally resolve them as part of the job.
 
-**Solution**: Look at the failing workflow run log for the specific layer (`testbuildSCKit.yml`, `testbuildSCApp.yml`, etc.). The job is responsible for ensuring dependencies are present (via checkout of `Package.resolved`, or via the prebuilt framework that already embeds them). Re-dispatch after confirming the prior layer's `*-prebuilt` artifact was correctly materialized (or let the workflow download it via the `*_run_id` input).
+**Solution**: Look at the failing workflow run log for the specific layer (`testbuildSCKit.yml`, `testbuildSCApp.yml`, etc.). The job has a short "Verify ... prebuilt is present" step at the very beginning that tells you exactly what tree it expected to find and did not. You fix it by downloading the matching prebuilt artifact from the prior layer's run and manually unpacking it into the right place in your tree, then re-dispatch.
 
 ### Build Fails: Framework Not Found (prebuilt missing)
 
@@ -277,9 +283,9 @@ Check (inside the Actions log for that run, or locally before dispatch):
 
 1. For a Kit build: does `ScaleCloudGo/prebuilt/` contain the Go output after materialization/download step?
 2. For an App build: does `ScaleCloudKit/prebuilt/` contain `NextcloudKit.framework` (note the name — deliberate for upstream import compatibility)?
-3. Was the correct `*_run_id` supplied to the dispatch, or did a human forget to unpack the prior artifact before pushing a branch that triggers the consuming workflow?
+3. Did a human forget to download the prior `*-prebuilt` artifact from the GitHub run page and manually unpack it under the correct `<LowerLayer>/prebuilt/` directory before dispatching?
 
-The four SC* workflows are responsible for downloading prior `*-prebuilt` artifacts (when a run id is supplied) and placing them under the expected tree before they invoke their own generation step.
+The human is responsible for downloading the prior `*-prebuilt` artifact from the GitHub UI and manually placing its contents under the expected `<Layer>/prebuilt/` directory before dispatching the consuming workflow. The workflows only verify presence; they do not download anything from other runs.
 
 ### Workflow Fails Immediately
 
@@ -289,27 +295,27 @@ Check the "Verify prebuilt dependencies" step in the Actions log. It tells you e
 
 **Q: Can a single workflow run build multiple layers bottom-to-top?**
 
-A: No. The four canonical per-layer workflows (`testbuildSCGo.yml`, `testbuildSCKit.yml`, `testbuildSCApp.yml`, `testbuildSCWrap.yml`) each build exactly one layer. You chain them by passing `*_run_id` inputs (or by committing the `*-prebuilt` tree and dispatching the next layer afterwards). All generation and compilation steps occur only inside one of these four dispatched jobs.
+A: No. The four canonical per-layer workflows each build exactly one layer. You chain them by hand: after layer N finishes you download its `*-prebuilt` artifact, unpack it into the correct `<N>/prebuilt/` dir(s) in your clone, then dispatch layer N+1. All generation and compilation steps occur only inside one of these four dispatched jobs.
 
 **Q: What if I want a completely fresh bottom-up rebuild of everything?**
 
-A: Dispatch Go (with no `go_run_id`), then dispatch Kit giving it the Go run id just produced, then App giving it the Kit run id, then Wrap giving it the App run id. You do not need to commit the intermediate prebuilts between dispatches if you are only using the short-lived artifacts within one investigation, but for ongoing development you normally commit the `*-prebuilt` trees so that future dispatches (and other humans) can refer to them by run id or see them after a normal `git checkout`.
+A: Dispatch only Go. After it succeeds, download its prebuilt artifact and unpack it into `ScaleCloudGo/prebuilt/`. Then dispatch only Kit. After it succeeds, download its prebuilt and unpack into `ScaleCloudKit/prebuilt/`. Repeat for App then Wrap if needed. You do not need to commit the trees between steps if you are just experimenting in one session, but for any realistic workflow you will usually commit the prebuilt trees (or at least the important ones) so that clean clones + manual unpack or git checkout already have what higher dispatches need.
 
 **Q: Do I need to commit prebuilts after every CI build?**
 
-A: Not strictly — you can chain dispatches using the run ids of the just-completed runs. Committing the `*-prebuilt` trees (or at least the critical ones) makes the artifacts survive past the short GitHub retention period and makes it easy for anyone to resume work later without having to hunt through old run logs.
+A: Not strictly — as long as you keep the browser tab / Actions run page open you can download the artifact and manually unpack it into the next layer's prebuilt dir for an immediate follow-up dispatch. For anything that will live longer than the artifact retention window, or that other people / future you on another machine will need, you commit the unpacked prebuilt trees (or at least the ones you treat as "golden").
 
 **Q: Can I (or should I) delete the `prebuilt/` folders locally to save space?**
 
-A: Yes. They are large binary trees. The model is: either they are committed (and you can `git checkout` / LFS-pull them), or the next workflow dispatch you care about will download the exact version it needs via the `*_run_id` input and materialize it under the folder for the duration of that job. Local `prebuilt/` contents are conveniences / caches, not authoritative. Use Git LFS if you decide to track the committed prebuilts (`git lfs track "*/prebuilt/**"`).
+A: Yes. They are large binary trees. The model is: either a prebuilt tree is committed in the repo (checkout or LFS will bring it back), or you manually download the artifact you need from a prior run's Artifacts list and unpack it into the right `<Layer>/prebuilt/` dir right before you dispatch the consuming layer. Local prebuilt contents are just a cache / staging area that you control by hand. Use Git LFS if the committed prebuilts get big (`git lfs track "*/prebuilt/**"`).
 
 **Q: What do the GitHub Actions `*-prebuilt` artifacts contain?**
 
-A: The tree that the next layer expects to find under its `../<LowerLayer>/prebuilt/` path after a download+unpack step. For Go this is typically the gomobile-produced xcframework (or framework). For Kit it is `NextcloudKit.framework` (intentionally named for import compatibility with the large upstream-derived client sources). For App it is usually the xcarchive / Products layout. The unpack step performed by the consuming workflow (or a human before dispatch) makes the layout identical to a committed prebuilt.
+A: Exactly the tree that you (the human) should unpack into the corresponding `<LowerLayer>/prebuilt/` directory in your clone so that the next layer's project reference, PBXFileReference + FRAMEWORK_SEARCH_PATHS, or explicit prebuilt guard will find it. For Go: usually `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework` (or .framework). For Kit: `ScaleCloudKit/prebuilt/NextcloudKit.framework`. For App: whatever payload the Wrap target or distribution step expects under `ScaleCloudApp/prebuilt/`. The final layout after your manual unzip must be identical to what a committed prebuilt tree would look like.
 
 **Q: Why do the specs use project references / search paths that point at prebuilt/ instead of just committing the final built products into the higher layer?**
 
-A: It keeps each layer's build job small and focused, makes the dependency handoff explicit and auditable, and lets a higher layer's workflow stay "maximally compatible" with the upstream project descriptions (which expect to link by framework name and search path) without having to embed another layer's entire build graph. It is the same principle that the old Tuist `.project()` + conditional-post-build design was trying to achieve, just realized with ordinary xcodegen / pbxproj mechanisms and ordinary GitHub artifact download steps.
+A: It keeps each layer's build job small and focused, makes the handoff between layers explicit (human unpacks artifact into prebuilt/ → next dispatch just sees it), and lets the higher layers stay compatible with how the upstream projects (and the adapted pbxproj) declare framework dependencies — by name and search path — without forcing every build to recompile everything below it.
 
 **Q: Do I need Go installed locally?**
 

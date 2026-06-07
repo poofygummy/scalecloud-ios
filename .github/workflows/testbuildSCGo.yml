@@ -58,12 +58,11 @@ jobs:
       - name: Stage prebuilt tree for downstream layers
         if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
         run: |
+          # Produce a clean tree under ScaleCloudGo/prebuilt/ containing exactly the layout
+          # that a human should unpack a "ScaleCloudGo-prebuilt" artifact into.
+          # The artifact will contain ScaleCloudGo/prebuilt/..., so a manual unzip into the repo root
+          # will land the xcframework (or framework) in the right place for Kit/App/Wrap dispatches.
           mkdir -p ScaleCloudGo/prebuilt
-          # Extract the gomobile-produced framework(s) from the archive payload into the
-          # conventional prebuilt layout expected by ScaleCloudKit (and documented in prebuilt/README.md).
-          # gomobile bind for a single-arch target produces a .framework; xcodebuild archive nests it.
-          # We copy the best candidate so the resulting artifact, when unpacked, lands at:
-          #   ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework  (or .framework) identically to git checkouts.
           ARCH_ROOT="ScaleCloudGo/build/ScaleCloudGo.xcarchive"
           CANDIDATE=$(find "$ARCH_ROOT" -type d \( -name 'ScaleCloudGo.framework' -o -name 'ScaleCloudGo.xcframework' \) 2>/dev/null | head -1 || true)
           if [ -n "$CANDIDATE" ]; then

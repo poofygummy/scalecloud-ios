@@ -3,10 +3,6 @@ name: Build ScaleCloudKit
 on:
   workflow_dispatch:
     inputs:
-      go_run_id:
-        description: 'GitHub run-id of a prior "Build ScaleCloudGo" workflow that published ScaleCloudGo-prebuilt (leave empty to build Go locally in this run)'
-        required: false
-        type: string
       publish_prebuilt:
         description: 'Publish a clean prebuilt artifact (ScaleCloudKit-prebuilt) for App/Wrap downstream layers'
         required: false
@@ -23,58 +19,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- Optional: materialize ScaleCloudGo prebuilt from a prior successful run ---
-      # If a go_run_id is supplied we download the prebuilt artifact produced by the Go layer
-      # and unpack it verbatim under ScaleCloudGo/prebuilt/. This lets the Kit build run
-      # completely independently without re-executing the full Go/Tailscale toolchain.
-      # The layout after unpack must match what a git checkout (or local Go build) would place there
-      # so that both the projectReference in ScaleCloudKit/project.yml and any build-phase guards resolve.
-      - name: Download and materialize ScaleCloudGo prebuilt from prior run
-        if: ${{ github.event.inputs.go_run_id != '' }}
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ github.event.inputs.go_run_id }}
-          name: ScaleCloudGo-prebuilt
-          path: ScaleCloudGo/prebuilt-download
-      - name: Place downloaded Go prebuilt into repo tree
-        if: ${{ github.event.inputs.go_run_id != '' }}
+      - name: Verify ScaleCloudGo prebuilt is present (human must have downloaded the artifact and placed it under ScaleCloudGo/prebuilt/)
         run: |
-          mkdir -p ScaleCloudGo/prebuilt
-          rsync -a ScaleCloudGo/prebuilt-download/ ScaleCloudGo/prebuilt/ || cp -a ScaleCloudGo/prebuilt-download/. ScaleCloudGo/prebuilt/
-          ls -lR ScaleCloudGo/prebuilt/ | head -30
-          echo "ScaleCloudGo prebuilt materialized from run ${{ github.event.inputs.go_run_id }}"
+          if [ ! -d "ScaleCloudGo/prebuilt" ] || [ -z "$(ls -A ScaleCloudGo/prebuilt 2>/dev/null || true)" ]; then
+            echo "ERROR: ScaleCloudGo/prebuilt/ is empty or missing."
+            echo "You must download the 'ScaleCloudGo-prebuilt' artifact from a prior successful 'Build ScaleCloudGo' run,"
+            echo "and unpack it so that ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework (or .framework) exists in the tree before dispatching this Kit build."
+            echo "This is pure data movement — the workflow never cross-downloads artifacts from other runs."
+            exit 1
+          fi
+          echo "✓ Found ScaleCloudGo prebuilt in tree (will be used via project reference; no Go toolchain will be installed for this Kit build)"
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.26'
-          cache-dependency-path: 'ScaleCloudGo/go.sum'
-
-      - name: Provision tools
+      - name: Provision tools (xcodegen only — no Go or gomobile needed when prebuilt is supplied)
         run: |
           brew install xcodegen
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          go install golang.org/x/mobile/cmd/gobind@latest
-          gomobile init
 
       - name: Set Xcode version
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
-      # 1. Generate prerequisite first (this will be a no-op or cheap header/module only step
-      #    when a prebuilt is already present under ScaleCloudGo/prebuilt/).
-      - name: Generate ScaleCloudGo project
+      # The Go project must be present for the projectReference in Kit's project.yml to resolve.
+      # We still run xcodegen on it so the .xcodeproj metadata exists, but this does not compile Go.
+      - name: Generate ScaleCloudGo project (for projectReference only; no compilation)
         working-directory: ScaleCloudGo
         run: xcodegen generate
-        # ← Add this diagnostic step
-      - name: List actual targets in ScaleCloudGo project
-        run: xcodebuild -project ScaleCloudGo/ScaleCloudGo.xcodeproj -list
 
-      # 2. Generate ScaleCloudKit from root (so ../ paths in projectReferences resolve correctly)
+      # Generate and build only the Kit layer.
       - name: Generate ScaleCloudKit
         run: xcodegen generate --spec ScaleCloudKit/project.yml
 
       # 3. Build using the individual project (no workspace needed)
-      - name: Build ScaleCloudKit
+      - name: Build ScaleCloudKit (only this layer; Go prebuilt must already be in ScaleCloudGo/prebuilt/ from a prior human unpack)
         run: |
           xcodebuild archive \
             -project ScaleCloudKit/ScaleCloudKit.xcodeproj \
@@ -89,9 +63,9 @@ jobs:
           path: ScaleCloudKit/build/ScaleCloudKit.xcarchive
           retention-days: 1
 
-      # Stage and publish a clean prebuilt tree named exactly as expected by downstream App layer
-      # (the adapted ScaleCloudApp/ScaleCloudApp.xcodeproj references ../ScaleCloudKit/prebuilt/NextcloudKit.framework
-      #  via classic PBXFileReference + FRAMEWORK_SEARCH_PATHS; the prebuilt artifact therefore contains that folder).
+      # Stage a clean prebuilt tree (NextcloudKit.framework layout) into ScaleCloudKit/prebuilt/
+      # so that the uploaded artifact, when a human downloads + unpacks it, lands ready for
+      # the App layer's ScaleCloudApp/ScaleCloudApp.xcodeproj to find at ../ScaleCloudKit/prebuilt/NextcloudKit.framework
       - name: Stage NextcloudKit-prebuilt tree for downstream layers
         if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
         run: |
@@ -107,10 +81,9 @@ jobs:
           else
             echo "Searching for the built framework in any Products dir..."
             find . -path '*ScaleCloudKit*' -name '*.framework' -type d 2>/dev/null | head -5
-            # As a last resort, if an xcodebuild build/Products directory has it, copy that.
           fi
 
-      - name: Upload prebuilt artifact (for individual App/Wrap builds)
+      - name: Upload prebuilt artifact (human downloads this and manually extracts the contents into ScaleCloudKit/prebuilt/ in their clone before the next dispatch)
         if: ${{ github.event.inputs.publish_prebuilt == 'true' || github.event.inputs.publish_prebuilt == true || github.event.inputs.publish_prebuilt == '' }}
         uses: actions/upload-artifact@v4
         with:

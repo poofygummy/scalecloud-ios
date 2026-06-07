@@ -393,7 +393,7 @@ The active build discipline (see `BUILD_WORKFLOW.md`) is:
 - The authoritative description of the App layer is the narrow-edit copy of the upstream `nextcloud/ios` `Nextcloud.xcodeproj` under `ScaleCloudApp/ScaleCloudApp.xcodeproj/`.
 - Go and Kit layers continue to have lightweight `project.yml` files used exclusively inside their GitHub jobs.
 - All generation (`xcodegen`, `gomobile`, `xcodebuild`) happens only on GitHub-hosted runners as part of one of the four canonical `workflow_dispatch` jobs.
-- Higher layers consume lower-layer outputs by receiving a prior run id (the job does `actions/download-artifact` + materializes the tree under `<layer>/prebuilt/`) or by checking out a committed prebuilt tree.
+- Higher layers consume lower-layer outputs by you (the human) manually downloading the prior layer's `*-prebuilt` artifact from the GitHub Actions UI and unpacking it into the appropriate `<layer>/prebuilt/` directory in your clone before you dispatch the higher layer's workflow. The workflows only verify that the prebuilt trees are already present; they never automatically fetch artifacts from other runs.
 
 `BUILD_WORKFLOW.md` is the current source of truth for dispatch, artifact handoff, and credit-saving independent layer builds. The Golden Rule ("we only execute any build steps as GitHub workflows, ever") governs all tooling.
 

@@ -16,11 +16,14 @@ ScaleCloudKit/prebuilt/
 ## CI usage — independent layer build
 
 - Use workflow: **Build ScaleCloudKit** (testbuildSCKit.yml)
-- Optional input: `go_run_id` — if you pass the run ID of a prior successful "Build ScaleCloudGo" that published `ScaleCloudGo-prebuilt`, the Kit workflow will fetch that artifact and unpack it under `ScaleCloudGo/prebuilt/` before anything else runs. This removes the entire Go+gomobile toolchain installation and execution from the Kit GitHub job.
+- Before you dispatch it you must have manually obtained a Go prebuilt:
+  - Download the `ScaleCloudGo-prebuilt` artifact from a prior successful "Build ScaleCloudGo" run.
+  - Unpack it by hand into your clone so that `ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework` (or .framework) exists.
+- The Kit workflow itself will refuse to start (clear error in the first step) if that prebuilt tree is missing.
 - Always produces:
   - `ScaleCloudKit-xcarchive`
   - `ScaleCloudKit-prebuilt` (contains `NextcloudKit.framework`)
-- To build App/Wrap without rebuilding Kit: supply the prior `kit_run_id` to the App or Wrap `workflow_dispatch`.
+- To build App/Wrap without rebuilding Kit: download the `ScaleCloudKit-prebuilt` artifact yourself and unpack it into `ScaleCloudKit/prebuilt/` before you dispatch App or Wrap.
 
 The Kit layer's xcodegen project.yml pins exactly the same ALamofire/SwiftyJSON/SwiftyXMLParser versions as upstream NextcloudKit's Package.swift.
 
@@ -29,10 +32,11 @@ The Kit layer's xcodegen project.yml pins exactly the same ALamofire/SwiftyJSON/
 The only place `ScaleCloudKit` is generated and archived is inside the official **Build ScaleCloudKit** GitHub Actions workflow (`testbuildSCKit.yml`).
 
 Typical independent usage:
-- You have (or a prior dispatch produced) a `go_run_id` whose "Build ScaleCloudGo" run published `ScaleCloudGo-prebuilt`.
-- You dispatch the Kit workflow, supplying that `go_run_id`.
-- The Kit job downloads the Go prebuilt artifact, unpacks it under `ScaleCloudGo/prebuilt/`, then runs its own `xcodegen generate --spec ScaleCloudKit/project.yml` + `xcodebuild archive`.
-- On success it publishes `ScaleCloudKit-prebuilt` (containing `NextcloudKit.framework`) for App / Wrap.
+- You dispatch the Go workflow, wait for success, download its `ScaleCloudGo-prebuilt` artifact.
+- You unpack that artifact into `ScaleCloudGo/prebuilt/` in your clone.
+- You dispatch the Kit workflow (no inputs about prior runs).
+- The Kit job sees the Go prebuilt you placed there, generates only the Kit project, builds only the Kit layer, and publishes `ScaleCloudKit-prebuilt`.
+- You later download that artifact and unpack it into `ScaleCloudKit/prebuilt/` when you are ready for an App or Wrap dispatch.
 
 ## Used by
 
