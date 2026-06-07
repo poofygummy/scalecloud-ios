@@ -37,6 +37,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudApp-prebuilt
-          path: ScaleCloudApp/build/
+          path: ScaleCloudApp/build/App.xcarchive
           retention-days: 7
 
