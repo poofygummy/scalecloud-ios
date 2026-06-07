@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -15,9 +15,6 @@ jobs:
             echo "ERROR: ScaleCloudGo/prebuilt/ missing. Download ScaleCloudGo-prebuilt artifact first."
             exit 1
           fi
-
-      - name: Set Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
 
       - name: Generate Xcode project with xcodegen
         run: |
