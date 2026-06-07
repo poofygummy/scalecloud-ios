@@ -4,7 +4,7 @@ let project = Project(
     name: "ScaleCloudKit",
     settings: .settings(base: [
         "IPHONEOS_DEPLOYMENT_TARGET": "14.0",
-        "FRAMEWORK_SEARCH_PATHS": "$(inherited) $(BUILT_PRODUCTS_DIR)"
+        "FRAMEWORK_SEARCH_PATHS": "$(inherited) $(BUILT_PRODUCTS_DIR) $(PROJECT_DIR)/../ScaleCloudGo/prebuilt"
     ]),
     targets: [
         .target(
@@ -15,7 +15,7 @@ let project = Project(
             deploymentTargets: .iOS("14.0"),
             sources: ["Sources/**"],
             dependencies: [
-                .project(target: "ScaleCloudGo", path: "../ScaleCloudGo"),
+                .xcframework(path: "../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework"),
                 .external(name: "Alamofire"),
                 .external(name: "SwiftyJSON"),
                 .external(name: "SwiftyXMLParser")
