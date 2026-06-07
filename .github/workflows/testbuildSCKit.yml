@@ -28,7 +28,7 @@ jobs:
             echo "This is pure data movement — the workflow never cross-downloads artifacts from other runs."
             exit 1
           fi
-          echo "✓ Found ScaleCloudGo prebuilt in tree (will be used via project reference; no Go toolchain will be installed for this Kit build)"
+          echo "✓ Found ScaleCloudGo prebuilt in tree (will be wired as a direct framework reference + search path; no Go projectReference, no Go target, no gomobile will be used for this Kit build)"
 
       - name: Provision tools (xcodegen only — no Go or gomobile needed when prebuilt is supplied)
         run: |
