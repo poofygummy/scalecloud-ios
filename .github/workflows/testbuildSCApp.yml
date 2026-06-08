@@ -60,18 +60,11 @@ jobs:
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
             echo "Resolving packages (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
             
-            # Clean corrupted caches on retry
-            if [ $ATTEMPT -gt 1 ]; then
-              echo "Cleaning SPM caches..."
-              rm -rf ~/Library/Caches/org.swift.swiftpm/
-              rm -rf build/DerivedData/SourcePackages/
-            fi
-            
             if xcodebuild -resolvePackageDependencies \
               -project ScaleCloudApp.xcodeproj \
               -scheme ScaleCloudApp \
               -derivedDataPath build/DerivedData \
-              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages; then
+              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages 2>&1 | tee resolve.log; then
               echo "✓ Package resolution succeeded"
               break
             else
@@ -80,6 +73,16 @@ jobs:
                 echo "This is likely a GitHub Actions network issue. Try re-running the workflow."
                 exit 1
               fi
+              
+              # Try to identify and clean only the corrupted package
+              if grep -q "No such file or directory" resolve.log; then
+                CORRUPTED=$(grep -oP "repositories/\K[^']+" resolve.log | head -1)
+                if [ -n "$CORRUPTED" ]; then
+                  echo "Removing corrupted package cache: $CORRUPTED"
+                  rm -rf ~/Library/Caches/org.swift.swiftpm/repositories/$CORRUPTED
+                fi
+              fi
+              
               echo "Retrying in 10 seconds..."
               sleep 10
               ATTEMPT=$((ATTEMPT + 1))
