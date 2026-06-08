@@ -23,19 +23,11 @@ jobs:
       - name: Download GoogleService-Info.plist
         run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
 
-      - name: Generate project with xcodegen
+      - name: Configure project for prebuilt frameworks
         run: |
-          brew install xcodegen
           cd ScaleCloudApp
-          # Modify project.yml to remove ScaleCloudKit dependency and project reference
-          cat project.yml | \
-            sed '/dependencies:/,/target: ScaleCloudKit/d' | \
-            sed '/projectReferences:/,/path: ..\/ScaleCloudKit/d' > project_temp.yml
-          xcodegen generate --spec project_temp.yml
-          rm project_temp.yml
-          
-          # Add Kit prebuilt as framework search path
-          xcrun ruby -i -pe '$_.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/, "IPHONEOS_DEPLOYMENT_TARGET = 14.0;\n\t\t\t\tFRAMEWORK_SEARCH_PATHS = \"$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt/**\";\n")' \
+          # Add Kit and Go prebuilt as framework search paths
+          xcrun ruby -i -pe '$_.gsub!(/FRAMEWORK_SEARCH_PATHS = \(/, "FRAMEWORK_SEARCH_PATHS = (\n\t\t\t\t\t\"$(SRCROOT)/../ScaleCloudKit/prebuilt/**\",\n\t\t\t\t\t\"$(SRCROOT)/../ScaleCloudGo/prebuilt/**\",")' \
             ScaleCloudApp.xcodeproj/project.pbxproj
 
       - name: Build
