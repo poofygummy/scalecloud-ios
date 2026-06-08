@@ -53,26 +53,35 @@ jobs:
         run: |
           cd ScaleCloudApp
           
-          # Resolve packages with retry logic for flaky Firebase downloads
-          MAX_ATTEMPTS=3
+          # Resolve packages with retry logic for flaky network issues
+          MAX_ATTEMPTS=5
           ATTEMPT=1
           
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
             echo "Resolving packages (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
             
+            # Clean corrupted caches on retry
+            if [ $ATTEMPT -gt 1 ]; then
+              echo "Cleaning SPM caches..."
+              rm -rf ~/Library/Caches/org.swift.swiftpm/
+              rm -rf build/DerivedData/SourcePackages/
+            fi
+            
             if xcodebuild -resolvePackageDependencies \
               -project ScaleCloudApp.xcodeproj \
               -scheme ScaleCloudApp \
-              -derivedDataPath build/DerivedData; then
+              -derivedDataPath build/DerivedData \
+              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages; then
               echo "✓ Package resolution succeeded"
               break
             else
               if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
                 echo "✗ Package resolution failed after $MAX_ATTEMPTS attempts"
+                echo "This is likely a GitHub Actions network issue. Try re-running the workflow."
                 exit 1
               fi
-              echo "Retrying in 5 seconds..."
-              sleep 5
+              echo "Retrying in 10 seconds..."
+              sleep 10
               ATTEMPT=$((ATTEMPT + 1))
             fi
           done
