@@ -26,6 +26,16 @@ jobs:
             exit 1
           fi
 
+      - name: Cache SPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
+            ScaleCloudApp/build/DerivedData/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
       - name: Download GoogleService-Info.plist
         run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
 
@@ -38,6 +48,34 @@ jobs:
           echo "=== ScaleCloudGo framework ==="
           ls -la ScaleCloudGo/prebuilt/
           ls -la ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ || true
+
+      - name: Resolve SPM dependencies with retry
+        run: |
+          cd ScaleCloudApp
+          
+          # Resolve packages with retry logic for flaky Firebase downloads
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Resolving packages (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+            
+            if xcodebuild -resolvePackageDependencies \
+              -project ScaleCloudApp.xcodeproj \
+              -scheme ScaleCloudApp \
+              -derivedDataPath build/DerivedData; then
+              echo "✓ Package resolution succeeded"
+              break
+            else
+              if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                echo "✗ Package resolution failed after $MAX_ATTEMPTS attempts"
+                exit 1
+              fi
+              echo "Retrying in 5 seconds..."
+              sleep 5
+              ATTEMPT=$((ATTEMPT + 1))
+            fi
+          done
 
       - name: Build
         run: |
@@ -60,6 +98,8 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/App.xcarchive \
             -derivedDataPath build/DerivedData \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
