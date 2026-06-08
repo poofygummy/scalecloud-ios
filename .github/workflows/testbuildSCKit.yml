@@ -20,15 +20,7 @@ jobs:
         run: |
           brew install xcodegen
           cd ScaleCloudKit
-          # Modify project.yml to link prebuilt Go instead of source Go
-          sed '/target: ScaleCloudGo/d' project.yml > project_temp.yml
-          sed -i.bak '/projectReferences:/,/path: ..\ScaleCloudGo/d' project_temp.yml
-          xcodegen generate --spec project_temp.yml
-          rm project_temp.yml project_temp.yml.bak
-          
-          # Add Go prebuilt as framework search path
-          xcrun ruby -i -pe '$_.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/, "IPHONEOS_DEPLOYMENT_TARGET = 14.0;\n\t\t\t\tFRAMEWORK_SEARCH_PATHS = \"$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt/**\";\n")' \
-            ScaleCloudKit.xcodeproj/project.pbxproj
+          xcodegen generate
 
       - name: Build and extract framework
         run: |

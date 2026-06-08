@@ -15,8 +15,13 @@ targets:
     deploymentTarget: "14.0"
     sources:
       - path: Sources
+    settings:
+      base:
+        FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudApp/prebuilt/**"
     dependencies:
-      - target: ScaleCloudApp
-projectReferences:
-  ScaleCloudApp:
-    path: ../ScaleCloudApp/ScaleCloudApp.xcodeproj
+      # NOTE: ScaleCloudApp target dependency commented out for prebuilt workflow
+      # The app is linked via FRAMEWORK_SEARCH_PATHS pointing to ../ScaleCloudApp/prebuilt/
+      # - target: ScaleCloudApp
+# projectReferences:
+#   ScaleCloudApp:
+#     path: ../ScaleCloudApp/ScaleCloudApp.xcodeproj

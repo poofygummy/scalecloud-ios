@@ -40,10 +40,8 @@ targets:
         PRODUCT_NAME: ScaleCloudKit
         PRODUCT_MODULE_NAME: ScaleCloudKit
     dependencies:
-      - target: ScaleCloudGo/ScaleCloudGo
+      - framework: ../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework
+        embed: false
       - package: Alamofire
       - package: SwiftyJSON
       - package: SwiftyXMLParser
-projectReferences:
-  ScaleCloudGo:
-    path: ../ScaleCloudGo/ScaleCloudGo.xcodeproj
