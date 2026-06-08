@@ -33,31 +33,21 @@ jobs:
         run: |
           cd ScaleCloudApp
           
-          # Determine which targets to skip based on input
           if [ "${{ inputs.build_extensions }}" = "false" ]; then
             echo "Building main app only (skipping extensions)"
-            xcodebuild archive \
-              -target Nextcloud \
-              -destination 'generic/platform=iOS' \
-              -archivePath build/App.xcarchive \
-              -skipPackagePluginValidation \
-              -skipMacroValidation \
-              EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64 \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGN_IDENTITY="" \
-              CODE_SIGN_ENTITLEMENTS="" \
-              PROVISIONING_PROFILE_SPECIFIER=""
           else
             echo "Building main app with all extensions"
-            xcodebuild archive \
-              -scheme ScaleCloudApp \
-              -destination 'generic/platform=iOS' \
-              -archivePath build/App.xcarchive \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGN_IDENTITY="" \
-              CODE_SIGN_ENTITLEMENTS="" \
-              PROVISIONING_PROFILE_SPECIFIER=""
           fi
+          
+          xcodebuild archive \
+            -project ScaleCloudApp.xcodeproj \
+            -scheme ScaleCloudApp \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            PROVISIONING_PROFILE_SPECIFIER=""
 
       - name: Extract app from archive
         run: |
