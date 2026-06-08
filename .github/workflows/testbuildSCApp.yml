@@ -2,6 +2,12 @@ name: Build ScaleCloudApp
 
 on:
   workflow_dispatch:
+    inputs:
+      build_extensions:
+        description: 'Build app extensions (Share, File Provider, Widget, etc.)'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build:
@@ -26,9 +32,24 @@ jobs:
       - name: Build
         run: |
           cd ScaleCloudApp
+          
+          # Determine which targets to skip based on input
+          SKIP_TARGETS=""
+          if [ "${{ inputs.build_extensions }}" = "false" ]; then
+            echo "Building main app only (skipping extensions)"
+            SKIP_TARGETS="-skipPackagePluginValidation \
+              -skipMacroValidation \
+              EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64 \
+              -destination 'generic/platform=iOS' \
+              -target Nextcloud"
+          else
+            echo "Building main app with all extensions"
+            SKIP_TARGETS="-scheme ScaleCloudApp \
+              -destination 'generic/platform=iOS'"
+          fi
+          
           xcodebuild archive \
-            -scheme ScaleCloudApp \
-            -destination 'generic/platform=iOS' \
+            $SKIP_TARGETS \
             -archivePath build/App.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \

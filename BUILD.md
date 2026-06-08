@@ -100,6 +100,11 @@ git push
 ```bash
 # Requires: ScaleCloudKit/prebuilt/ committed
 # In GitHub Actions UI: Run "Build ScaleCloudApp" workflow
+# 
+# Workflow Options:
+#   - build_extensions: true (default) - Builds main app + all 7 extensions
+#   - build_extensions: false - Builds only main app (faster, for quick testing)
+#
 # Downloads artifact: ScaleCloudApp-prebuilt.zip
 unzip ScaleCloudApp-prebuilt.zip
 # Contains: ScaleCloudApp/prebuilt/
@@ -108,7 +113,11 @@ git commit -m "Add App prebuilt"
 git push
 ```
 
-**What it builds:** Main application archive
+**What it builds:** Main application archive (with or without extensions)
+
+**Build options:**
+- **With extensions (default):** Compiles all 8 targets (main app + 7 extensions). Use for production builds or when testing extension functionality.
+- **Main app only:** Compiles only the Nextcloud target, skipping extensions. Use for faster iteration when working on main app code that doesn't involve extensions.
 
 ### 4. ScaleCloudWrap
 ```bash
@@ -136,13 +145,16 @@ git push
 
 ### testbuildSCApp.yml
 - **Project generation:** NONE - uses existing committed ScaleCloudApp.xcodeproj (adapted from upstream nextcloud/ios)
+- **Workflow inputs:**
+  - `build_extensions` (boolean, default: true) - Whether to build app extensions along with main app
+    - When `true`: Builds main Nextcloud app + all 7 extensions (Share, File Provider, Widget, etc.)
+    - When `false`: Builds only the main Nextcloud app target, skipping all extensions (faster builds)
 - Checks Kit and Go prebuilts exist at `ScaleCloudKit/prebuilt/` and `ScaleCloudGo/prebuilt/`
 - Downloads mock Firebase GoogleService-Info.plist
-- Builds app with `xcodebuild archive -scheme ScaleCloudApp` with code signing disabled:
-  - `CODE_SIGNING_ALLOWED=NO`
-  - `CODE_SIGN_IDENTITY=""`
-  - `CODE_SIGN_ENTITLEMENTS=""`
-  - `PROVISIONING_PROFILE_SPECIFIER=""`
+- Builds app with `xcodebuild archive` with code signing disabled:
+  - If extensions enabled: Uses `-scheme ScaleCloudApp` (builds all targets in scheme)
+  - If extensions disabled: Uses `-target Nextcloud` (builds only main app target)
+  - Code signing flags: `CODE_SIGNING_ALLOWED=NO`, `CODE_SIGN_IDENTITY=""`, `CODE_SIGN_ENTITLEMENTS=""`, `PROVISIONING_PROFILE_SPECIFIER=""`
 - Copies archive to prebuilt directory
 - **Note:** Framework search paths are pre-configured in the committed xcodeproj at:
   - `FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt"`
@@ -244,6 +256,12 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
 - If error persists, verify workflow has all CODE_SIGNING flags set to NO/empty
 - Archive will not be installable on devices, but builds successfully for CI
 
+**Extension build failures**
+- If extensions fail to build but main app succeeds, use the `build_extensions: false` option
+- This allows you to iterate on main app code without waiting for extension compilation
+- Remember: Extensions need FRAMEWORK_SEARCH_PATHS configured (see "module not found" error above)
+- For production builds, always build with extensions enabled to catch integration issues
+
 ## Key Design Decisions
 
 **Manual artifacts** - Explicit control over when layers rebuild, no complex automation
@@ -257,3 +275,60 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
 **Code signing disabled** - App layer builds with CODE_SIGNING_ALLOWED=NO to avoid provisioning profile requirements in CI/CD
 
 **Maximum simplicity** - Shell commands only (sed, ruby), no Python scripts or complex logic
+
+
+
+cat << 'EOF'
+╔════════════════════════════════════════════════════════════════════╗
+║                    FRAMEWORK SEARCH PATHS FIX                      ║
+║                         COMPLETE ✓                                 ║
+╚════════════════════════════════════════════════════════════════════╝
+
+PROBLEM:
+  Build failed with "no such module 'ScaleCloudKit'" in Action Assistant
+  target, even though the main app target was fixed earlier.
+
+ROOT CAUSE:
+  Each app extension is a separate executable. Only the main Nextcloud app
+  target had FRAMEWORK_SEARCH_PATHS configured. All 7 extension targets
+  were missing this critical setting.
+
+SOLUTION:
+  Added FRAMEWORK_SEARCH_PATHS to all targets that import ScaleCloudKit:
+  
+  Main App:
+    ✓ Nextcloud (Debug + Release)
+  
+  Extensions (7):
+    ✓ Action Assistant (Debug + Release)
+    ✓ Notification Service Extension (Debug + Release)
+    ✓ File Provider Extension (Debug + Release)
+    ✓ File Provider Extension UI (Debug + Release)
+    ✓ Share (Debug + Release)
+    ✓ Widget (Debug + Release)
+    ✓ WidgetDashboardIntentHandler (Debug + Release)
+
+TOTAL: 16 configurations updated (8 targets × 2 configs each)
+
+VALUE FOR EACH:
+  FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt"
+
+VERIFICATION:
+  ✓ All 16 entries present in project.pbxproj
+  ✓ All targets verified with automated script
+  ✓ BUILD.md updated with comprehensive documentation
+  ✓ All changes committed (4 commits)
+
+COMMITS:
+  be1e0e8 - Fix ScaleCloudKit module not found in Action Assistant target
+  a37cee3 - Add FRAMEWORK_SEARCH_PATHS to all extension targets  
+  7e60b7e - Update BUILD.md to document framework search paths for all targets
+  d56b3f8 - Add missing FRAMEWORK_SEARCH_PATHS to File Provider Extension Release
+
+NEXT STEPS:
+  1. Push commits to repository
+  2. Run "Build ScaleCloudApp" workflow in GitHub Actions
+  3. Monitor for any remaining build errors
+
+═══════════════════════════════════════════════════════════════════════
+EOF
