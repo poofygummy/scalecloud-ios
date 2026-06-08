@@ -16,6 +16,13 @@ ScaleCloudWrap (distribution wrapper)
 
 ## Build Process
 
+Each layer:
+1. Checks that lower-layer prebuilt dependencies exist in repository
+2. For Go/Kit/Wrap: Generates Xcode project with xcodegen from project.yml
+3. For App: Uses existing committed ScaleCloudApp.xcodeproj (from upstream nextcloud/ios)
+4. Injects framework search paths to prebuilt dependencies
+5. Builds with xcodebuild or gomobile
+6. Uploads artifact for manual download
 
 You manually download artifacts, extract to `<layer>/prebuilt/`, and commit to repository.
 
@@ -78,23 +85,31 @@ git push
 - Runs: `gomobile bind -target=ios -o prebuilt/ScaleCloudGo.xcframework .`
 - Output: XCFramework with Tailscale proxy
 
-### testbuildSCKit.yml (51 lines)
+### testbuildSCKit.yml
+- **Project generation:** Uses xcodegen with modified project.yml (strips ScaleCloudGo dependency)
 - Checks Go prebuilt exists at `ScaleCloudGo/prebuilt/`
 - Uses `sed` to remove Go target dependency from project.yml
-- Uses `ruby` one-liner to inject framework search path
-- Generates with xcodegen, builds with xcodebuild
-- Extracts NextcloudKit.framework from archive
+- Generates project with xcodegen
+- Uses `ruby` to inject framework search path for Go prebuilt
+- Builds framework with `xcodebuild build` (not archive - frameworks don't archive)
+- Extracts ScaleCloudKit.framework from build products directory
 
-### testbuildSCApp.yml (41 lines)
-- Checks Kit prebuilt exists at `ScaleCloudKit/prebuilt/`
+### testbuildSCApp.yml
+- **Project generation:** NONE - uses existing committed ScaleCloudApp.xcodeproj from upstream nextcloud/ios
+- Checks Kit and Go prebuilts exist at `ScaleCloudKit/prebuilt/` and `ScaleCloudGo/prebuilt/`
 - Downloads mock Firebase GoogleService-Info.plist
-- Generates with xcodegen, builds with xcodebuild
-- Archives full app
+- Uses `ruby` to inject framework search path for Kit prebuilt into existing xcodeproj
+- Builds app with `xcodebuild archive`
+- Copies archive to prebuilt directory
 
-### testbuildSCWrap.yml (38 lines)
+### testbuildSCWrap.yml
+- **Project generation:** Uses xcodegen with modified project.yml (strips ScaleCloudApp dependency)
 - Checks App prebuilt exists at `ScaleCloudApp/prebuilt/`
-- Generates with xcodegen, builds with xcodebuild
-- Creates final wrapper
+- Uses `sed` to remove App target dependency from project.yml
+- Generates project with xcodegen
+- Uses `ruby` to inject framework search path for App prebuilt
+- Builds with `xcodebuild archive`
+- Creates final distribution wrapper
 
 ## Rebuild Strategy
 
@@ -121,8 +136,9 @@ git pull upstream main
 cd ScaleCloudApp
 git remote add upstream https://github.com/nextcloud/ios.git
 git pull upstream master
-# Resolve conflicts in iOSClient/ and Brand/
-# project.yml won't conflict (separate from upstream)
+# Resolve conflicts in iOSClient/, Brand/, and ScaleCloudApp.xcodeproj/
+# The committed ScaleCloudApp.xcodeproj is maintained and updateable from upstream
+# Workflow modifies it at build time to inject prebuilt framework paths
 ```
 
 ## Troubleshooting
@@ -150,6 +166,6 @@ git pull upstream master
 
 **Uniform patterns** - All four workflows follow identical structure for maintainability
 
-**Upstream compatibility** - Kit builds as "NextcloudKit" module name, minimal divergence from forks
+**Upstream compatibility** - Kit builds as "ScaleCloudKit" module. App layer uses committed upstream xcodeproj (updateable via git merge), modified at build time for prebuilt linking
 
 **Maximum simplicity** - Shell commands only (sed, ruby), no Python scripts or complex logic
