@@ -23,13 +23,6 @@ jobs:
       - name: Download GoogleService-Info.plist
         run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
 
-      - name: Configure project for prebuilt frameworks
-        run: |
-          cd ScaleCloudApp
-          # Add Kit prebuilt as framework search path to the existing upstream xcodeproj
-          xcrun ruby -i -pe 'gsub(/FRAMEWORK_SEARCH_PATHS = \(/, "FRAMEWORK_SEARCH_PATHS = (\n\t\t\t\t\t\\\"$(SRCROOT)/../ScaleCloudKit/prebuilt/**\\\",\n")' \
-            ScaleCloudApp.xcodeproj/project.pbxproj
-
       - name: Build
         run: |
           cd ScaleCloudApp
