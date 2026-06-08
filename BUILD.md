@@ -176,6 +176,7 @@ git pull upstream main
 # Resolve conflicts in Sources/
 # project.yml won't conflict (separate from upstream)
 ```
+NextcloudKit is currently not upstream compatible as we've renamed all internal variables to our new naming convention.
 
 ### Merging nextcloud/ios changes
 ```bash
