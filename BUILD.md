@@ -16,11 +16,6 @@ ScaleCloudWrap (distribution wrapper)
 
 ## Build Process
 
-Each layer:
-1. Checks that lower-layer prebuilt dependencies exist in repository
-2. Generates Xcode project with xcodegen
-3. Builds with xcodebuild
-4. Uploads artifact for manual download
 
 You manually download artifacts, extract to `<layer>/prebuilt/`, and commit to repository.
 
