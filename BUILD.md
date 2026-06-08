@@ -95,12 +95,12 @@ git push
 - Extracts ScaleCloudKit.framework from build products directory
 
 ### testbuildSCApp.yml
-- **Project generation:** NONE - uses existing committed ScaleCloudApp.xcodeproj from upstream nextcloud/ios
+- **Project generation:** NONE - uses existing committed ScaleCloudApp.xcodeproj (adapted from upstream nextcloud/ios)
 - Checks Kit and Go prebuilts exist at `ScaleCloudKit/prebuilt/` and `ScaleCloudGo/prebuilt/`
 - Downloads mock Firebase GoogleService-Info.plist
-- Uses `ruby` to inject framework search path for Kit prebuilt into existing xcodeproj
-- Builds app with `xcodebuild archive`
+- Builds app with `xcodebuild archive -scheme ScaleCloudApp`
 - Copies archive to prebuilt directory
+- **Note:** Framework search paths are pre-configured in the committed xcodeproj, not modified at build time
 
 ### testbuildSCWrap.yml
 - **Project generation:** Uses xcodegen with modified project.yml (strips ScaleCloudApp dependency)
@@ -137,8 +137,10 @@ cd ScaleCloudApp
 git remote add upstream https://github.com/nextcloud/ios.git
 git pull upstream master
 # Resolve conflicts in iOSClient/, Brand/, and ScaleCloudApp.xcodeproj/
-# The committed ScaleCloudApp.xcodeproj is maintained and updateable from upstream
-# Workflow modifies it at build time to inject prebuilt framework paths
+# The committed ScaleCloudApp.xcodeproj is tracked in our repo with:
+#   - Scheme renamed from "Nextcloud" to "ScaleCloudApp"
+#   - Framework search paths configured to point to ../ScaleCloudKit/prebuilt
+# After merging upstream changes, verify these customizations are preserved
 ```
 
 ## Troubleshooting
@@ -166,6 +168,6 @@ git pull upstream master
 
 **Uniform patterns** - All four workflows follow identical structure for maintainability
 
-**Upstream compatibility** - Kit builds as "ScaleCloudKit" module. App layer uses committed upstream xcodeproj (updateable via git merge), modified at build time for prebuilt linking
+**Upstream compatibility** - Kit builds as "ScaleCloudKit" module. App layer uses committed xcodeproj adapted from upstream (updateable via git merge), with framework search paths pre-configured for prebuilt dependencies
 
 **Maximum simplicity** - Shell commands only (sed, ruby), no Python scripts or complex logic
