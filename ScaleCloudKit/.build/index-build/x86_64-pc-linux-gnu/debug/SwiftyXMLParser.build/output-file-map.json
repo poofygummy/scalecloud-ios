@@ -1,0 +1,35 @@
+{
+  "": {
+    "swift-dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/master.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Accessor.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Accessor.d",
+    "object": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Accessor.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Accessor~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Accessor.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Element.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Element.d",
+    "object": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Element.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Element~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Element.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Error.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Error.d",
+    "object": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Error.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Error~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Error.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Parser.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Parser.d",
+    "object": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Parser.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Parser~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Parser.swiftdeps"
+  },
+  "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/XML.swift": {
+    "dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/XML.d",
+    "object": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/XML.swift.o",
+    "swiftmodule": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/XML~partial.swiftmodule",
+    "swift-dependencies": "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/XML.swiftdeps"
+  }
+}

@@ -1,0 +1,1029 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+    "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire_Alamofire.resources/PrivacyInfo.xcprivacy" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/PrivacyInfo.xcprivacy"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire_Alamofire.resources/PrivacyInfo.xcprivacy"
+        }
+      ]
+    },
+    "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON_SwiftyJSON.resources/PrivacyInfo.xcprivacy" : {
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyJSON/Source/SwiftyJSON/PrivacyInfo.xcprivacy"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON_SwiftyJSON.resources/PrivacyInfo.xcprivacy"
+        }
+      ]
+    }
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Alamofire-x86_64-pc-linux-gnu-debug.module" : {
+      "executable" : "/usr/libexec/swift/bin/swiftc",
+      "fileList" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/sources",
+      "importPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/AFError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataStreamRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DownloadRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPHeaders.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPMethod.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Notifications.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoding.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Protected.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Request.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/RequestTaskMap.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Response.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Session.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/SessionDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/URLConvertible+URLRequestConvertible.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/UploadRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/WebSocketRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/DispatchQueue+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/OperationQueue+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/Result+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/StringEncoding+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLRequest+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLSessionConfiguration+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AlamofireExtended.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AuthenticationInterceptor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/CachedResponseHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Combine.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Concurrency.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/EventMonitor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartFormData.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartUpload.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/NetworkReachabilityManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/OfflineRetrier.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RedirectHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestCompression.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestInterceptor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ResponseSerialization.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RetryPolicy.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ServerTrustEvaluation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/URLEncodedFormEncoder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Validation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DerivedSources/resource_bundle_accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/swift-version--413BBEA0737331CC.txt"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<Alamofire-x86_64-pc-linux-gnu-debug.module-resources>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Alamofire",
+      "moduleOutputPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules/Alamofire.swiftmodule",
+      "objects" : [
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/AFError.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DataRequest.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DataStreamRequest.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DownloadRequest.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/HTTPHeaders.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/HTTPMethod.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Notifications.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/ParameterEncoder.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/ParameterEncoding.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Protected.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Request.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/RequestTaskMap.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Response.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Session.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/SessionDelegate.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/URLConvertible+URLRequestConvertible.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/UploadRequest.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/WebSocketRequest.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DispatchQueue+Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/OperationQueue+Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Result+Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/StringEncoding+Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/URLRequest+Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/URLSessionConfiguration+Alamofire.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/AlamofireExtended.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/AuthenticationInterceptor.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/CachedResponseHandler.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Combine.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Concurrency.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/EventMonitor.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/MultipartFormData.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/MultipartUpload.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/NetworkReachabilityManager.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/OfflineRetrier.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/RedirectHandler.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/RequestCompression.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/RequestInterceptor.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/ResponseSerialization.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/RetryPolicy.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/ServerTrustEvaluation.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/URLEncodedFormEncoder.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/Validation.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/resource_bundle_accessor.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-pc-linux-gnu",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-enable-upcoming-feature",
+        "ExistentialAny",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-g",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings",
+        "-user-module-version",
+        "5.12.0",
+        "-package-name",
+        "alamofire",
+        "-Xcc",
+        "-fno-omit-frame-pointer"
+      ],
+      "outputFileMapPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules/Alamofire.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/AFError.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataRequest.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataStreamRequest.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DownloadRequest.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPHeaders.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPMethod.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Notifications.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoder.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoding.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Protected.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Request.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/RequestTaskMap.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Response.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Session.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/SessionDelegate.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/URLConvertible+URLRequestConvertible.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/UploadRequest.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/WebSocketRequest.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/DispatchQueue+Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/OperationQueue+Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/Result+Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/StringEncoding+Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLRequest+Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLSessionConfiguration+Alamofire.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AlamofireExtended.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AuthenticationInterceptor.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/CachedResponseHandler.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Combine.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Concurrency.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/EventMonitor.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartFormData.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartUpload.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/NetworkReachabilityManager.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/OfflineRetrier.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RedirectHandler.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestCompression.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestInterceptor.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ResponseSerialization.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RetryPolicy.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ServerTrustEvaluation.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/URLEncodedFormEncoder.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Validation.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DerivedSources/resource_bundle_accessor.swift"
+      ],
+      "tempsPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.SwiftyJSON-x86_64-pc-linux-gnu-debug.module" : {
+      "executable" : "/usr/libexec/swift/bin/swiftc",
+      "fileList" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/sources",
+      "importPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyJSON/Source/SwiftyJSON/SwiftyJSON.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/DerivedSources/resource_bundle_accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/swift-version--413BBEA0737331CC.txt"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<SwiftyJSON-x86_64-pc-linux-gnu-debug.module-resources>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "SwiftyJSON",
+      "moduleOutputPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules/SwiftyJSON.swiftmodule",
+      "objects" : [
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/SwiftyJSON.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/resource_bundle_accessor.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-pc-linux-gnu",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-g",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings",
+        "-Xcc",
+        "-fno-omit-frame-pointer"
+      ],
+      "outputFileMapPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules/SwiftyJSON.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyJSON/Source/SwiftyJSON/SwiftyJSON.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/DerivedSources/resource_bundle_accessor.swift"
+      ],
+      "tempsPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.SwiftyXMLParser-x86_64-pc-linux-gnu-debug.module" : {
+      "executable" : "/usr/libexec/swift/bin/swiftc",
+      "fileList" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/sources",
+      "importPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Element.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Error.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Parser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/XML.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/swift-version--413BBEA0737331CC.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "SwiftyXMLParser",
+      "moduleOutputPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules/SwiftyXMLParser.swiftmodule",
+      "objects" : [
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Accessor.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Element.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Error.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/Parser.swift.o",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/XML.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "x86_64-pc-linux-gnu",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-Xfrontend",
+        "-experimental-lazy-typecheck",
+        "-Xfrontend",
+        "-experimental-skip-all-function-bodies",
+        "-Xfrontend",
+        "-experimental-allow-module-with-compiler-errors",
+        "-Xfrontend",
+        "-empty-abi-descriptor",
+        "-g",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings",
+        "-Xcc",
+        "-fno-omit-frame-pointer"
+      ],
+      "outputFileMapPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules/SwiftyXMLParser.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : true,
+      "sources" : [
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Accessor.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Element.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Error.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Parser.swift",
+        "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/XML.swift"
+      ],
+      "tempsPath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Alamofire" : [
+      "/usr/libexec/swift/bin/swiftc",
+      "-module-name",
+      "Alamofire",
+      "-package-name",
+      "alamofire",
+      "-incremental",
+      "-c",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/AFError.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataRequest.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataStreamRequest.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DownloadRequest.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPHeaders.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPMethod.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Notifications.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoder.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoding.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Protected.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Request.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/RequestTaskMap.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Response.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Session.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/SessionDelegate.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/URLConvertible+URLRequestConvertible.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/UploadRequest.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/WebSocketRequest.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/DispatchQueue+Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/OperationQueue+Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/Result+Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/StringEncoding+Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLRequest+Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLSessionConfiguration+Alamofire.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AlamofireExtended.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AuthenticationInterceptor.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/CachedResponseHandler.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Combine.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Concurrency.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/EventMonitor.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartFormData.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartUpload.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/NetworkReachabilityManager.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/OfflineRetrier.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RedirectHandler.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestCompression.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestInterceptor.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ResponseSerialization.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RetryPolicy.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ServerTrustEvaluation.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/URLEncodedFormEncoder.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Validation.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DerivedSources/resource_bundle_accessor.swift",
+      "-I",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules",
+      "-target",
+      "x86_64-pc-linux-gnu",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-enable-upcoming-feature",
+      "ExistentialAny",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-g",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-user-module-version",
+      "5.12.0",
+      "-package-name",
+      "alamofire",
+      "-Xcc",
+      "-fno-omit-frame-pointer",
+      "-driver-use-frontend-path",
+      "/usr/libexec/swift/bin/swiftc"
+    ],
+    "SwiftyJSON" : [
+      "/usr/libexec/swift/bin/swiftc",
+      "-module-name",
+      "SwiftyJSON",
+      "-incremental",
+      "-c",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyJSON/Source/SwiftyJSON/SwiftyJSON.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/DerivedSources/resource_bundle_accessor.swift",
+      "-I",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules",
+      "-target",
+      "x86_64-pc-linux-gnu",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-g",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-Xcc",
+      "-fno-omit-frame-pointer",
+      "-driver-use-frontend-path",
+      "/usr/libexec/swift/bin/swiftc"
+    ],
+    "SwiftyXMLParser" : [
+      "/usr/libexec/swift/bin/swiftc",
+      "-module-name",
+      "SwiftyXMLParser",
+      "-incremental",
+      "-c",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Accessor.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Element.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Error.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Parser.swift",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/XML.swift",
+      "-I",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Modules",
+      "-target",
+      "x86_64-pc-linux-gnu",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-Xfrontend",
+      "-experimental-lazy-typecheck",
+      "-Xfrontend",
+      "-experimental-skip-all-function-bodies",
+      "-Xfrontend",
+      "-experimental-allow-module-with-compiler-errors",
+      "-Xfrontend",
+      "-empty-abi-descriptor",
+      "-g",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-Xcc",
+      "-fno-omit-frame-pointer",
+      "-driver-use-frontend-path",
+      "/usr/libexec/swift/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Alamofire" : [
+
+    ],
+    "SwiftyJSON" : [
+
+    ],
+    "SwiftyXMLParser" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "enableAllTraits" : false
+  },
+  "writeCommands" : {
+    "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/AFError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DataStreamRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/DownloadRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPHeaders.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/HTTPMethod.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Notifications.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/ParameterEncoding.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Protected.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Request.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/RequestTaskMap.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Response.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/Session.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/SessionDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/URLConvertible+URLRequestConvertible.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/UploadRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Core/WebSocketRequest.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/DispatchQueue+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/OperationQueue+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/Result+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/StringEncoding+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLRequest+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Extensions/URLSessionConfiguration+Alamofire.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AlamofireExtended.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/AuthenticationInterceptor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/CachedResponseHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Combine.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Concurrency.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/EventMonitor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartFormData.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/MultipartUpload.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/NetworkReachabilityManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/OfflineRetrier.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RedirectHandler.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestCompression.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RequestInterceptor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ResponseSerialization.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/RetryPolicy.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/ServerTrustEvaluation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/URLEncodedFormEncoder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/Alamofire/Source/Features/Validation.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/DerivedSources/resource_bundle_accessor.swift"
+        }
+      ],
+      "outputFilePath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/Alamofire.build/sources"
+    },
+    "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyJSON/Source/SwiftyJSON/SwiftyJSON.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/DerivedSources/resource_bundle_accessor.swift"
+        }
+      ],
+      "outputFilePath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyJSON.build/sources"
+    },
+    "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Element.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Error.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/Parser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/checkouts/SwiftyXMLParser/SwiftyXMLParser/XML.swift"
+        }
+      ],
+      "outputFilePath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/SwiftyXMLParser.build/sources"
+    },
+    "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/swift-version--413BBEA0737331CC.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/usr/libexec/swift/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/home/cvt/scalecloud-ios/ScaleCloudKit/.build/index-build/x86_64-pc-linux-gnu/debug/swift-version--413BBEA0737331CC.txt"
+    }
+  }
+}
