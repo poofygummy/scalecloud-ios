@@ -29,6 +29,16 @@ jobs:
       - name: Download GoogleService-Info.plist
         run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
 
+      - name: Verify framework structure
+        run: |
+          echo "=== ScaleCloudKit framework ==="
+          ls -la ScaleCloudKit/prebuilt/
+          ls -la ScaleCloudKit/prebuilt/ScaleCloudKit.framework/ || true
+          echo ""
+          echo "=== ScaleCloudGo framework ==="
+          ls -la ScaleCloudGo/prebuilt/
+          ls -la ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ || true
+
       - name: Build
         run: |
           cd ScaleCloudApp
@@ -39,15 +49,31 @@ jobs:
             echo "Building main app with all extensions"
           fi
           
+          # Clean any previous build artifacts
+          rm -rf build/
+          
+          # Build with explicit derived data path for cleaner builds
+          set -o pipefail
           xcodebuild archive \
             -project ScaleCloudApp.xcodeproj \
             -scheme ScaleCloudApp \
             -destination 'generic/platform=iOS' \
             -archivePath build/App.xcarchive \
+            -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
-            PROVISIONING_PROFILE_SPECIFIER=""
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            ONLY_ACTIVE_ARCH=NO \
+            DEBUG_INFORMATION_FORMAT=dwarf 2>&1 | tee build.log
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudApp-build-log
+          path: ScaleCloudApp/build.log
+          retention-days: 7
 
       - name: Extract app from archive
         run: |

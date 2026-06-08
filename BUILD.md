@@ -148,13 +148,19 @@ git push
 - **Workflow inputs:**
   - `build_extensions` (boolean, default: true) - Whether to build app extensions along with main app
     - When `true`: Builds main Nextcloud app + all 7 extensions (Share, File Provider, Widget, etc.)
-    - When `false`: Builds only the main Nextcloud app target, skipping all extensions (faster builds)
+    - When `false`: Builds only main app (note: due to Xcode project structure, extensions are still compiled but may fail gracefully)
 - Checks Kit and Go prebuilts exist at `ScaleCloudKit/prebuilt/` and `ScaleCloudGo/prebuilt/`
 - Downloads mock Firebase GoogleService-Info.plist
-- Builds app with `xcodebuild archive` with code signing disabled:
-  - If extensions enabled: Uses `-scheme ScaleCloudApp` (builds all targets in scheme)
-  - If extensions disabled: Uses `-target Nextcloud` (builds only main app target)
+- Verifies framework structure before building (lists prebuilt directories)
+- Builds app with `xcodebuild archive` with code signing disabled and optimized settings:
+  - Uses `-scheme ScaleCloudApp` (builds all targets in scheme)
   - Code signing flags: `CODE_SIGNING_ALLOWED=NO`, `CODE_SIGN_IDENTITY=""`, `CODE_SIGN_ENTITLEMENTS=""`, `PROVISIONING_PROFILE_SPECIFIER=""`
+  - Build optimizations:
+    - `-derivedDataPath build/DerivedData` - Uses explicit, clean derived data directory
+    - `ONLY_ACTIVE_ARCH=NO` - Builds all architectures (arm64, arm64e)
+    - `DEBUG_INFORMATION_FORMAT=dwarf` - Uses simpler debug format for CI reliability
+  - Captures complete build log to `build.log` for debugging
+  - Uploads build log as artifact if build fails
 - Copies archive to prebuilt directory
 - **Note:** Framework search paths are pre-configured in the committed xcodeproj at:
   - `FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt"`
@@ -257,8 +263,24 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
 - Archive will not be installable on devices, but builds successfully for CI
 
 **Extension build failures**
-- If extensions fail to build but main app succeeds, use the `build_extensions: false` option
-- This allows you to iterate on main app code without waiting for extension compilation
+- **Swift compilation errors in extensions:** Most commonly caused by:
+  - Missing or incorrect framework search paths (see "module not found" section above)
+  - Corrupted derived data from previous builds - workflow now cleans build directory
+  - Module import failures - verify frameworks have correct architectures
+  - Parallel build race conditions - workflow now uses explicit derived data path
+- **Debugging extension failures:**
+  - Download the `ScaleCloudApp-build-log` artifact from failed workflow run
+  - Search for first `error:` message - this is usually the root cause
+  - Common error patterns:
+    - `error: lstat(...Share.abi.json): No such file or directory` - Swift compiler failed before generating ABI
+    - `error: no such module 'XXX'` - Framework not found or missing module file
+    - `error: cannot find 'YYY' in scope` - Missing import or circular dependency
+- **Recent fixes applied (2026-06-08):**
+  - Added explicit derived data path to prevent build artifact conflicts
+  - Added `ONLY_ACTIVE_ARCH=NO` to ensure all architectures are built
+  - Added `DEBUG_INFORMATION_FORMAT=dwarf` for more reliable CI builds
+  - Added build log capture and upload on failure for easier debugging
+  - Added framework structure verification before build
 - Remember: Extensions need FRAMEWORK_SEARCH_PATHS configured (see "module not found" error above)
 - For production builds, always build with extensions enabled to catch integration issues
 
