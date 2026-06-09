@@ -23,22 +23,25 @@ ScaleCloudWrap/     # Distribution wrapper
 
 ### ScaleCloudKit
 - **Language:** Swift
-- **Module Name:** NextcloudKit (for upstream compatibility)
+- **Framework Name:** ScaleCloudKit.framework
 - **Dependencies:**
   - Alamofire 5.10.2+ (HTTP networking)
   - SwiftyJSON 5.0.2+ (JSON parsing)
   - SwiftyXMLParser 5.6.0+ (XML parsing)
 - **Upstream:** https://github.com/nextcloud/NextcloudKit
+- **Note:** Built as ScaleCloudKit.framework (not NextcloudKit)
 
 ### ScaleCloudApp
 - **Language:** Swift
 - **Dependencies:**
-  - NextcloudKit (from ScaleCloudKit layer)
+  - ScaleCloudKit (framework from ScaleCloudKit layer)
+  - ScaleCloudGo (XCFramework from Go layer)
   - RealmSwift (database)
   - MobileVLCKit (media playback)
   - LucidBanner (notifications)
   - Additional nextcloud/ios dependencies
 - **Upstream:** https://github.com/nextcloud/ios
+- **Note:** Uses committed .xcodeproj (not generated), with framework search paths pre-configured
 
 ### ScaleCloudWrap
 - **Language:** Swift
@@ -55,6 +58,16 @@ Quick summary:
 2. Build Kit layer → download artifact → commit to `ScaleCloudKit/prebuilt/`
 3. Build App layer → download artifact → commit to `ScaleCloudApp/prebuilt/`
 4. Build Wrap layer → download artifact (final deliverable)
+
+### Recent Build History
+
+**June 9, 2026** - ScaleCloud features integration and successful compilation
+- Added 3 missing Swift files to Xcode project (ScaleCloudWatchedFolders*, ScaleCloudDownloadsHelper)
+- Fixed iOS security-scoped bookmark API usage (removed macOS-only `.withSecurityScope` option)
+- Fixed optional binding error in NCSession.getSession() call
+- Updated framework references from NextcloudKit.framework to ScaleCloudKit.framework
+- **Result:** ✅ All targets compile successfully
+- **Commits:** `5f5eeef196`, `4134dffed0`, `2cdd5fd09b`, `68cf83aec6`
 
 ## Development Environment
 
@@ -142,11 +155,18 @@ See BUILD.md "Upstream Compatibility" section for merge instructions.
 
 ## Features
 
+### Core Nextcloud Features
 - **Tailscale Integration:** Native Go-based Tailscale client in iOS app
 - **Nextcloud Client:** Full-featured Nextcloud iOS client functionality
 - **Offline Support:** Local file caching and sync
 - **Media Playback:** Integrated video/audio player
 - **Secure Networking:** VPN-layer security via Tailscale
+
+### ScaleCloud-Specific Features
+- **Custom Login UI:** Specialized login flow for Tailscale-hosted Nextcloud instances
+- **Watched Download Folders:** Monitor user-selected folders and automatically upload new files
+- **Auto-Upload Integration:** Enhanced auto-upload for photos, videos, and watched folders
+- **Security-Scoped Bookmarks:** Persistent access to user-selected folders across app restarts
 
 ## License
 

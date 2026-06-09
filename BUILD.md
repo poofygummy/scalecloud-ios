@@ -88,13 +88,13 @@ git push
 # In GitHub Actions UI: Run "Build ScaleCloudKit" workflow
 # Downloads artifact: ScaleCloudKit-prebuilt.zip
 unzip ScaleCloudKit-prebuilt.zip
-# Contains: ScaleCloudKit/prebuilt/NextcloudKit.framework/
+# Contains: ScaleCloudKit/prebuilt/ScaleCloudKit.framework/
 git add ScaleCloudKit/prebuilt/
 git commit -m "Add Kit prebuilt"
 git push
 ```
 
-**What it builds:** Framework with module name "NextcloudKit" (for import compatibility)
+**What it builds:** Framework named "ScaleCloudKit.framework"
 
 ### 3. ScaleCloudApp
 ```bash
@@ -209,6 +209,51 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
 # Should return: 16 (8 targets × 2 configs)
 ```
 
+## Recent Development History
+
+### June 9, 2026 - ScaleCloud Features Integration
+**Issue:** Three Swift files for ScaleCloud-specific features existed in repository but were not included in Xcode project, causing compilation failures.
+
+**Files Added:**
+- `ScaleCloudApp/iOSClient/Account/Account Settings/ScaleCloudWatchedFoldersModel.swift`
+- `ScaleCloudApp/iOSClient/Account/Account Settings/ScaleCloudWatchedFoldersView.swift`
+- `ScaleCloudApp/iOSClient/Utility/ScaleCloudDownloadsHelper.swift`
+
+**Method:** Created Python script (`add_three_files.py`) to insert entries into project.pbxproj:
+- Added PBXBuildFile entries (3)
+- Added PBXFileReference entries (3)
+- Updated PBXGroup children arrays (Account Settings + Utility)
+- Added to PBXSourcesBuildPhase for Nextcloud target
+
+**Subsequent Compilation Errors Fixed:**
+
+1. **iOS Security-Scoped Bookmarks (4 errors)**
+   - **Problem:** Code used `.withSecurityScope` option, which is macOS-only
+   - **Root Cause:** On iOS, security scope is automatically included for URLs from UIDocumentPickerViewController
+   - **Solution:** Changed `options: .withSecurityScope` to `options: []` in 3 locations
+   - **Files Modified:**
+     - ScaleCloudWatchedFoldersModel.swift (lines 78, 116)
+     - ScaleCloudDownloadsHelper.swift (line 40)
+   - **Deinit Issue:** Removed deinit cleanup accessing @MainActor-isolated property from non-isolated context
+
+2. **Optional Binding Error**
+   - **Problem:** `NCSession.getSession()` returns non-optional Session, code used `guard let`
+   - **Solution:** Changed to validity check on returned session.account.isEmpty
+   - **File Modified:** ScaleCloudDownloadsHelper.swift (line 110)
+
+3. **Framework Not Found**
+   - **Problem:** project.pbxproj referenced NextcloudKit.framework, but prebuilt is ScaleCloudKit.framework
+   - **Solution:** Updated all framework references in project.pbxproj (21 occurrences across 8 targets)
+   - **Files Modified:** ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj
+
+**Commits:**
+- `5f5eeef196` - Add missing Swift files to Xcode project
+- `4134dffed0` - Fix getSession optional binding error
+- `2cdd5fd09b` - Fix iOS security-scoped bookmark API usage
+- `68cf83aec6` - Update framework references to ScaleCloudKit.framework
+
+**Result:** ✅ Build successful - all targets compile cleanly
+
 ## Troubleshooting
 
 **"prebuilt missing" error**
@@ -258,12 +303,11 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
     - `error: lstat(...Share.abi.json): No such file or directory` - Swift compiler failed before generating ABI
     - `error: no such module 'XXX'` - Framework not found or missing module file
     - `error: cannot find 'YYY' in scope` - Missing import or circular dependency
-- **Recent fixes applied (2026-06-08):**
-  - Added explicit derived data path to prevent build artifact conflicts
-  - Added `ONLY_ACTIVE_ARCH=NO` to ensure all architectures are built
-  - Added `DEBUG_INFORMATION_FORMAT=dwarf` for more reliable CI builds
-  - Added build log capture and upload on failure for easier debugging
-  - Added framework structure verification before build
+- **Recent fixes applied:**
+  - **(2026-06-08):** Added explicit derived data path, ONLY_ACTIVE_ARCH=NO, dwarf debug format, build log capture
+  - **(2026-06-09):** Added 3 missing Swift files (ScaleCloudWatchedFolders*, ScaleCloudDownloadsHelper)
+  - **(2026-06-09):** Fixed iOS security-scoped bookmark API usage (removed macOS-only .withSecurityScope)
+  - **(2026-06-09):** Updated framework references from NextcloudKit.framework to ScaleCloudKit.framework
 - Remember: Extensions need FRAMEWORK_SEARCH_PATHS configured (see "module not found" error above)
 - For production builds, always build with extensions enabled to catch integration issues
 
@@ -273,7 +317,7 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
 
 **Uniform patterns** - All four workflows follow similar structure for maintainability
 
-**Upstream compatibility** - Kit builds as "ScaleCloudKit" module. App layer uses committed xcodeproj adapted from upstream (updateable via git merge), with framework search paths pre-configured for prebuilt dependencies
+**Upstream compatibility** - Kit builds as "ScaleCloudKit.framework". App layer uses committed xcodeproj adapted from upstream (updateable via git merge), with framework search paths pre-configured for prebuilt dependencies. Framework references in project.pbxproj point to ScaleCloudKit.framework (not NextcloudKit)
 
 **No runtime modifications** - All project files (ScaleCloudApp.xcodeproj, ScaleCloudKit/project.yml, ScaleCloudWrap/project.yml) are committed with all configurations baked in. xcodegen layers (Kit/Wrap) have framework search paths defined in their project.yml files
 
