@@ -162,12 +162,7 @@ git push
   - Captures complete build log to `build.log` for debugging
   - Uploads build log as artifact if build fails
 - Copies archive to prebuilt directory
-- **Note:** Framework search paths are pre-configured in the committed xcodeproj at:
-  - `FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt"`
-  - Located in `ScaleCloudApp.xcodeproj/project.pbxproj` (16 occurrences across 8 targets × 2 configs each)
-  - Configured for: Nextcloud (main app), Action Assistant, Notification Service Extension, File Provider Extension, File Provider Extension UI, Share, Widget, WidgetDashboardIntentHandler
-  - Each target has Debug and Release configurations with identical framework search paths
-  - NO runtime injection - must be committed to repo
+- **Note:** Framework search paths pre-configured in committed xcodeproj (16 occurrences across 8 targets × 2 configs - see "module not found" troubleshooting for details)
 
 ### testbuildSCWrap.yml
 - **Project generation:** Uses xcodegen with committed project.yml
@@ -206,16 +201,12 @@ git pull upstream master
 # Resolve conflicts in iOSClient/, Brand/, and ScaleCloudApp.xcodeproj/
 # The committed ScaleCloudApp.xcodeproj is tracked in our repo with customizations:
 #   1. Scheme renamed from "Nextcloud" to "ScaleCloudApp"
-#   2. Framework search paths configured to point to prebuilt frameworks:
-#      FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt"
+#   2. Framework search paths configured (see verification command below)
 #   3. Code signing disabled (handled via xcodebuild flags in workflow)
 #
 # After merging upstream changes, verify these customizations are preserved:
-grep "FRAMEWORK_SEARCH_PATHS" ScaleCloudApp.xcodeproj/project.pbxproj
-# Should show 16 entries with both ScaleCloudKit and ScaleCloudGo prebuilt paths
-# (8 targets: main app + 7 extensions, each with Debug + Release configs)
 grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.pbxproj
-# Should return: 16
+# Should return: 16 (8 targets × 2 configs)
 ```
 
 ## Troubleshooting
@@ -232,17 +223,9 @@ grep -c "FRAMEWORK_SEARCH_PATHS.*ScaleCloudKit" ScaleCloudApp.xcodeproj/project.
   ```bash
   grep "FRAMEWORK_SEARCH_PATHS" ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj
   ```
-  Should show 16 entries (Debug + Release for main app + 7 extensions):
-  - Main Nextcloud app target (2 entries)
-  - Action Assistant extension (2 entries)
-  - Notification Service Extension (2 entries)
-  - File Provider Extension (2 entries)
-  - File Provider Extension UI (2 entries)
-  - Share extension (2 entries)
-  - Widget (2 entries)
-  - WidgetDashboardIntentHandler (2 entries)
+  Should show 16 entries (Debug + Release for 8 targets: main app + 7 extensions)
   
-  Each entry should be: `$(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt`
+  Each entry should be: `$(inherited) $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/../ScaleCloudGo/prebuilt`
   
   **Why all targets need it:** Each app extension is a separate executable that imports
   ScaleCloudKit. Without FRAMEWORK_SEARCH_PATHS, the compiler cannot locate the framework
