@@ -1,2 +1,2 @@
-# Prebuilt artifacts (tracked with Git LFS)
-**/prebuilt/
+# Prebuilt artifacts are tracked with Git LFS via .gitattributes
+# (nothing gitignored here)
