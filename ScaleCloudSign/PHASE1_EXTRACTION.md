@@ -1,7 +1,7 @@
 # Phase 1: Extraction Complete
 
 **Status**: Dependencies Configured - Ready for Phase 2
-**Files**: 49 extracted + ldid source tree + Silence.m4a asset
+**Files**: 49 extracted + ldid source tree + Silence.m4a asset + 102 Roxas files + 103 AltStoreCore files
 
 ## Source
 - SideStore 0.6.4: `/home/cvt/sidestore/`
@@ -25,17 +25,26 @@
 ### Resources (1 asset)
 `Resources/Silence.m4a` - Silent audio file for background execution extension
 
-## Dependencies (SPM)
+## Dependencies
 
-### Starscream
-WebSocket for Anisette V3
+### SPM Package: Starscream
+WebSocket for Anisette V3 - Public package dependency
 
-### Roxas
-Riley Testut utilities (ResultOperation)
+### Local Sources: Roxas (102 files)
+Riley Testut utilities (ResultOperation, data sources, UI helpers)
+Copied from `/home/cvt/sidestore/Dependencies/Roxas/Roxas/` to `Sources/Roxas/`
+- Objective-C utility library with UIKit extensions
+- File count includes .h/.m pairs, .xib files
+- No package manager dependency - compiled directly into framework
 
-### AltStoreCore
-CoreData models (InstalledApp, DatabaseManager, RefreshAttempt)
-Will replace with custom orchestration in Phase 3-4
+### Local Sources: AltStoreCore (103 files)
+CoreData models (InstalledApp, DatabaseManager, RefreshAttempt), extensions, types
+Copied from `/home/cvt/sidestore/AltStoreCore/` to `Sources/AltStoreCore/`
+- Swift framework with Core Data models and utilities
+- Includes .xcdatamodeld directories with multiple model versions
+- No package manager dependency - compiled directly into framework
+
+**Rationale**: Original SideStore uses these as local framework targets, not Swift packages. The GitHub repositories (rileytestut/Roxas, SideStore/AltStoreCore) are either private or inaccessible, causing SPM fetch failures in CI/CD workflows. Copying as local sources matches SideStore's architecture and avoids authentication issues.
 
 ## ldid Resolution
 ✅ Full source tree copied to `Sources/AltSign/ldid/`
@@ -153,6 +162,14 @@ Resources directory includes Silence.m4a as bundle resource.
 - `PHASE1_EXTRACTION.md` (updated file count and manifest)
 ------------------
 
+
+## Build Configuration Update
+
+**`project.yml`** dependency changes:
+- **Removed**: `Roxas` and `AltStoreCore` from `packages:` section
+- **Kept**: `Starscream` as only external SPM dependency
+- Local sources automatically compiled from `Sources/` directory
+- All three dependencies now link directly into ScaleCloudSign.framework
 
 ## Next: Phase 2
 - Strip UI from FetchAnisetteDataOperation
