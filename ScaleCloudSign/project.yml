@@ -31,16 +31,8 @@ targets:
       - framework: ../ScaleCloudKit/prebuilt/ScaleCloudKit.framework
         embed: false
       - package: Starscream
-      - package: Roxas
-      - package: AltStoreCore
       - sdk: UIKit.framework
 packages:
   Starscream:
     url: https://github.com/daltoniam/Starscream
     from: 4.0.0
-  Roxas:
-    url: https://github.com/rileytestut/Roxas
-    branch: master
-  AltStoreCore:
-    url: https://github.com/SideStore/AltStoreCore
-    branch: main
