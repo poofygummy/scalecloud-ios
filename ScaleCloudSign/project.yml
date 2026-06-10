@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+name: ScaleCloudSign
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+targets:
+  ScaleCloudSign:
+    type: framework
+    platform: iOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Resources
+        type: folder
+        buildPhase: resources
+      - path: Sources
+    settings:
+      base:
+        SKIP_INSTALL: "NO"
+        BUILD_LIBRARY_FOR_DISTRIBUTION: "YES"
+        DEFINES_MODULE: "YES"
+        PRODUCT_MODULE_NAME: "ScaleCloudSign"
+        FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt"
+        HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign/ldid $(SRCROOT)/Sources/AltSign/ldid/libplist/include"
+        OTHER_CPLUSPLUSFLAGS: "$(inherited) -w"
+        GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) unix=1"
+    dependencies:
+      - framework: ../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework
+        embed: false
+      - target: ScaleCloudKit/ScaleCloudKit
+      - package: Starscream
+      - package: Roxas
+      - package: AltStoreCore
+      - sdk: UIKit.framework
+packages:
+  Starscream:
+    url: https://github.com/daltoniam/Starscream
+    from: 4.0.0
+  Roxas:
+    url: https://github.com/rileytestut/Roxas
+    branch: master
+  AltStoreCore:
+    url: https://github.com/SideStore/AltStoreCore
+    branch: main

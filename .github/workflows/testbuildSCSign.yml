@@ -1,0 +1,80 @@
+name: Build ScaleCloudSign
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Go and Kit prebuilt exist
+        run: |
+          if [ ! -d "ScaleCloudGo/prebuilt" ]; then
+            echo "ERROR: ScaleCloudGo/prebuilt/ missing. Run ScaleCloudGo workflow first."
+            exit 1
+          fi
+          if [ ! -d "ScaleCloudKit/prebuilt" ]; then
+            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run ScaleCloudKit workflow first."
+            exit 1
+          fi
+
+      - name: Generate Xcode project with xcodegen
+        run: |
+          brew install xcodegen
+          cd ScaleCloudSign
+          xcodegen generate
+
+      - name: Build for iOS device
+        run: |
+          cd ScaleCloudSign
+          mkdir -p build
+          xcodebuild archive \
+            -project ScaleCloudSign.xcodeproj \
+            -scheme ScaleCloudSign \
+            -destination "generic/platform=iOS" \
+            -archivePath build/ScaleCloudSign-iOS \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build for iOS Simulator
+        run: |
+          cd ScaleCloudSign
+          xcodebuild archive \
+            -project ScaleCloudSign.xcodeproj \
+            -scheme ScaleCloudSign \
+            -destination "generic/platform=iOS Simulator" \
+            -archivePath build/ScaleCloudSign-Simulator \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create xcframework
+        run: |
+          cd ScaleCloudSign
+          mkdir -p prebuilt
+          xcodebuild -create-xcframework \
+            -framework build/ScaleCloudSign-iOS.xcarchive/Products/Library/Frameworks/ScaleCloudSign.framework \
+            -framework build/ScaleCloudSign-Simulator.xcarchive/Products/Library/Frameworks/ScaleCloudSign.framework \
+            -output prebuilt/ScaleCloudSign.xcframework
+
+      - name: Verify xcframework
+        run: |
+          echo "=== ScaleCloudSign.xcframework structure ==="
+          ls -la ScaleCloudSign/prebuilt/ScaleCloudSign.xcframework/
+          echo ""
+          echo "=== Architectures ==="
+          find ScaleCloudSign/prebuilt/ScaleCloudSign.xcframework -name "ScaleCloudSign" -type f -exec lipo -info {} \;
+
+      - name: Upload prebuilt
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudSign-prebuilt
+          path: ScaleCloudSign/prebuilt/
+          retention-days: 7
