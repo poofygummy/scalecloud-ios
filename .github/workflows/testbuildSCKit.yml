@@ -46,6 +46,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudKit-prebuilt
-          path: ScaleCloudKit/prebuilt/
+          path: |
+            ScaleCloudKit/prebuilt/
+            ScaleCloudKit/ScaleCloudKit.xcodeproj/
           retention-days: 7
           

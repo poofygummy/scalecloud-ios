@@ -50,5 +50,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudSign-prebuilt
-          path: ScaleCloudSign/prebuilt/
+          path: |
+            ScaleCloudSign/prebuilt/
+            ScaleCloudSign/ScaleCloudSign.xcodeproj/
           retention-days: 7
