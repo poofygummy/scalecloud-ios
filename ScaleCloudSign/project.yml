@@ -32,6 +32,7 @@ targets:
       - framework: ../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework
         embed: false
       - target: ScaleCloudKit
+        project: ScaleCloudKit
       - package: Starscream
       - package: Roxas
       - package: AltStoreCore
