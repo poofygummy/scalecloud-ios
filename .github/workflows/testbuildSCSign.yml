@@ -26,51 +26,25 @@ jobs:
           cd ScaleCloudSign
           xcodegen generate
 
-      - name: Build for iOS device
-        run: |
-          cd ScaleCloudSign
-          mkdir -p build
-          xcodebuild archive \
-            -project ScaleCloudSign.xcodeproj \
-            -scheme ScaleCloudSign \
-            -destination "generic/platform=iOS" \
-            -archivePath build/ScaleCloudSign-iOS \
-            SKIP_INSTALL=NO \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Build for iOS Simulator
-        run: |
-          cd ScaleCloudSign
-          xcodebuild archive \
-            -project ScaleCloudSign.xcodeproj \
-            -scheme ScaleCloudSign \
-            -destination "generic/platform=iOS Simulator" \
-            -archivePath build/ScaleCloudSign-Simulator \
-            SKIP_INSTALL=NO \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Create xcframework
+      - name: Build and extract framework
         run: |
           cd ScaleCloudSign
           mkdir -p prebuilt
-          xcodebuild -create-xcframework \
-            -framework build/ScaleCloudSign-iOS.xcarchive/Products/Library/Frameworks/ScaleCloudSign.framework \
-            -framework build/ScaleCloudSign-Simulator.xcarchive/Products/Library/Frameworks/ScaleCloudSign.framework \
-            -output prebuilt/ScaleCloudSign.xcframework
-
-      - name: Verify xcframework
-        run: |
-          echo "=== ScaleCloudSign.xcframework structure ==="
-          ls -la ScaleCloudSign/prebuilt/ScaleCloudSign.xcframework/
-          echo ""
-          echo "=== Architectures ==="
-          find ScaleCloudSign/prebuilt/ScaleCloudSign.xcframework -name "ScaleCloudSign" -type f -exec lipo -info {} \;
+          xcodebuild build \
+            -scheme ScaleCloudSign \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+          
+          # Copy framework from build products
+          FW=$(find build/Build/Products -type d -name "ScaleCloudSign.framework" | head -1)
+          if [ -z "$FW" ]; then
+            echo "ERROR: ScaleCloudSign.framework not found in build products"
+            find build -name "*.framework" -o -name "*.a"
+            exit 1
+          fi
+          echo "Found framework at: $FW"
+          cp -R "$FW" prebuilt/
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
