@@ -5,6 +5,9 @@ name: ScaleCloudSign
 settings:
   base:
     IPHONEOS_DEPLOYMENT_TARGET: "14.0"
+projectReferences:
+  ScaleCloudKit:
+    path: ../ScaleCloudKit/ScaleCloudKit.xcodeproj
 targets:
   ScaleCloudSign:
     type: framework
