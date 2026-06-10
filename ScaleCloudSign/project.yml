@@ -5,9 +5,6 @@ name: ScaleCloudSign
 settings:
   base:
     IPHONEOS_DEPLOYMENT_TARGET: "14.0"
-projectReferences:
-  ScaleCloudKit:
-    path: ../ScaleCloudKit/ScaleCloudKit.xcodeproj
 targets:
   ScaleCloudSign:
     type: framework
@@ -24,15 +21,15 @@ targets:
         BUILD_LIBRARY_FOR_DISTRIBUTION: "YES"
         DEFINES_MODULE: "YES"
         PRODUCT_MODULE_NAME: "ScaleCloudSign"
-        FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt"
+        FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt $(SRCROOT)/../ScaleCloudKit/prebuilt"
         HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign/ldid $(SRCROOT)/Sources/AltSign/ldid/libplist/include"
         OTHER_CPLUSPLUSFLAGS: "$(inherited) -w"
         GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) unix=1"
     dependencies:
       - framework: ../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework
         embed: false
-      - target: ScaleCloudKit
-        project: ScaleCloudKit
+      - framework: ../ScaleCloudKit/prebuilt/ScaleCloudKit.framework
+        embed: false
       - package: Starscream
       - package: Roxas
       - package: AltStoreCore
