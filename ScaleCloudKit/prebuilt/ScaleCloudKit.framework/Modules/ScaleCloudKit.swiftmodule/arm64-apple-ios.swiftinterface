@@ -782,6 +782,8 @@ public struct SCKSession : @unchecked Swift.Sendable {
   public let sessionUploadBackground: Foundation.URLSession
   public let sessionUploadBackgroundWWan: Foundation.URLSession
   public let proxyDictionary: [Swift.AnyHashable : Any]?
+  public static func applyProxySettings() -> [Swift.AnyHashable : Any]?
+  public static func registerSession(_ session: Foundation.URLSession)
   public let sessionDownloadBackgroundExt: Foundation.URLSession
   public let sessionUploadBackgroundExt: Foundation.URLSession
 }

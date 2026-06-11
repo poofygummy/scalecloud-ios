@@ -42987,6 +42987,78 @@
             ]
           },
           {
+            "kind": "Function",
+            "name": "applyProxySettings",
+            "printedName": "applyProxySettings()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "[Swift.AnyHashable : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.AnyHashable : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AnyHashable",
+                        "printedName": "Swift.AnyHashable",
+                        "usr": "s:s11AnyHashableV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:13ScaleCloudKit10SCKSessionV18applyProxySettingsSDys11AnyHashableVypGSgyFZ",
+            "mangledName": "$s13ScaleCloudKit10SCKSessionV18applyProxySettingsSDys11AnyHashableVypGSgyFZ",
+            "moduleName": "ScaleCloudKit",
+            "static": true,
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "registerSession",
+            "printedName": "registerSession(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "URLSession",
+                "printedName": "Foundation.URLSession",
+                "usr": "c:objc(cs)NSURLSession"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:13ScaleCloudKit10SCKSessionV15registerSessionyySo12NSURLSessionCFZ",
+            "mangledName": "$s13ScaleCloudKit10SCKSessionV15registerSessionyySo12NSURLSessionCFZ",
+            "moduleName": "ScaleCloudKit",
+            "static": true,
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
             "kind": "Var",
             "name": "sessionDownloadBackgroundExt",
             "printedName": "sessionDownloadBackgroundExt",

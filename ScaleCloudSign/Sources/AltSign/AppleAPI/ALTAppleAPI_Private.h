@@ -6,7 +6,7 @@
 //  Copyright © 2019 Riley Testut. All rights reserved.
 //
 
-#import <AltSign/ALTAppleAPI.h>
+#import "ALTAppleAPI.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

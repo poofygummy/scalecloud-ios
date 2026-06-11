@@ -28,7 +28,7 @@ targets:
           - "**/configure*"
           - "**/config.h.in"
           - "**/*.pc.in"
-          - "AltSign/include"
+          - "**/*.dict"
           - "AltSign/ldid/libplist/src/plist.h"
           - "AltSign/ldid/libplist/include"
           - "AltStoreCore/Components/Keychain.swift"
@@ -41,15 +41,39 @@ targets:
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt $(SRCROOT)/../ScaleCloudKit/prebuilt"
         HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign/ldid"
         OTHER_CPLUSPLUSFLAGS: "$(inherited) -w"
-        GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) unix=1"
+        GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) unix=1 MARKETPLACE=1"
     dependencies:
       - framework: ../ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework
         embed: false
       - framework: ../ScaleCloudKit/prebuilt/ScaleCloudKit.framework
         embed: false
       - package: Starscream
+      - package: KeychainAccess
+      - package: SemanticVersion
+      - package: Minimuxer
+      - package: Alamofire
+      - package: SwiftyJSON
+      - package: SwiftyXMLParser
       - sdk: UIKit.framework
 packages:
   Starscream:
     url: https://github.com/daltoniam/Starscream
     from: 4.0.0
+  KeychainAccess:
+    url: https://github.com/kishikawakatsumi/KeychainAccess
+    from: 4.2.0
+  SemanticVersion:
+    url: https://github.com/SwiftPackageIndex/SemanticVersion
+    from: 0.4.0
+  Minimuxer:
+    url: https://github.com/rileytestut/Minimuxer
+    from: 0.1.0
+  Alamofire:
+    url: https://github.com/Alamofire/Alamofire
+    from: 5.6.0
+  SwiftyJSON:
+    url: https://github.com/SwiftyJSON/SwiftyJSON
+    from: 5.0.0
+  SwiftyXMLParser:
+    url: https://github.com/yahoojapan/SwiftyXMLParser
+    from: 5.6.0
