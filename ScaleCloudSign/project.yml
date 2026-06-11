@@ -30,6 +30,7 @@ targets:
           - "**/*.pc.in"
           - "AltSign/include"
           - "AltSign/ldid/libplist/src/plist.h"
+          - "AltStoreCore/Components/Keychain.swift"
     settings:
       base:
         SKIP_INSTALL: "NO"
