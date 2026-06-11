@@ -30,6 +30,7 @@ targets:
           - "**/*.pc.in"
           - "AltSign/include"
           - "AltSign/ldid/libplist/src/plist.h"
+          - "AltSign/ldid/libplist/include"
           - "AltStoreCore/Components/Keychain.swift"
     settings:
       base:
@@ -38,7 +39,7 @@ targets:
         DEFINES_MODULE: "YES"
         PRODUCT_MODULE_NAME: "ScaleCloudSign"
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt $(SRCROOT)/../ScaleCloudKit/prebuilt"
-        HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign/ldid $(SRCROOT)/Sources/AltSign/ldid/libplist/include"
+        HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign/ldid"
         OTHER_CPLUSPLUSFLAGS: "$(inherited) -w"
         GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) unix=1"
     dependencies:
