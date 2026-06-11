@@ -10,7 +10,6 @@ import Foundation
 import CoreData
 
 import AltSign
-import SemanticVersion
 
 extension InstalledApp
 {

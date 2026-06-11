@@ -50,7 +50,6 @@ targets:
         embed: false
       - package: Starscream
       - package: KeychainAccess
-      - package: SemanticVersion
       - package: ZIPFoundation
       - package: Alamofire
       - package: SwiftyJSON
@@ -63,9 +62,6 @@ packages:
   KeychainAccess:
     url: https://github.com/kishikawakatsumi/KeychainAccess
     from: 4.2.0
-  SemanticVersion:
-    url: https://github.com/SwiftPackageIndex/SemanticVersion
-    from: 0.4.0
   ZIPFoundation:
     url: https://github.com/weichsel/ZIPFoundation
     from: 0.9.0

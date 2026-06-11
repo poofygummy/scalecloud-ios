@@ -12,8 +12,6 @@ import CoreData
 import Roxas
 import AltSign
 
-import SemanticVersion
-
 public enum ReleaseTracks: String, CodingKey, CaseIterable
 {
     case unknown
