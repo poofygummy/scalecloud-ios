@@ -28,6 +28,8 @@ targets:
           - "**/configure*"
           - "**/config.h.in"
           - "**/*.pc.in"
+          - "AltSign/include"
+          - "AltSign/ldid/libplist/src/plist.h"
     settings:
       base:
         SKIP_INSTALL: "NO"
