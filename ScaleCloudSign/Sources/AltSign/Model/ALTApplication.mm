@@ -7,7 +7,7 @@
 //
 
 #import "ALTApplication.h"
-#import "AppleAPI/ALTProvisioningProfile.h"
+#import "ALTProvisioningProfile.h"
 
 #include "alt_ldid.hpp"
 

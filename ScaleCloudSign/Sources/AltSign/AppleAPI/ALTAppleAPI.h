@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "../Capabilities/ALTCapabilities.h"
-#import "../Model/AppleAPI/ALTDevice.h"
+#import "ALTCapabilities.h"
+#import "ALTDevice.h"
 
 @class ALTAppleAPISession;
 

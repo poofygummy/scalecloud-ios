@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "../../Capabilities/ALTCapabilities.h"
+#import "ALTCapabilities.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

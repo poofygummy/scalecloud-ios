@@ -7,14 +7,14 @@
 //
 
 #import "ALTSigner.h"
-#import "../Model/AppleAPI/ALTAppID.h"
-#import "../Model/AppleAPI/ALTTeam.h"
-#import "../Model/AppleAPI/ALTCertificate.h"
-#import "../Model/AppleAPI/ALTProvisioningProfile.h"
-#import "../Model/ALTApplication.h"
+#import "ALTAppID.h"
+#import "ALTTeam.h"
+#import "ALTCertificate.h"
+#import "ALTProvisioningProfile.h"
+#import "ALTApplication.h"
 
-#import "../Categories/NSFileManager+Zip.h"
-#import "../Categories/NSError+ALTErrors.h"
+#import "NSFileManager+Zip.h"
+#import "NSError+ALTErrors.h"
 
 #import "alt_ldid.hpp"
 

@@ -7,12 +7,12 @@
 //
 
 #import "ALTAppleAPI_Private.h"
-#include "../Capabilities/ALTCapabilities.h"
+#include "ALTCapabilities.h"
 #import "ALTAppleAPISession.h"
 
-#import "../Model/AppleAPI/ALTAnisetteData.h"
+#import "ALTAnisetteData.h"
 
-#import "../Model/AppleAPI/ALTModel+Internal.h"
+#import "ALTModel+Internal.h"
 
 #import "../Categories/NSError+ALTErrors.h"
 #import "../Categories/NSCharacterSet+ASCII.h"

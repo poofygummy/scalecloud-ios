@@ -12,8 +12,8 @@
 #import <UIKit/UIKit.h>
 #endif
 
-#import "../Capabilities/ALTCapabilities.h"
-#import "AppleAPI/ALTDevice.h"
+#import "ALTCapabilities.h"
+#import "ALTDevice.h"
 
 @class ALTProvisioningProfile;
 
