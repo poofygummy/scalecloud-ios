@@ -9,7 +9,6 @@
 import Foundation
 
 #if !MARKETPLACE
-import CoreCrypto
 #endif
 
 extension Data {
