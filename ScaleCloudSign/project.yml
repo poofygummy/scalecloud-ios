@@ -31,6 +31,7 @@ targets:
           - "**/*.dict"
           - "AltSign/ldid/libplist/src/plist.h"
           - "AltSign/ldid/libplist/include"
+          - "AltSign/ldid/libplist/test"
           - "AltStoreCore/Components/Keychain.swift"
           - "RustBridge/lib"
           - "AltSign/AppleAPI/ALTAppleAPI_Private.h"
