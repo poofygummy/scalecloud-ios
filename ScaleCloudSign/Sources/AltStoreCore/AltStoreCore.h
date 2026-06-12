@@ -21,8 +21,8 @@ FOUNDATION_EXPORT const unsigned char AltStoreCoreVersionString[];
 #import <AltStoreCore/ALTPatreonBenefitID.h>
 
 // Shared
-#import <AltStoreCore/ALTConstants.h>
-#import <AltStoreCore/ALTConnection.h>
-#import <AltStoreCore/ALTWrappedError.h>
-#import <AltStoreCore/NSError+ALTServerError.h>
-#import <AltStoreCore/CFNotificationName+AltStore.h>
+#import "Shared/ALTConstants.h"
+#import "Shared/Connections/ALTConnection.h"
+#import "Shared/Errors/ALTWrappedError.h"
+#import "Shared/Categories/NSError+ALTServerError.h"
+#import "Shared/Categories/CFNotificationName+AltStore.h"
