@@ -33,6 +33,9 @@ targets:
           - "AltSign/ldid/libplist/include"
           - "AltStoreCore/Components/Keychain.swift"
           - "RustBridge/lib"
+          - "AltSign/AppleAPI/ALTAppleAPI_Private.h"
+          - "AltSign/Model/AppleAPI/ALTModel+Internal.h"
+          - "AltSign/Model/AppleAPI/ALTCertificateRequest.h"
     settings:
       base:
         SKIP_INSTALL: "NO"
