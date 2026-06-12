@@ -15,7 +15,7 @@
 #import "AltServer-Swift.h"
 @import AltSign;
 #elif !TARGET_OS_OSX
-#import <AltStoreCore/AltStoreCore-Swift.h>
+#import "ScaleCloudSign-Swift.h"
 @import AltSign;
 #endif
 
