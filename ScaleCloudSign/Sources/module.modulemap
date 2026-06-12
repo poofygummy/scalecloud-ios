@@ -2,4 +2,8 @@ framework module ScaleCloudSign {
     umbrella "."
     export *
     module * { export * }
+    
+    // Exclude C++ headers from module
+    exclude header "AltSign/ldid/ldid.hpp"
+    exclude header "AltSign/ldid/alt_ldid.hpp"
 }
