@@ -1,4 +1,4 @@
-module CCoreCrypto [system] {
+module CoreCrypto [system] {
     header "corecrypto/ccsrp.h"
     header "corecrypto/ccdrbg.h"
     header "corecrypto/ccsrp_gp.h"
