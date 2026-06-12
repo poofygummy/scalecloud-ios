@@ -1,7 +1,7 @@
 # Phase 1: Extraction Complete
 
 **Status**: All bridge files extracted - Ready for build test
-**Files**: 63 extracted + ldid source tree + Silence.m4a asset + 102 Roxas files + 103 AltStoreCore files
+**Files**: 65 extracted + ldid source tree + Silence.m4a asset + 102 Roxas files + 103 AltStoreCore files
 
 ## Source
 - SideStore 0.6.4: `/home/cvt/sidestore/`
@@ -188,6 +188,12 @@ Resources directory includes Silence.m4a as bundle resource.
 ✅ `/home/cvt/sidestore/Shared/Errors/ProcessError.swift` → `Sources/AltStoreCore/Shared/Errors/`
 
 **File count**: 49 + 3 Swift + 11 Shared = 63 extracted files
+
+## Additional Files Copied
+
+### Critical Missing Files (Now Added)
+✅ `/home/cvt/sidestore/AltStore/Operations/AuthenticationOperation.swift` → `Sources/Operations/`
+✅ `/home/cvt/sidestore/Shared/Extensions/Bundle+AltStore.swift` → `Sources/AltStoreCore/Extensions/`
 
 ## Next: Phase 2
 - Verify compilation succeeds
