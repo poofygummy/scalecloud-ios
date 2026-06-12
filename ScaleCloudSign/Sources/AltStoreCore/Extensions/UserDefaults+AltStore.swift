@@ -24,10 +24,9 @@ public extension UserDefaults
     @NSManaged var textInputSideJITServerurl: String?
     @NSManaged var textInputAnisetteURL: String?
     @NSManaged var customAnisetteURL: String?
-    @NSManaged var menuAnisetteURL: String
     @NSManaged var menuAnisetteList: String
-    @NSManaged var menuAnisetteServersList: [String]
     @NSManaged var preferredServerID: String?
+    // menuAnisetteURL and menuAnisetteServersList defined in UserDefaults+Anisette.swift
     
     @NSManaged var isBackgroundRefreshEnabled: Bool
     @NSManaged var enableEMPforWireguard: Bool
@@ -145,7 +144,7 @@ public extension UserDefaults
             #keyPath(UserDefaults.localServerSupportsRefreshing): localServerSupportsRefreshing,
             #keyPath(UserDefaults.requiresAppGroupMigration): true,
             #keyPath(UserDefaults.menuAnisetteList): "https://servers.sidestore.io/servers.json",
-            #keyPath(UserDefaults.menuAnisetteURL): "https://ani.sidestore.io",
+            //#keyPath(UserDefaults.menuAnisetteURL): "https://ani.sidestore.io", ------menuAnisetteURL default handled in UserDefaults+Anisette.swift getter
             #keyPath(UserDefaults.isCowExploitSupported): isMacDirtyCowSupported,
             #keyPath(UserDefaults.permissionCheckingDisabled): permissionCheckingDisabled,
             #keyPath(UserDefaults._preferredAppSorting): preferredAppSorting.rawValue,
