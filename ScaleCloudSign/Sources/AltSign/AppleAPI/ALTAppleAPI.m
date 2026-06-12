@@ -14,8 +14,8 @@
 
 #import "ALTModel+Internal.h"
 
-#import "../Categories/NSError+ALTErrors.h"
-#import "../Categories/NSCharacterSet+ASCII.h"
+#import "NSError+ALTErrors.h"
+#import "NSCharacterSet+ASCII.h"
 
 // Import ScaleCloudKit for shared proxy lifecycle
 #if __has_include(<ScaleCloudKit/ScaleCloudKit-Swift.h>)
