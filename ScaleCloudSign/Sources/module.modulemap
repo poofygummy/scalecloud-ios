@@ -1,24 +1,5 @@
 framework module ScaleCloudSign {
-    // Import all directories except ldid which contains C++ headers
-    umbrella "Roxas"
-    umbrella "AltStoreCore"
-    umbrella "AltSign/AppleAPI"
-    umbrella "AltSign/Capabilities"
-    umbrella "AltSign/Categories"
-    umbrella "AltSign/Model"
-    umbrella "AltSign/Signing"
-    umbrella "AltSign/include"
-    umbrella "Anisette"
-    umbrella "BackgroundTasks"
-    umbrella "Extensions"
-    umbrella "Minimuxer"
-    umbrella "Models"
-    umbrella "Operations"
-    umbrella "RustBridge"
-    umbrella "Security"
-    umbrella "Setup"
-    umbrella "Utilities"
-    
+    umbrella header "ScaleCloudSign.h"
     export *
     module * { export * }
 }
