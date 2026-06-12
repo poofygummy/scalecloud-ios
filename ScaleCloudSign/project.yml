@@ -48,6 +48,8 @@ targets:
         embed: false
       - framework: ../ScaleCloudKit/prebuilt/ScaleCloudKit.framework
         embed: false
+      - framework: Sources/RustBridge/lib/RustBridge.xcframework
+        embed: false
       - package: Starscream
       - package: KeychainAccess
       - package: ZIPFoundation
