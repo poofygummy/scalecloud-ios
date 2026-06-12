@@ -7,30 +7,30 @@
 //
 
 // Apple API
-#import "AppleAPI/ALTAppleAPI.h"
-#import "AppleAPI/ALTAppleAPISession.h"
+#import <AltSign/ALTAppleAPI.h>
+#import <AltSign/ALTAppleAPISession.h>
 
 // Signing
-#import "Signing/ALTSigner.h"
+#import <AltSign/ALTSigner.h>
 
 // Model
-#import "Model/ALTApplication.h"
-#import "Model/Apple API/ALTAccount.h"
-#import "Model/Apple API/ALTAnisetteData.h"
-#import "Model/Apple API/ALTTeam.h"
-#import "Model/Apple API/ALTDevice.h"
-#import "Model/Apple API/ALTCertificate.h"
-#import "Model/Apple API/ALTAppID.h"
-#import "Model/Apple API/ALTAppGroup.h"
-#import "Model/Apple API/ALTProvisioningProfile.h"
+#import <AltSign/ALTApplication.h>
+#import <AltSign/ALTAccount.h>
+#import <AltSign/ALTAnisetteData.h>
+#import <AltSign/ALTTeam.h>
+#import <AltSign/ALTDevice.h>
+#import <AltSign/ALTCertificate.h>
+#import <AltSign/ALTAppID.h>
+#import <AltSign/ALTAppGroup.h>
+#import <AltSign/ALTProvisioningProfile.h>
 
 // Categories
-#import "Categories/NSError+ALTErrors.h"
-#import "Categories/NSFileManager+Zip.h"
-#import "Categories/NSCharacterSet+ASCII.h"
+#import <AltSign/NSError+ALTErrors.h>
+#import <AltSign/NSFileManager+Zip.h>
+#import <AltSign/NSCharacterSet+ASCII.h>
 
 // Capabilities
-#import "Capabilities/ALTCapabilities.h"
+#import <AltSign/ALTCapabilities.h>
 
 //! Project version number for AltSign.
 FOUNDATION_EXPORT double AltSignVersionNumber;
