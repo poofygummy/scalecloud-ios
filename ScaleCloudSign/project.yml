@@ -61,7 +61,7 @@ targets:
         PRODUCT_MODULE_NAME: "ScaleCloudSign"
         MODULEMAP_FILE: "$(SRCROOT)/Sources/module.modulemap"
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/Sources/RustBridge/lib"
-        HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign $(SRCROOT)/Sources/AltSign/ldid $(SRCROOT)/Sources/AltSign/AppleAPI $(SRCROOT)/Sources/AltSign/Model $(SRCROOT)/Sources/AltSign/Model/AppleAPI $(SRCROOT)/Sources/AltSign/Categories $(SRCROOT)/Sources/AltSign/Capabilities $(SRCROOT)/Sources/AltSign/Signing $(SRCROOT)/Sources/Roxas $(SRCROOT)/Sources/AltStoreCore"
+        HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign $(SRCROOT)/Sources/AltSign/ldid $(SRCROOT)/Sources/AltSign/corecrypto/include $(SRCROOT)/Sources/AltSign/AppleAPI $(SRCROOT)/Sources/AltSign/Model $(SRCROOT)/Sources/AltSign/Model/AppleAPI $(SRCROOT)/Sources/AltSign/Categories $(SRCROOT)/Sources/AltSign/Capabilities $(SRCROOT)/Sources/AltSign/Signing $(SRCROOT)/Sources/Roxas $(SRCROOT)/Sources/AltStoreCore"
         OTHER_CPLUSPLUSFLAGS: "$(inherited) -w"
         GCC_PREPROCESSOR_DEFINITIONS: "$(inherited) unix=1 MARKETPLACE=1"
     dependencies:

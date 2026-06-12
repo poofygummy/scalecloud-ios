@@ -1,12 +1,13 @@
 # Phase 1: Extraction Complete
 
 **Status**: All bridge files extracted - Ready for build test
-**Files**: 65 extracted + ldid source tree + Silence.m4a asset + 102 Roxas files + 103 AltStoreCore files
+**Files**: 65 extracted + ldid source tree + corecrypto headers + Silence.m4a asset + 102 Roxas files + 103 AltStoreCore files
 
 ## Source
 - SideStore 0.6.4: `/home/cvt/sidestore/`
 - AltSign: `a48493283bd676ad3a4d5b65dc7c039cebf7749e`
 - ldid: Full source copied to `Sources/AltSign/ldid/`
+- corecrypto: Headers copied to `Sources/AltSign/corecrypto/`
 
 ## Extracted (Local - Modified)
 
@@ -54,6 +55,13 @@ Copied from `/home/cvt/sidestore/AltStoreCore/` to `Sources/AltStoreCore/`
 - libplist/ (entire directory)
 
 Build settings configured in project.yml
+
+## corecrypto Resolution
+✅ Headers copied from `/home/cvt/sidestore/Dependencies/AltSign/Dependencies/corecrypto/`
+- `Sources/AltSign/corecrypto/include/corecrypto/` - SRP crypto headers (ccsrp.h, ccsha2.h, etc.)
+- `Sources/AltSign/corecrypto/include/module.modulemap` - CCoreCrypto module
+- Used by GSAContext.swift for Apple authentication
+- Added to HEADER_SEARCH_PATHS in project.yml
 
 
 # ADDENDUM -------------------------------
@@ -194,6 +202,9 @@ Resources directory includes Silence.m4a as bundle resource.
 ### Critical Missing Files (Now Added)
 ✅ `/home/cvt/sidestore/AltStore/Operations/AuthenticationOperation.swift` → `Sources/Operations/`
 ✅ `/home/cvt/sidestore/Shared/Extensions/Bundle+AltStore.swift` → `Sources/AltStoreCore/Extensions/`
+
+### Crypto Headers (Now Added)
+✅ `/home/cvt/sidestore/Dependencies/AltSign/Dependencies/corecrypto/` → `Sources/AltSign/corecrypto/`
 
 ## Next: Phase 2
 - Verify compilation succeeds

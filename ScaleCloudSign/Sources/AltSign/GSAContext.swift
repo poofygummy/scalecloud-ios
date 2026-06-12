@@ -9,7 +9,7 @@
 import Foundation
 
 #if !MARKETPLACE
-import CommonCrypto
+import CCoreCrypto
 #endif
 
 class GSAContext
