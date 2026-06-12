@@ -59,6 +59,7 @@ targets:
         BUILD_LIBRARY_FOR_DISTRIBUTION: "YES"
         DEFINES_MODULE: "YES"
         PRODUCT_MODULE_NAME: "ScaleCloudSign"
+        MODULEMAP_FILE: "$(SRCROOT)/Sources/module.modulemap"
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/Sources/RustBridge/lib"
         HEADER_SEARCH_PATHS: "$(inherited) $(SRCROOT)/Sources/AltSign/include $(SRCROOT)/Sources/AltSign $(SRCROOT)/Sources/AltSign/ldid"
         OTHER_CPLUSPLUSFLAGS: "$(inherited) -w"
