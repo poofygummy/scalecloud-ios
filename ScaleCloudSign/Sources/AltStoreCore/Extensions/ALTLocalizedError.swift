@@ -8,10 +8,6 @@
 
 import Foundation
 
-#if !ALTJIT
-import AltSign
-#endif
-
 public let ALTLocalizedTitleErrorKey = "ALTLocalizedTitle"
 public let ALTLocalizedDescriptionKey = "ALTLocalizedDescription"
 

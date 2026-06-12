@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Roxas
 
 class ResultOperation<ResultType>: Operation
 {
