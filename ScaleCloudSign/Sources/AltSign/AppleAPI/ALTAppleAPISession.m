@@ -7,8 +7,8 @@
 //
 
 #import "ALTAppleAPISession.h"
-#import "ALTAccount.h"
-#import "ALTAnisetteData.h"
+#import "../Model/AppleAPI/ALTAccount.h"
+#import "../Model/AppleAPI/ALTAnisetteData.h"
 
 @implementation ALTAppleAPISession
 
