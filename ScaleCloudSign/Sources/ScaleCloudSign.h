@@ -10,4 +10,4 @@
 // Import sub-framework umbrella headers
 #import "Roxas/Roxas.h"
 #import "AltStoreCore/AltStoreCore.h"
-#import "AltSign/include/AltSign/AltSign.h"
+#import "AltSign/include/AltSign.h"
