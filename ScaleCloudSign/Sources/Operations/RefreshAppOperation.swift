@@ -7,11 +7,7 @@
 //
 
 import Foundation
-import AltStoreCore
-import AltSign
-import Roxas
 
-import Minimuxer
 
 @objc(RefreshAppOperation)
 final class RefreshAppOperation: ResultOperation<InstalledApp>

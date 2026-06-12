@@ -9,7 +9,6 @@
 import Foundation
 import CoreData
 
-import AltSign
 
 public extension ALTTeamType
 {

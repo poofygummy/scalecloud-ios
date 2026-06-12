@@ -9,7 +9,6 @@
 import Foundation
 import KeychainAccess
 
-import AltSign
 
 @propertyWrapper
 public struct KeychainItem<Value>

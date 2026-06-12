@@ -9,8 +9,6 @@
 import Foundation
 import CoreData
 
-import Roxas
-import AltSign
 
 public enum ReleaseTracks: String, CodingKey, CaseIterable
 {

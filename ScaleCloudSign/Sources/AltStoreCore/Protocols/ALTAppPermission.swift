@@ -8,7 +8,6 @@
 
 import RegexBuilder
 
-import AltSign
 
 extension ALTAppPermissionType
 {

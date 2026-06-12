@@ -9,7 +9,6 @@
 import Foundation
 import CoreData
 
-import AltSign
 
 @objc(InstalledExtension)
 public class InstalledExtension: BaseEntity, InstalledAppProtocol

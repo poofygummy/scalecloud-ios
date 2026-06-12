@@ -9,7 +9,6 @@
 import Foundation
 import CoreData
 
-import AltSign
 
 extension InstalledApp
 {

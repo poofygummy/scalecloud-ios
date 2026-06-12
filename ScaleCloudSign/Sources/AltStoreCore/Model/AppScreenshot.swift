@@ -8,7 +8,6 @@
 
 import CoreData
 
-import AltSign
 
 public extension AppScreenshot
 {

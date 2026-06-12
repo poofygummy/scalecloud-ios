@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import AltSign
 
 /// Notification posted when setup flow completes successfully
 public extension Notification.Name {

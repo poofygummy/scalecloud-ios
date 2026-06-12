@@ -8,8 +8,6 @@
 
 import Foundation
 import CoreData
-import AltStoreCore
-import AltSign
 
 final class RefreshGroup: NSObject
 {

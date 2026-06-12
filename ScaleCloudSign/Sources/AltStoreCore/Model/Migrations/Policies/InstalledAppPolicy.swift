@@ -7,7 +7,6 @@
 //
 
 import CoreData
-import AltSign
 
 @objc(InstalledAppToInstalledAppMigrationPolicy)
 class InstalledAppToInstalledAppMigrationPolicy: NSEntityMigrationPolicy

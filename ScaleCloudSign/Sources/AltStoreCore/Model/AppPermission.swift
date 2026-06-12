@@ -9,7 +9,6 @@
 import CoreData
 import UIKit
 
-import AltSign
 
 @objc(AppPermission) @dynamicMemberLookup
 public class AppPermission: BaseEntity

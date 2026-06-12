@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import RustBridge
 
 public class Heartbeat {
     public static var lastBeatSuccessful = false

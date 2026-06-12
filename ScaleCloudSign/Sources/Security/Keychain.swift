@@ -8,7 +8,6 @@
 
 import Foundation
 import KeychainAccess
-import AltSign
 
 /// Property wrapper for Keychain items supporting Data and String types
 @propertyWrapper

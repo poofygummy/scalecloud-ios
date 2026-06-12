@@ -9,9 +9,6 @@
 import Foundation
 import CommonCrypto
 import Starscream
-import AltStoreCore
-import AltSign
-import Roxas
 import ScaleCloudKit
 
 class ANISETTE_VERBOSITY: Operation {} // dummy tag iface

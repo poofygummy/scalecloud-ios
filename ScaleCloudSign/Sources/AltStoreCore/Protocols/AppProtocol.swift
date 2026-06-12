@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import AltSign
 
 public protocol AppProtocol
 {
