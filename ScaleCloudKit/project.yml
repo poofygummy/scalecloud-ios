@@ -5,13 +5,8 @@
 # External package pins are taken from upstream nextcloud/NextcloudKit Package.swift
 # (read-only reference clone) to keep the declaration surface maximally compatible
 # with the upstream NextcloudKit contract. The actual sources under ScaleCloudKit/Sources
-# contain the ScaleCloud fork (proxy integration etc.).
-#
-# IMPORTANT FOR PREBUILT HANDOFF: the PRODUCT_NAME and PRODUCT_MODULE_NAME are forced
-# to 'NextcloudKit' so that the archived framework directory is NextcloudKit.framework
-# and the Swift module seen by importers (including the transplanted upstream sources
-# in iOSClient/ and Brand/) remains "NextcloudKit".  This preserves source compatibility
-# with upstream without mass-renaming imports in the App layer.
+# contain the ScaleCloudKit fork (proxy integration etc.).
+
 
 name: ScaleCloudKit
 packages:

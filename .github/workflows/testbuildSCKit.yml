@@ -32,7 +32,7 @@ jobs:
             -scheme ScaleCloudKit \
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+            BUILD_LIBRARY_FOR_DISTRIBUTION=NO
           
           # Copy framework from build products
           FW=$(find build/Build/Products -type d -name "ScaleCloudKit.framework" | head -1)
