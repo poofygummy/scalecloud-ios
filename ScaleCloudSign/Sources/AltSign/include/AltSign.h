@@ -7,8 +7,8 @@
 //
 
 // Apple API
-#import "../API/ALTAppleAPI.h"
-#import "../API/ALTAppleAPISession.h"
+#import "../AppleAPI/ALTAppleAPI.h"
+#import "../AppleAPI/ALTAppleAPISession.h"
 
 // Signing
 #import "../Signing/ALTSigner.h"
