@@ -36,7 +36,9 @@ jobs:
           cd ScaleCloudSign
           # Nuke the old project folder to clear the cached format metadata
           rm -rf ScaleCloudSign.xcodeproj
-          xcodegen generate
+          
+          # Force xcodegen to evaluate and bind against the Xcode 15.4 toolchain paths
+          DEVELOPER_DIR=/Applications/Xcode_15.4.app/Contents/Developer xcodegen generate
 
       - name: Build and extract framework
         run: |
