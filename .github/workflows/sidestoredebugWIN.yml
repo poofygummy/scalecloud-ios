@@ -1,0 +1,24 @@
+name: Get Windows libimobiledevice binaries
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Download from jrjr/libimobiledevice-windows
+        run: |
+          $base = "https://github.com/jrjr/libimobiledevice-windows/releases/latest/download"
+          Invoke-WebRequest "$base/idevicedebug.exe" -OutFile "idevicedebug.exe"
+          Invoke-WebRequest "$base/ideviceimagemounter.exe" -OutFile "ideviceimagemounter.exe"
+          Invoke-WebRequest "$base/ideviceinfo.exe" -OutFile "ideviceinfo.exe"
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: libimobiledevice-windows-x86_64
+          path: |
+            idevicedebug.exe
+            ideviceimagemounter.exe
+            ideviceinfo.exe

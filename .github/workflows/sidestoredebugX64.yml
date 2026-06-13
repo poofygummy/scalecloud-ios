@@ -1,0 +1,20 @@
+name: Get macOS libimobiledevice binaries arm64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+      - name: Install libimobiledevice
+        run: brew install libimobiledevice
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: libimobiledevice-macos-x86_64
+          path: |
+            /usr/local/bin/idevicedebug
+            /usr/local/bin/ideviceimagemounter
+            /usr/local/bin/ideviceinfo
