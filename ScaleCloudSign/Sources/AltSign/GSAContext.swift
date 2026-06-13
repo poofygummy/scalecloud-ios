@@ -42,7 +42,7 @@ class GSAContext
     /// SRP group: https://tools.ietf.org/html/rfc5054#page-16
     private let srpGroup = ccsrp_gp_rfc5054_2048()
 
-    private let digestInfo = ccsha256_di()
+    private let digestInfo = ccsha256_di()!
 
     private lazy var srpContext: ccsrp_ctx_t = {
         let size = ccsrp_sizeof_srp(self.digestInfo, self.srpGroup)
