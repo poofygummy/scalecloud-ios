@@ -59,7 +59,7 @@ Build settings configured in project.yml
 ## corecrypto Resolution
 ✅ Headers copied from `/home/cvt/sidestore/Dependencies/AltSign/Dependencies/corecrypto/`
 - `Sources/AltSign/corecrypto/include/corecrypto/` - SRP crypto headers (ccsrp.h, ccsha2.h, etc.)
-- `Sources/AltSign/corecrypto/include/module.modulemap` - CCoreCrypto module
+- `Sources/AltSign/corecrypto/include/module.modulemap` - CoreCrypto module
 - Used by GSAContext.swift for Apple authentication
 - Added to HEADER_SEARCH_PATHS in project.yml
 
