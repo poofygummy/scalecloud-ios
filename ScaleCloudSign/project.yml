@@ -3,6 +3,7 @@
 
 name: ScaleCloudSign
 settings:
+  objectVersion: 56
   base:
     IPHONEOS_DEPLOYMENT_TARGET: "14.0"
 targets:

@@ -7,12 +7,18 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Download from jrjr/libimobiledevice-windows
+      - name: Install libimobiledevice via MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-libimobiledevice
+
+      - name: Copy binaries
+        shell: msys2 {0}
         run: |
-          $base = "https://github.com/jrjr/libimobiledevice-windows/releases/latest/download"
-          Invoke-WebRequest "$base/idevicedebug.exe" -OutFile "idevicedebug.exe"
-          Invoke-WebRequest "$base/ideviceimagemounter.exe" -OutFile "ideviceimagemounter.exe"
-          Invoke-WebRequest "$base/ideviceinfo.exe" -OutFile "ideviceinfo.exe"
+          cp /mingw64/bin/idevicedebug.exe idevicedebug.exe
+          cp /mingw64/bin/ideviceimagemounter.exe ideviceimagemounter.exe
+          cp /mingw64/bin/ideviceinfo.exe ideviceinfo.exe
 
       - name: Upload binaries
         uses: actions/upload-artifact@v4

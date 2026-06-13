@@ -1,4 +1,4 @@
-name: Get macOS libimobiledevice binaries
+name: Get macOS libimobiledevice binaries ARM
 
 on:
   workflow_dispatch:
