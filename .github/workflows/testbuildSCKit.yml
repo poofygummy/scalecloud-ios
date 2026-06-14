@@ -5,11 +5,11 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-14
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2'
+          xcode-version: '15.4'
       - uses: actions/checkout@v4
         with:
           lfs: false
@@ -20,10 +20,18 @@ jobs:
             echo "ERROR: ScaleCloudGo/prebuilt/ missing. Download ScaleCloudGo-prebuilt artifact first."
             exit 1
           fi
+      - name: Cache iOS platform SDK
+        id: cache-ios-sdk
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform
+          key: ios-sdk-xcode-15.4
+
       - name: Install iOS platform SDK
+        if: steps.cache-ios-sdk.outputs.cache-hit != 'true'
         run: |
           sudo xcodebuild -downloadPlatform iOS
-          
+
       - name: Generate Xcode project with xcodegen
         run: |
           brew install xcodegen

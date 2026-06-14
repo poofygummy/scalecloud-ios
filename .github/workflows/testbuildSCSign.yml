@@ -5,14 +5,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.2"
+          xcode-version: "15.4"
 
       - name: Check Go and Kit prebuilt exist
         run: |
@@ -24,10 +24,18 @@ jobs:
             echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run ScaleCloudKit workflow first."
             exit 1
           fi
+
+      - name: Cache iOS platform SDK
+        id: cache-ios-sdk
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Xcode_15.4.app/Contents/Developer/Platforms/iPhoneOS.platform
+          key: ios-sdk-xcode-15.4
+
       - name: Install iOS platform SDK
+        if: steps.cache-ios-sdk.outputs.cache-hit != 'true'
         run: |
           sudo xcodebuild -downloadPlatform iOS
-
           
       - name: Generate Xcode project with xcodegen
         run: |
