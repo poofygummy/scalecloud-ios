@@ -39,7 +39,12 @@ jobs:
           
       - name: Generate Xcode project with xcodegen
         run: |
-          brew install xcodegen
+
+      - name: Install xcodegen
+        run: |
+          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.43.0/xcodegen.zip -o xcodegen.zip
+          unzip xcodegen.zip
+          sudo mv xcodegen /usr/local/bin/xcodegen
           cd ScaleCloudSign
           xcodegen generate
 
