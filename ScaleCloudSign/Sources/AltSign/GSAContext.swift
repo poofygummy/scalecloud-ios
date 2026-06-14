@@ -40,7 +40,7 @@ class GSAContext
     #if !MARKETPLACE
 
     /// SRP group: https://tools.ietf.org/html/rfc5054#page-16
-    private let srpGroup = ccsrp_gp_rfc5054_2048()
+    private let srpGroup = ccsrp_gp_rfc5054_2048()!
 
     private let digestInfo = ccsha256_di()!
 
