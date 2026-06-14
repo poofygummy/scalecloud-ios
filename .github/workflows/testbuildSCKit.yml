@@ -20,7 +20,10 @@ jobs:
             echo "ERROR: ScaleCloudGo/prebuilt/ missing. Download ScaleCloudGo-prebuilt artifact first."
             exit 1
           fi
-
+      - name: Install iOS platform SDK
+        run: |
+          sudo xcodebuild -downloadPlatform iOS
+          
       - name: Generate Xcode project with xcodegen
         run: |
           brew install xcodegen
