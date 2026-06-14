@@ -9,8 +9,8 @@ settings:
   objectVersion: 56
   base:
     DEFINES_MODULE: "YES"
-    PRODUCT_NAME: ScaleCloudKit
-    PRODUCT_MODULE_NAME: ScaleCloudKit
+    PRODUCT_NAME: ScaleCloudSign
+    PRODUCT_MODULE_NAME: ScaleCloudSign
     SWIFT_VERSION: "5.0"
     IPHONEOS_DEPLOYMENT_TARGET: "14.0"
 targets:
@@ -65,8 +65,10 @@ targets:
       base:
         SKIP_INSTALL: "NO"
         BUILD_LIBRARY_FOR_DISTRIBUTION: "YES"
+        PRODUCT_NAME: ScaleCloudSign
+        PRODUCT_MODULE_NAME: ScaleCloudSign
+        SWIFT_VERSION: "5.0"
         DEFINES_MODULE: "YES"
-        PRODUCT_MODULE_NAME: "ScaleCloudSign"
         MODULEMAP_FILE: "$(SRCROOT)/Sources/module.modulemap"
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../ScaleCloudGo/prebuilt $(SRCROOT)/../ScaleCloudKit/prebuilt $(SRCROOT)/Sources/RustBridge/lib"
         INTENTS_CODEGEN_LANGUAGE: "Swift"
