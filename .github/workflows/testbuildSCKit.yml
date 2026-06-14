@@ -38,7 +38,7 @@ jobs:
         run: |
           curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.43.0/xcodegen.zip -o xcodegen.zip
           unzip xcodegen.zip
-          sudo mv xcodegen /usr/local/bin/xcodegen
+          sudo mv xcodegen/bin/xcodegen /usr/local/bin/xcodegen
           cd ScaleCloudKit
           xcodegen generate
 
