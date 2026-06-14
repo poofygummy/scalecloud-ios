@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 name: ScaleCloudSign
+options:
+  xcodeVersion: "15.4"
+  minimumXcodeVersion: "15.4"
 settings:
   objectVersion: 56
   base:
