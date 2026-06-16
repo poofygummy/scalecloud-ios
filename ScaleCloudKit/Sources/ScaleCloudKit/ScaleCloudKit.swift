@@ -35,19 +35,11 @@ open class ScaleCloudKit: @unchecked Sendable {
                                  eventMonitors: [SCKMonitor(nkCommonInstance: self.nkCommonInstance)])
     }()
 
-#if swift(<6.0)
-    init() {
-#if !os(watchOS)
-        startNetworkReachabilityObserver()
-#endif
-    }
-#else
     public init() {
 #if !os(watchOS)
         startNetworkReachabilityObserver()
 #endif
     }
-#endif
 
     deinit {
 #if !os(watchOS)
