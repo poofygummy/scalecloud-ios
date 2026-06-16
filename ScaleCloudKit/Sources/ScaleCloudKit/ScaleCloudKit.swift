@@ -167,8 +167,8 @@ open class ScaleCloudKit: @unchecked Sendable {
     /// suitable for use as `NSURLSessionConfiguration.connectionProxyDictionary`.
     /// Forwards to `SCKSession.applyProxySettings()` so the shared lifecycle state
     /// (port number, cleanup timer) is kept in one place.
-    @objc public static func applyProxySettings() -> NSDictionary? {
-        return SCKSession.applyProxySettings() as NSDictionary?
+    @objc public static func applyProxySettings() -> [AnyHashable: Any]? {
+        return SCKSession.applyProxySettings()
     }
 
     /// Registers a `URLSession` with the shared lifecycle tracker so the proxy
