@@ -1,0 +1,67 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build_xcframework:
+    name: Build XCFramework
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: /tmp/DerivedData
+          key: derived-data-${{ runner.os }}-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          restore-keys: derived-data-${{ runner.os }}-
+
+      - name: Remove invalid OpenSSL signature
+        run: |
+          find Dependencies/OpenSSL.xcframework -name '_CodeSignature' -type d -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Resolve package and list schemes
+        run: |
+          xcodebuild -resolvePackageDependencies -clonedSourcePackagesDirPath /tmp/DerivedData/SourcePackages
+          xcodebuild -list -json || true
+
+      - name: Build XCFramework
+        run: |
+          set -euo pipefail
+          WS=${{ github.workspace }}
+
+          xcodebuild archive \
+            -scheme AltSign \
+            -destination "generic/platform=iOS" \
+            -archivePath /tmp/AltSign-ios \
+            -derivedDataPath /tmp/DerivedData \
+            -clonedSourcePackagesDirPath /tmp/DerivedData/SourcePackages \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            FRAMEWORK_SEARCH_PATHS="$WS/Dependencies" \
+            OTHER_SWIFT_FLAGS="-no-verify-emitted-module-interface"
+
+          FW=$(find /tmp/AltSign-ios.xcarchive/Products -name "AltSign.framework" | head -1)
+          echo "Found framework at: $FW"
+
+          xcodebuild -create-xcframework \
+            -framework "$FW" \
+            -output $WS/AltSign.xcframework
+
+          zip -r AltSign.xcframework.zip AltSign.xcframework
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AltSign.xcframework
+          path: AltSign.xcframework.zip

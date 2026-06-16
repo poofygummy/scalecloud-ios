@@ -3,7 +3,7 @@
 ## Overview
 This document outlines the integration of SideStore's app signing capabilities into ScaleCloudApp to enable automatic app refresh without relying on external signing services.
 Original official Sidestore repo: /home/cvt/sidestore/
-our subrepos: ./ScaleCloudGo, ./ScaleCloudKit, ./ScaleCloudSign, ./ScaleCloudApp THESE ARE THE ONES YOU CREATE THINGS IN
+our subrepos: ./ScaleCloudGo, ./ScaleCloudKit, ./ScaleCloudRenew, ./ScaleCloudApp THESE ARE THE ONES YOU CREATE THINGS IN
 starting state: Go, Kit, and App, compile successfully as archives with the workflows under /.github/workflows
 DO NOT create reports! Only create extremely consise, non-verbose, SINGLE progress trackers, one per phase. No human needs to read this only ai agents for progress tracking.
 NO LOCAL BUILD ENGINE IS AVAILABLE! all code compilation is done through github workflows on remote runners
@@ -15,16 +15,16 @@ ALWAYS MAKE SURE YOU DO NOT CREATE A PARALLEL /home/ DIRECTORY IN OUR WORKING FO
 **Goal:** Establish the foundational structure for the signing module.
 
 ### Tasks
-- [x] Rename `ScaleCloudWrap` folder to `ScaleCloudSign`
-- [x] Create Xcode target for `ScaleCloudSign` manually
+- [x] Rename `ScaleCloudWrap` folder to `ScaleCloudRenew`
+- [x] Create Xcode target for `ScaleCloudRenew` manually
 - [x] Configure target to link against pre-compiled `ScaleCloudGo` binary
 - [x] Document the target structure and dependencies
 
-**Deliverable:** A properly configured but empty ScaleCloudSign module.
+**Deliverable:** A properly configured but empty ScaleCloudRenew module.
 
 ### Implementation Notes
-- Folder already renamed to `ScaleCloudSign`
-- Updated `project.yml` to define `ScaleCloudSign` as a framework target
+- Folder already renamed to `ScaleCloudRenew`
+- Updated `project.yml` to define `ScaleCloudRenew` as a framework target
 - Configured framework settings:
   - Type: framework
   - Platform: iOS
@@ -44,7 +44,7 @@ ALWAYS MAKE SURE YOU DO NOT CREATE A PARALLEL /home/ DIRECTORY IN OUR WORKING FO
 - [ ] Pin SideStore at stable release **0.6.4** in a local reference branch
 - [ ] Document extraction methodology (not using as submodule)
 
-### Components to Extract into ScaleCloudSign
+### Components to Extract into ScaleCloudRenew
 
 #### 1.1 AltSign Library
 SideStore's fork of AltSign handles:
@@ -104,7 +104,7 @@ Extract SideStore's defensive mechanism for extending execution time:
 Tasks:
 - [x] Extract BackgroundTaskManager.swift
 - [x] Extract Silence.m4a asset
-- [x] Configure ScaleCloudSign Resources directory
+- [x] Configure ScaleCloudRenew Resources directory
 - [x] Wrap BackgroundRefreshAppsOperation in performExtendedBackgroundTask
 - [x] Update bundle reference for framework context
 
@@ -126,7 +126,7 @@ Tasks:
 - [x] **Remove:** JIT enablement features (not extracted)
 - [x] **Remove:** Most of AppDelegate (extracted only BGTask handler)
 
-**Deliverable:** A clean, extracted signing engine in ScaleCloudSign with no UI dependencies.
+**Deliverable:** A clean, extracted signing engine in ScaleCloudRenew with no UI dependencies.
 
 **Status:** ✅ **COMPLETE** - All extraction tasks finished, dependencies resolved as local sources
 
@@ -365,15 +365,15 @@ Tasks:
 
 ## Phase 8 — Build System
 
-**Goal:** Integrate ScaleCloudSign into the build process as a pre-compiled binary.
+**Goal:** Integrate ScaleCloudRenew into the build process as a pre-compiled binary.
 
 ### Architecture
-- ScaleCloudSign compiled as `.xcframework`
+- ScaleCloudRenew compiled as `.xcframework`
 - Committed to repository alongside ScaleCloudGo and ScaleCloudKit
 - ScaleCloudApp links against all three binaries
 
 ### Local Build
-- [ ] Create build script for ScaleCloudSign framework
+- [ ] Create build script for ScaleCloudRenew framework
 - [ ] Configure framework targets for all architectures
 - [ ] Generate .xcframework bundle
 - [ ] Document manual build process
@@ -382,7 +382,7 @@ Tasks:
 ### GitHub Actions
 - [ ] Create new job: `build-scalecloud-sign`
 - [ ] Configure job dependencies and order
-- [ ] Compile ScaleCloudSign for all platforms
+- [ ] Compile ScaleCloudRenew for all platforms
 - [ ] Generate .xcframework output
 - [ ] Upload framework as artifact
 - [ ] Modify `build-scalecloud-app` job to depend on signing job
@@ -398,7 +398,7 @@ Tasks:
 - [ ] Test complete CI/CD pipeline
 - [ ] Document build dependencies and requirements
 
-**Deliverable:** Automated build system producing and integrating ScaleCloudSign.
+**Deliverable:** Automated build system producing and integrating ScaleCloudRenew.
 
 ---
 
@@ -592,7 +592,7 @@ If headless installation doesn't work reliably:
 ## Success Criteria
 
 ### Technical
-- ✅ ScaleCloudSign builds and links successfully
+- ✅ ScaleCloudRenew builds and links successfully
 - ✅ All network traffic routes through Tailscale
 - ✅ Signing workflow completes end-to-end
 - ✅ Background tasks fire reliably

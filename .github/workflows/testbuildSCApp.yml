@@ -27,8 +27,8 @@ jobs:
             echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run ScaleCloudKit workflow first."
             exit 1
           fi
-          if [ ! -d "ScaleCloudSign/prebuilt" ]; then
-            echo "ERROR: ScaleCloudSign/prebuilt/ missing. Run ScaleCloudSign workflow first."
+          if [ ! -d "ScaleCloudRenew/prebuilt" ]; then
+            echo "ERROR: ScaleCloudRenew/prebuilt/ missing. Run ScaleCloudRenew workflow first."
             exit 1
           fi
 
@@ -55,9 +55,9 @@ jobs:
           ls -la ScaleCloudGo/prebuilt/
           ls -la ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ || true
           echo ""
-          echo "=== ScaleCloudSign framework ==="
-          ls -la ScaleCloudSign/prebuilt/
-          ls -la ScaleCloudSign/prebuilt/ScaleCloudSign.xcframework/ || true
+          echo "=== ScaleCloudRenew framework ==="
+          ls -la ScaleCloudRenew/prebuilt/
+          ls -la ScaleCloudRenew/prebuilt/ScaleCloudRenew.xcframework/ || true
 
       - name: Resolve SPM dependencies with retry
         run: |
