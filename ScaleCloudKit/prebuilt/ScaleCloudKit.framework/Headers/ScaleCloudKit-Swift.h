@@ -486,6 +486,48 @@ SWIFT_CLASS("_TtC13ScaleCloudKit13SCKUserStatus")
 @end
 
 
+SWIFT_CLASS("_TtC13ScaleCloudKit13ScaleCloudKit")
+@interface ScaleCloudKit : NSObject
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+/// Starts (or reuses) the shared Tailscale proxy and returns a proxy dictionary
+/// suitable for use as <code>NSURLSessionConfiguration.connectionProxyDictionary</code>.
+/// Forwards to <code>SCKSession.applyProxySettings()</code> so the shared lifecycle state
+/// (port number, cleanup timer) is kept in one place.
++ (NSDictionary * _Nullable)applyProxySettings SWIFT_WARN_UNUSED_RESULT;
+/// Registers a <code>URLSession</code> with the shared lifecycle tracker so the proxy
+/// is kept alive as long as at least one live session exists.
+/// Forwards to <code>SCKSession.registerSession(_:)</code>.
++ (void)registerSession:(NSURLSession * _Nonnull)session;
+@end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif
 #if __has_attribute(external_source_symbol)
 # pragma clang attribute pop
