@@ -36,6 +36,7 @@ open class ScaleCloudKit: NSObject, @unchecked Sendable {
     }()
 
     override public init() {
+        super.init()
 #if !os(watchOS)
         startNetworkReachabilityObserver()
 #endif
