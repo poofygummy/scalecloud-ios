@@ -161,6 +161,23 @@ open class ScaleCloudKit: @unchecked Sendable {
         }
     }
 
+    // MARK: - ScaleCloud proxy (ObjC bridge)
+
+    /// Starts (or reuses) the shared Tailscale proxy and returns a proxy dictionary
+    /// suitable for use as `NSURLSessionConfiguration.connectionProxyDictionary`.
+    /// Forwards to `SCKSession.applyProxySettings()` so the shared lifecycle state
+    /// (port number, cleanup timer) is kept in one place.
+    @objc public static func applyProxySettings() -> [AnyHashable: Any]? {
+        return SCKSession.applyProxySettings()
+    }
+
+    /// Registers a `URLSession` with the shared lifecycle tracker so the proxy
+    /// is kept alive as long as at least one live session exists.
+    /// Forwards to `SCKSession.registerSession(_:)`.
+    @objc public static func registerSession(_ session: URLSession) {
+        SCKSession.registerSession(session)
+    }
+
     // MARK: - Reachability
 
 #if !os(watchOS)

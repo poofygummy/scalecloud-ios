@@ -18,9 +18,7 @@
 #import "NSCharacterSet+ASCII.h"
 
 // Import ScaleCloudKit for shared proxy lifecycle
-#if __has_include(<ScaleCloudKit/ScaleCloudKit-Swift.h>)
 #import <ScaleCloudKit/ScaleCloudKit-Swift.h>
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -50,11 +48,13 @@ NS_ASSUME_NONNULL_END
     if (self)
     {
         // Configure URLSession with Tailscale proxy (shared with ScaleCloudKit)
+        // SCKSession is a Swift struct and is not visible to ObjC; the same static methods
+        // are forwarded through the ObjC-visible ScaleCloudKit class instead.
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-        config.connectionProxyDictionary = [SCKSession applyProxySettings];
+        config.connectionProxyDictionary = [ScaleCloudKit applyProxySettings];
         
         _session = [NSURLSession sessionWithConfiguration:config];
-        [SCKSession registerSession:_session];
+        [ScaleCloudKit registerSession:_session];
         
         _dateFormatter = [[NSISO8601DateFormatter alloc] init];
 
