@@ -16,7 +16,7 @@ jobs:
         with:
           xcode-version: latest
 
-      - name: Checkout ScaleCloudSign submodule (for AltSign prebuilt)
+      - name: Checkout ScaleCloudSign submodule (for ScaleCloudSign prebuilt)
         run: git submodule update --init -- ScaleCloudSign
 
       - name: Check prebuilts exist

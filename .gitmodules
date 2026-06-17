@@ -3,7 +3,7 @@
 	url = https://github.com/rileytestut/ldid.git
 [submodule "ScaleCloudSign"]
 	path = ScaleCloudSign
-	url = https://github.com/poofygummy/AltSign.git
+	url = https://github.com/poofygummy/ScaleCloudSign.git
 	branch = master
 [submodule "ScaleCloudApp"]
 	path = ScaleCloudApp
