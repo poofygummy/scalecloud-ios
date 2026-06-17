@@ -1,0 +1,95 @@
+name: Build ScaleCloudSign
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_xcframework:
+    name: Build XCFramework
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check ScaleCloudKit prebuilt exists
+        run: |
+          if [ ! -d "ScaleCloudKit/prebuilt" ]; then
+            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run testbuildSCKit first."
+            exit 1
+          fi
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: /tmp/DerivedData
+          key: derived-data-${{ runner.os }}-${{ hashFiles('ScaleCloudSign/Package.swift', 'ScaleCloudSign/Package.resolved') }}
+          restore-keys: derived-data-${{ runner.os }}-
+
+      - name: Remove invalid OpenSSL signature
+        run: |
+          find ScaleCloudSign/Dependencies/OpenSSL.xcframework -name '_CodeSignature' -type d -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Resolve package and list schemes
+        working-directory: ScaleCloudSign
+        run: |
+          xcodebuild -resolvePackageDependencies -clonedSourcePackagesDirPath /tmp/DerivedData/SourcePackages
+          xcodebuild -list -json || true
+
+      - name: Build and extract framework
+        run: |
+          set -euo pipefail
+          WS=${{ github.workspace }}
+          mkdir -p ScaleCloudSign/prebuilt
+
+          xcodebuild build \
+            -scheme AltSign \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath /tmp/DerivedData \
+            -clonedSourcePackagesDirPath /tmp/DerivedData/SourcePackages \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/Dependencies $WS/ScaleCloudKit/prebuilt" \
+            OTHER_SWIFT_FLAGS="-no-verify-emitted-module-interface"
+
+          FW=$(find /tmp/DerivedData/Build/Products -type d -name "AltSign.framework" | head -1)
+          if [ -z "$FW" ]; then
+            echo "ERROR: AltSign.framework not found in build products"
+            find /tmp/DerivedData/Build/Products -name "*.framework" -o -name "*.a"
+            exit 1
+          fi
+          echo "Found framework at: $FW"
+          cp -R "$FW" ScaleCloudSign/prebuilt/
+
+          # Assemble Modules/ from DerivedData — SPM doesn't put them inside the .framework
+          mkdir -p ScaleCloudSign/prebuilt/AltSign.framework/Modules/AltSign.swiftmodule
+          find /tmp/DerivedData/Build/Intermediates.noindex -name "AltSign.swiftmodule" -type d | head -1 | xargs -I{} cp -R {}/ ScaleCloudSign/prebuilt/AltSign.framework/Modules/AltSign.swiftmodule/ 2>/dev/null || true
+          find /tmp/DerivedData/Build/Products -name "*.swiftmodule" -o -name "*.swiftdoc" -o -name "*.swiftinterface" -o -name "*.abi.json" | grep AltSign | while read f; do
+            cp "$f" ScaleCloudSign/prebuilt/AltSign.framework/Modules/AltSign.swiftmodule/ 2>/dev/null || true
+          done
+
+          # Copy public headers from source tree into Headers/
+          mkdir -p ScaleCloudSign/prebuilt/AltSign.framework/Headers
+          cp ScaleCloudSign/AltSign/include/AltSign.h ScaleCloudSign/prebuilt/AltSign.framework/Headers/
+          cp ScaleCloudSign/AltSign/include/AltSign/*.h ScaleCloudSign/prebuilt/AltSign.framework/Headers/
+
+          # Write module.modulemap
+          cat > ScaleCloudSign/prebuilt/AltSign.framework/Modules/module.modulemap << 'MODULEMAP'
+          framework module AltSign {
+            umbrella header "AltSign.h"
+            export *
+            module * { export * }
+          }
+          MODULEMAP
+
+          echo "=== Final framework contents ==="
+          find ScaleCloudSign/prebuilt/AltSign.framework -type f | sort
+
+      - name: Upload prebuilt
+        uses: actions/upload-artifact@v4
+        with:
+          name: AltSign-prebuilt
+          path: ScaleCloudSign/prebuilt/
+          retention-days: 7
