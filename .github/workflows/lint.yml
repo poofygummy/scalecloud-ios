@@ -25,6 +25,9 @@ jobs:
 
     steps:
      - uses: actions/checkout@v4
+      
+     - name: Init submodules (non-recursive)
+       run: git submodule update --init
 
      - name: GitHub Action for SwiftLint
        uses: norio-nomura/action-swiftlint@3.2.1

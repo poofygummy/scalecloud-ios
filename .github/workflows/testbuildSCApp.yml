@@ -16,6 +16,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Init submodules (non-recursive)
+        run: git submodule update --init
 
       - name: Check prebuilt exists
         run: |
