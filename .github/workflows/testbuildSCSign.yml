@@ -81,48 +81,14 @@ jobs:
           cp ScaleCloudSign/include/ScaleCloudSign.h prebuilt/ScaleCloudSign.framework/Headers/
           cp ScaleCloudSign/include/ScaleCloudSign/*.h prebuilt/ScaleCloudSign.framework/Headers/
 
-          # Copy CCoreCrypto headers into Headers/corecrypto/ so the module can be found
-          mkdir -p prebuilt/ScaleCloudSign.framework/Headers/corecrypto
-          cp Dependencies/corecrypto/include/corecrypto/*.h prebuilt/ScaleCloudSign.framework/Headers/corecrypto/
-
-          # Copy CScaleCloudSign private headers into Headers/ScaleCloudSign/ (already in Headers/ at top level)
-          mkdir -p prebuilt/ScaleCloudSign.framework/Headers/ScaleCloudSign
-          cp ScaleCloudSign/include/ScaleCloudSign/*.h prebuilt/ScaleCloudSign.framework/Headers/ScaleCloudSign/
-
-          # Write module.modulemap declaring all three modules the .swiftinterface depends on
+          # Write module.modulemap
           cat > prebuilt/ScaleCloudSign.framework/Modules/module.modulemap << 'MODULEMAP'
-framework module ScaleCloudSign {
-  umbrella header "ScaleCloudSign.h"
-  export *
-  module * { export * }
-}
-
-module CScaleCloudSign {
-  umbrella header "ScaleCloudSign.h"
-  export *
-
-  explicit module Private {
-    header "ScaleCloudSign/ALTAppleAPI_Private.h"
-    header "ScaleCloudSign/ALTModel+Internal.h"
-    header "ScaleCloudSign/ALTCertificateRequest.h"
-    export *
-  }
-}
-
-module CCoreCrypto [system] {
-  header "corecrypto/ccsrp.h"
-  header "corecrypto/ccdrbg.h"
-  header "corecrypto/ccsrp_gp.h"
-  header "corecrypto/ccdigest.h"
-  header "corecrypto/ccsha2.h"
-  header "corecrypto/ccpbkdf2.h"
-  header "corecrypto/cchmac.h"
-  header "corecrypto/ccaes.h"
-  header "corecrypto/ccpad.h"
-  header "corecrypto/ccn.h"
-  export *
-}
-MODULEMAP
+          framework module ScaleCloudSign {
+            umbrella header "ScaleCloudSign.h"
+            export *
+            module * { export * }
+          }
+          MODULEMAP
 
           echo "=== Final framework contents ==="
           find prebuilt/ScaleCloudSign.framework -type f | sort
