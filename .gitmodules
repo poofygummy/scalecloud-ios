@@ -1,0 +1,23 @@
+[submodule "ScaleCloudSign/Dependencies/ldid"]
+	path = ScaleCloudSign/Dependencies/ldid
+	url = https://github.com/rileytestut/ldid.git
+[submodule "ScaleCloudSign"]
+	path = ScaleCloudSign
+	url = https://github.com/poofygummy/AltSign.git
+	branch = master
+[submodule "ScaleCloudApp"]
+	path = ScaleCloudApp
+	url = https://github.com/poofygummy/ScaleCloudApp.git
+	branch = main
+[submodule "ScaleCloudGo"]
+	path = ScaleCloudGo
+	url = https://github.com/poofygummy/ScaleCloudGo.git
+	branch = main
+[submodule "ScaleCloudKit"]
+	path = ScaleCloudKit
+	url = https://github.com/poofygummy/ScaleCloudKit.git
+	branch = main
+[submodule "ScaleCloudRenew"]
+	path = ScaleCloudRenew
+	url = https://github.com/poofygummy/ScaleCloudRenew.git
+	branch = main
