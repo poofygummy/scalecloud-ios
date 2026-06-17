@@ -34,18 +34,6 @@ jobs:
             exit 1
           fi
 
-      - name: Cache iOS platform SDK
-        id: cache-ios-sdk
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/Platforms/iPhoneOS.platform
-          key: ios-sdk-xcode-latest
-
-      - name: Install iOS platform SDK
-        if: steps.cache-ios-sdk.outputs.cache-hit != 'true'
-        run: |
-          sudo xcodebuild -downloadPlatform iOS
-          
       - name: Generate Xcode project with xcodegen
         run: |
 
