@@ -16,6 +16,9 @@ jobs:
       - name: Init submodules (recursive for ScaleCloudSign)
         run: git submodule update --init --recursive -- ScaleCloudSign
 
+      - name: Checkout ScaleCloudKit submodule
+        run: git submodule update --init -- ScaleCloudKit
+
       - name: Check ScaleCloudKit prebuilt exists
         run: |
           if [ ! -d "ScaleCloudKit/prebuilt" ]; then
