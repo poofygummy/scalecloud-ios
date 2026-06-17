@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
-      - name: Init submodules
-        run: git submodule update --init -- ScaleCloudSign
+          fetch-depth: 0
+      - name: Init submodules (recursive for ScaleCloudSign)
+        run: git submodule update --init --recursive -- ScaleCloudSign
 
       - name: Checkout ScaleCloudKit submodule
         run: git submodule update --init -- ScaleCloudKit
