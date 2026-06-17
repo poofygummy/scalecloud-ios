@@ -16,7 +16,10 @@ jobs:
         with:
           xcode-version: "15.4"
 
-      - name: Check Go and Kit prebuilt exist
+      - name: Checkout ScaleCloudSign submodule (for AltSign prebuilt)
+        run: git submodule update --init -- ScaleCloudSign
+
+      - name: Check prebuilts exist
         run: |
           if [ ! -d "ScaleCloudGo/prebuilt" ]; then
             echo "ERROR: ScaleCloudGo/prebuilt/ missing. Run ScaleCloudGo workflow first."
@@ -24,6 +27,10 @@ jobs:
           fi
           if [ ! -d "ScaleCloudKit/prebuilt" ]; then
             echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run ScaleCloudKit workflow first."
+            exit 1
+          fi
+          if [ ! -d "ScaleCloudSign/prebuilt" ]; then
+            echo "ERROR: ScaleCloudSign/prebuilt/ missing. Run ScaleCloudSign workflow first."
             exit 1
           fi
 
@@ -54,11 +61,14 @@ jobs:
         run: |
           cd ScaleCloudRenew
           mkdir -p prebuilt
+          WS=${{ github.workspace }}
           xcodebuild build \
             -scheme ScaleCloudRenew \
             -destination 'generic/platform=iOS' \
+            -sdk iphoneos \
             -derivedDataPath build \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudRenew/Sources/RustBridge/lib"
           
           # Copy framework from build products
           FW=$(find build/Build/Products -type d -name "ScaleCloudRenew.framework" | head -1)
