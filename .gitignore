@@ -1,2 +1,4 @@
 # Prebuilt artifacts are tracked with Git LFS via .gitattributes
-# (nothing gitignored here)
+
+# Swift Package Manager build artifacts — must never be committed
+**/.build/
