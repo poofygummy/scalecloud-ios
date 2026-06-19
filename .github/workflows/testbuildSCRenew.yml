@@ -55,7 +55,6 @@ jobs:
             -destination 'generic/platform=iOS' \
             -sdk iphoneos \
             -derivedDataPath build \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudRenew/Sources/RustBridge/lib" \
             OTHER_SWIFT_FLAGS="-suppress-warnings -Xcc -fpermissive -Xcc -fmodule-map-file=$WS/ScaleCloudSign/Dependencies/corecrypto/include/module.modulemap -Xcc -fmodule-map-file=$WS/ScaleCloudSign/ScaleCloudSign/include/module.modulemap -Xcc -I$WS/ScaleCloudSign/Dependencies/corecrypto/include -Xcc -I$WS/ScaleCloudSign/ScaleCloudSign/include"
           
