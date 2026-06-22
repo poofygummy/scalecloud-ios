@@ -68,6 +68,12 @@ jobs:
           echo "Found framework at: $FW"
           cp -R "$FW" prebuilt/
 
+      - name: Wrap into XCFramework
+        run: |
+          xcodebuild -create-xcframework \
+            -framework ScaleCloudRenew/prebuilt/ScaleCloudRenew.framework \
+            -output ScaleCloudRenew/prebuilt/ScaleCloudRenew.xcframework
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
