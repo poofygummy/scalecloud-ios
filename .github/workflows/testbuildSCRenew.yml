@@ -34,6 +34,9 @@ jobs:
             exit 1
           fi
 
+      - name: Generate Xcode project with xcodegen
+        run: |
+
       - name: Install xcodegen
         run: |
           curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.43.0/xcodegen.zip -o xcodegen.zip
@@ -42,37 +45,28 @@ jobs:
           cd ScaleCloudRenew
           xcodegen generate
 
-      - name: Build and extract XCFramework
+      - name: Build and extract framework
         run: |
           cd ScaleCloudRenew
           mkdir -p prebuilt
           WS=${{ github.workspace }}
-
-          # Archive for iOS device (arm64)
-          xcodebuild archive \
+          xcodebuild build \
             -scheme ScaleCloudRenew \
             -destination 'generic/platform=iOS' \
             -sdk iphoneos \
-            -archivePath build/ios.xcarchive \
             -derivedDataPath build \
-            SKIP_INSTALL=NO \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudRenew/Sources/RustBridge/lib $WS/ScaleCloudSign/Dependencies/OpenSSL.xcframework/ios-arm64" \
             OTHER_SWIFT_FLAGS="-suppress-warnings -Xcc -fpermissive -Xcc -fmodule-map-file=$WS/ScaleCloudSign/Dependencies/corecrypto/include/module.modulemap -Xcc -fmodule-map-file=$WS/ScaleCloudSign/ScaleCloudSign/include/module.modulemap -Xcc -I$WS/ScaleCloudSign/Dependencies/corecrypto/include -Xcc -I$WS/ScaleCloudSign/ScaleCloudSign/include"
-
-          # Locate the archived framework
-          FW=$(find build/ios.xcarchive -type d -name "ScaleCloudRenew.framework" | head -1)
+          
+          # Copy framework from build products
+          FW=$(find build/Build/Products -type d -name "ScaleCloudRenew.framework" | head -1)
           if [ -z "$FW" ]; then
-            echo "ERROR: ScaleCloudRenew.framework not found in archive"
-            find build/ios.xcarchive -name "*.framework" -o -name "*.a"
+            echo "ERROR: ScaleCloudRenew.framework not found in build products"
+            find build -name "*.framework" -o -name "*.a"
             exit 1
           fi
           echo "Found framework at: $FW"
-
-          # Create XCFramework from the archived framework
-          xcodebuild -create-xcframework \
-            -framework "$FW" \
-            -output prebuilt/ScaleCloudRenew.xcframework
+          cp -R "$FW" prebuilt/
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
