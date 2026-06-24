@@ -32,9 +32,14 @@ jobs:
 
       - name: Generate project with xcodegen
         run: |
-          brew install xcodegen
+          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.43.0/xcodegen.zip -o xcodegen.zip
+          unzip xcodegen.zip
+          sudo mv xcodegen/bin/xcodegen /usr/local/bin/xcodegen
           cd ScaleCloudApp
           xcodegen generate
+
+      - name: Clear SPM cache
+        run: rm -rf ~/Library/Caches/org.swift.swiftpm/repositories
 
       - name: Build
         run: |
