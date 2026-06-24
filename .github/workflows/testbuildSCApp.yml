@@ -2,31 +2,24 @@ name: Build ScaleCloudApp
 
 on:
   workflow_dispatch:
-    inputs:
-      build_extensions:
-        description: 'Build app extensions (Share, File Provider, Widget, etc.)'
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          submodules: true
           lfs: true
-      - name: Init submodules (non-recursive)
-        run: git submodule update --init
 
-      - name: Check prebuilt exists
+      - name: Check prebuilts exist
         run: |
-          if [ ! -d "ScaleCloudGo/prebuilt" ]; then
-            echo "ERROR: ScaleCloudGo/prebuilt/ missing. Run ScaleCloudGo workflow first."
+          if [ ! -d "ScaleCloudKit/prebuilt" ]; then
+            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Download ScaleCloudKit-prebuilt artifact first."
             exit 1
           fi
-          if [ ! -d "ScaleCloudKit/prebuilt" ]; then
-            echo "ERROR: ScaleCloudKit/prebuilt/ missing. Run ScaleCloudKit workflow first."
+          if [ ! -d "ScaleCloudSign/prebuilt" ]; then
+            echo "ERROR: ScaleCloudSign/prebuilt/ missing. Run ScaleCloudSign workflow first."
             exit 1
           fi
           if [ ! -d "ScaleCloudRenew/prebuilt" ]; then
@@ -34,124 +27,27 @@ jobs:
             exit 1
           fi
 
-      - name: Cache SPM dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
-            ScaleCloudApp/build/DerivedData/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
       - name: Download GoogleService-Info.plist
-        run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O ScaleCloudApp/GoogleService-Info.plist
+        run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
 
-      - name: Verify framework structure
+      - name: Generate project with xcodegen
         run: |
-          echo "=== ScaleCloudKit framework ==="
-          ls -la ScaleCloudKit/prebuilt/
-          ls -la ScaleCloudKit/prebuilt/ScaleCloudKit.framework/ || true
-          echo ""
-          echo "=== ScaleCloudGo framework ==="
-          ls -la ScaleCloudGo/prebuilt/
-          ls -la ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ || true
-          echo ""
-          echo "=== ScaleCloudRenew framework ==="
-          ls -la ScaleCloudRenew/prebuilt/
-          ls -la ScaleCloudRenew/prebuilt/ScaleCloudRenew.xcframework/ || true
-
-      - name: Resolve SPM dependencies with retry
-        run: |
+          brew install xcodegen
           cd ScaleCloudApp
-          
-          # Resolve packages with retry logic for flaky network issues
-          MAX_ATTEMPTS=5
-          ATTEMPT=1
-          
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            echo "Resolving packages (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
-            
-            if xcodebuild -resolvePackageDependencies \
-              -project ScaleCloudApp.xcodeproj \
-              -scheme ScaleCloudApp \
-              -derivedDataPath build/DerivedData \
-              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages 2>&1 | tee resolve.log; then
-              echo "✓ Package resolution succeeded"
-              break
-            else
-              if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-                echo "✗ Package resolution failed after $MAX_ATTEMPTS attempts"
-                echo "This is likely a GitHub Actions network issue. Try re-running the workflow."
-                exit 1
-              fi
-              
-              # Try to identify and clean only the corrupted package
-              if grep -q "No such file or directory" resolve.log; then
-                CORRUPTED=$(grep -oP "repositories/\K[^']+" resolve.log | head -1)
-                if [ -n "$CORRUPTED" ]; then
-                  echo "Removing corrupted package cache: $CORRUPTED"
-                  rm -rf ~/Library/Caches/org.swift.swiftpm/repositories/$CORRUPTED
-                fi
-              fi
-              
-              echo "Retrying in 10 seconds..."
-              sleep 10
-              ATTEMPT=$((ATTEMPT + 1))
-            fi
-          done
+          xcodegen generate
 
       - name: Build
         run: |
           cd ScaleCloudApp
-          
-          if [ "${{ inputs.build_extensions }}" = "false" ]; then
-            echo "Building main app only (skipping extensions)"
-          else
-            echo "Building main app with all extensions"
-          fi
-          
-          # Clean any previous build artifacts
-          rm -rf build/
-          
-          # Build with explicit derived data path for cleaner builds
-          WS=${{ github.workspace }}
-          set -o pipefail
           xcodebuild archive \
-            -project ScaleCloudApp.xcodeproj \
             -scheme ScaleCloudApp \
             -destination 'generic/platform=iOS' \
-            -archivePath build/App.xcarchive \
-            -derivedDataPath build/DerivedData \
-            -skipPackagePluginValidation \
-            -skipMacroValidation \
-            FRAMEWORK_SEARCH_PATHS="\$(inherited) $WS/ScaleCloudSign/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudRenew/prebuilt" \
-            OTHER_SWIFT_FLAGS="-Xcc -fmodule-map-file=$WS/ScaleCloudSign/ScaleCloudSign/include/module.modulemap -Xcc -I$WS/ScaleCloudSign/ScaleCloudSign/include" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGN_ENTITLEMENTS="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            ONLY_ACTIVE_ARCH=NO \
-            DEBUG_INFORMATION_FORMAT=dwarf 2>&1 | tee build.log
-
-      - name: Upload build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ScaleCloudApp-build-log
-          path: ScaleCloudApp/build.log
-          retention-days: 7
-
-      - name: Extract app from archive
-        run: |
-          mkdir -p ScaleCloudApp/prebuilt
-          # Copy the entire xcarchive for apps
-          cp -R ScaleCloudApp/build/App.xcarchive ScaleCloudApp/prebuilt/
+            -archivePath build/App.xcarchive
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudApp-prebuilt
-          path: ScaleCloudApp/prebuilt/
+          path: ScaleCloudApp/build/
           retention-days: 7
 
