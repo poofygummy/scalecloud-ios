@@ -115,6 +115,7 @@ jobs:
           rm -rf build/
           
           # Build with explicit derived data path for cleaner builds
+          WS=${{ github.workspace }}
           set -o pipefail
           xcodebuild archive \
             -project ScaleCloudApp.xcodeproj \
@@ -124,6 +125,8 @@ jobs:
             -derivedDataPath build/DerivedData \
             -skipPackagePluginValidation \
             -skipMacroValidation \
+            FRAMEWORK_SEARCH_PATHS="\$(inherited) $WS/ScaleCloudSign/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudRenew/prebuilt" \
+            OTHER_SWIFT_FLAGS="-Xcc -fmodule-map-file=$WS/ScaleCloudSign/ScaleCloudSign/include/module.modulemap -Xcc -I$WS/ScaleCloudSign/ScaleCloudSign/include" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
