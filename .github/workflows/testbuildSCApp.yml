@@ -42,7 +42,14 @@ jobs:
           xcodebuild archive \
             -scheme ScaleCloudApp \
             -destination 'generic/platform=iOS' \
-            -archivePath build/App.xcarchive
+            -archivePath build/App.xcarchive \
+            -derivedDataPath build/DerivedData \
+            -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
