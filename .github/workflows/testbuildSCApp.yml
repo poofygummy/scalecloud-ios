@@ -32,7 +32,7 @@ jobs:
           fi
 
       - name: Download GoogleService-Info.plist
-        run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O GoogleService-Info.plist
+        run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O ScaleCloudApp/GoogleService-Info.plist
 
       - name: Build
         run: |
