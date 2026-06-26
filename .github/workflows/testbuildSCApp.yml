@@ -50,10 +50,20 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
 
-      - name: Upload prebuilt
+      - name: Export IPA
+        run: |
+          mkdir -p ScaleCloudApp/build/ipa
+          # Package the .app from the archive into an unsigned IPA
+          cd ScaleCloudApp/build/App.xcarchive/Products/Applications
+          mkdir -p Payload
+          cp -R *.app Payload/
+          zip -r ../../../ipa/ScaleCloudApp.ipa Payload
+          rm -rf Payload
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: ScaleCloudApp-prebuilt
-          path: ScaleCloudApp/build/
+          name: ScaleCloudApp-ipa
+          path: ScaleCloudApp/build/ipa/ScaleCloudApp.ipa
           retention-days: 7
 
