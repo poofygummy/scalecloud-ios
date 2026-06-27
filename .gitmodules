@@ -21,3 +21,6 @@
 	path = ScaleCloudRenew
 	url = https://github.com/poofygummy/ScaleCloudRenew.git
 	branch = main
+[submodule "ScaleCloudBanner"]
+	path = ScaleCloudBanner
+	url = https://github.com/poofygummy/ScaleCloudBanner.git
