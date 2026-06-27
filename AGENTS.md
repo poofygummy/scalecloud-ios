@@ -12,6 +12,9 @@ Always verify hunches.
 - Every single time you want to push changes assess whether they're likely to work. If yes push. If no, reassess and fix.
 - Always check your work after completion.
 - Always try to minimize the number of responses and calls. One message to or from you can be long, but there should be few.
+- Always try to commit and push submodules and main repo in a single comment with -A and without prior checking.
+- Always try to use the tools rather than command line commands.
+- You are working from the working directory. Tool calls are relative to the repo root.
 
 ## Project Overview
 local workspace is linux. no xcode available. use of workflows with macos runners is needed for xcode
