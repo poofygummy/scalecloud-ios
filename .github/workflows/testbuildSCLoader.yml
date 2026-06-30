@@ -1,0 +1,106 @@
+name: Build ScaleCloudLoader
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build for'
+        required: true
+        type: choice
+        options:
+          - macos-arm
+          - macos-intel
+          - windows
+          - linux
+
+jobs:
+  build:
+    runs-on: ${{
+      inputs.platform == 'macos-arm' && 'macos-latest' ||
+      inputs.platform == 'macos-intel' && 'macos-15-intel' ||
+      inputs.platform == 'windows' && 'windows-latest' ||
+      'ubuntu-latest'
+    }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Init ScaleCloudLoader submodule
+        run: git submodule update --init -- ScaleCloudLoader
+
+      - name: Set target triple
+        id: target
+        shell: bash
+        run: |
+          case "${{ inputs.platform }}" in
+            macos-arm) echo "triple=aarch64-apple-darwin" >> "$GITHUB_OUTPUT" ;;
+            macos-intel) echo "triple=x86_64-apple-darwin" >> "$GITHUB_OUTPUT" ;;
+            windows) echo "triple=x86_64-pc-windows-msvc" >> "$GITHUB_OUTPUT" ;;
+            linux) echo "triple=x86_64-unknown-linux-gnu" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ steps.target.outputs.triple }}
+
+      - name: Install Linux build dependencies
+        if: inputs.platform == 'linux'
+        run: |
+          sudo apt update
+          sudo apt install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install frontend dependencies
+        working-directory: ScaleCloudLoader
+        run: bun install
+
+      - name: Check sidecar binaries exist
+        working-directory: ScaleCloudLoader
+        shell: bash
+        run: |
+          ext=""
+          if [ "${{ inputs.platform }}" = "windows" ]; then ext=".exe"; fi
+          for bin in idevicedebug idevicedevmodectl ideviceimagemounter ideviceinfo; do
+            file="src-tauri/binaries/${bin}-${{ steps.target.outputs.triple }}${ext}"
+            if [ ! -f "$file" ]; then
+              echo "ERROR: $file missing"
+              exit 1
+            fi
+          done
+
+      - name: Build Tauri app
+        working-directory: ScaleCloudLoader
+        run: bun run tauri build --target ${{ steps.target.outputs.triple }}
+
+      - name: Upload artifact (macOS)
+        if: startsWith(inputs.platform, 'macos')
+        uses: actions/upload-artifact@v4
+        with:
+          name: iloader-${{ inputs.platform }}
+          path: |
+            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/dmg/*.dmg
+            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/macos/*.app
+          retention-days: 7
+
+      - name: Upload artifact (Windows)
+        if: inputs.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: iloader-windows
+          path: |
+            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/msi/*.msi
+            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/nsis/*.exe
+          retention-days: 7
+
+      - name: Upload artifact (Linux)
+        if: inputs.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: iloader-linux
+          path: |
+            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/appimage/*.AppImage
+          retention-days: 7
