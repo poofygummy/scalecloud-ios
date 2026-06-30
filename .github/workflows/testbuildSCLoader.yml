@@ -15,12 +15,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{
-      inputs.platform == 'macos-arm' && 'macos-latest' ||
-      inputs.platform == 'macos-intel' && 'macos-15-intel' ||
-      inputs.platform == 'windows' && 'windows-latest' ||
-      'ubuntu-latest'
-    }}
+    runs-on: ${{ fromJSON('{"macos-arm":"macos-latest","macos-intel":"macos-15-intel","windows":"windows-latest","linux":"ubuntu-latest"}')[inputs.platform] }}
     steps:
       - uses: actions/checkout@v4
         with:
