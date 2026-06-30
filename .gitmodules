@@ -24,3 +24,7 @@
 [submodule "ScaleCloudBanner"]
 	path = ScaleCloudBanner
 	url = https://github.com/poofygummy/ScaleCloudBanner.git
+[submodule "ScaleCloudLoader"]
+	path = ScaleCloudLoader
+	url = https://github.com/poofygummy/ScaleCloudLoader.git
+	branch = main
