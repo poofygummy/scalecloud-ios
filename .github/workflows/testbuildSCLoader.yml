@@ -64,7 +64,7 @@ jobs:
         run: |
           ext=""
           if [ "${{ inputs.platform }}" = "windows" ]; then ext=".exe"; fi
-          for bin in idevicedebug idevicedevmodectl ideviceimagemounter ideviceinfo; do
+          for bin in idevicedebug ideviceimagemounter ideviceinfo; do
             file="src-tauri/binaries/${bin}-${{ steps.target.outputs.triple }}${ext}"
             if [ ! -f "$file" ]; then
               echo "ERROR: $file missing"
