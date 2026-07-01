@@ -28,3 +28,7 @@
 	path = ScaleCloudLoader
 	url = https://github.com/poofygummy/ScaleCloudLoader.git
 	branch = main
+[submodule "ScaleCloudBundle"]
+	path = ScaleCloudBundle
+	url = https://github.com/poofygummy/ScaleCloudBundle.git
+	branch = main
