@@ -74,20 +74,13 @@ jobs:
             fi
           done
 
-      - name: Build Tauri app (non-linux)
-        if: inputs.platform != 'linux'
-        working-directory: ScaleCloudLoader
-        run: bun run tauri build --target ${{ steps.target.outputs.triple }}
-
-      - name: Build Tauri app (linux deb+rpm)
-        if: inputs.platform == 'linux'
-        working-directory: ScaleCloudLoader
-        run: bun run tauri build --target ${{ steps.target.outputs.triple }} --bundles deb,rpm
-
-      - name: Build Tauri app (linux appimage)
-        if: inputs.platform == 'linux'
-        working-directory: ScaleCloudLoader
-        run: bun run tauri build --target ${{ steps.target.outputs.triple }} --bundles appimage
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: ScaleCloudLoader
+          args: ${{ inputs.platform == 'linux' && format('--target {0} --bundles appimage', steps.target.outputs.triple) || format('--target {0}', steps.target.outputs.triple) }}
 
       - name: Upload artifact (macOS)
         if: startsWith(inputs.platform, 'macos')
