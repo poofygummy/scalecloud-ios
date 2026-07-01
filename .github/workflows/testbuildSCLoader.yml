@@ -74,6 +74,7 @@ jobs:
 
       - name: Build Tauri app
         working-directory: ScaleCloudLoader
+        shell: bash
         run: |
           if [ "${{ inputs.platform }}" = "linux" ]; then
             bun run tauri build --target ${{ steps.target.outputs.triple }} --bundles deb
