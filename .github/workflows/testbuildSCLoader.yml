@@ -77,6 +77,8 @@ jobs:
         run: |
           if [ "${{ inputs.platform }}" = "linux" ]; then
             bun run tauri build --target ${{ steps.target.outputs.triple }} --bundles deb
+          elif [ "${{ inputs.platform }}" = "windows" ]; then
+            bun run tauri build --target ${{ steps.target.outputs.triple }} --bundles none
           else
             bun run tauri build --target ${{ steps.target.outputs.triple }}
           fi
@@ -97,8 +99,10 @@ jobs:
         with:
           name: iloader-windows
           path: |
-            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/msi/*.msi
-            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/bundle/nsis/*.exe
+            ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/iloader.exe
+            ScaleCloudLoader/src-tauri/binaries/idevicedebug-${{ steps.target.outputs.triple }}.exe
+            ScaleCloudLoader/src-tauri/binaries/ideviceimagemounter-${{ steps.target.outputs.triple }}.exe
+            ScaleCloudLoader/src-tauri/binaries/ideviceinfo-${{ steps.target.outputs.triple }}.exe
           retention-days: 7
 
       - name: Upload artifact (Linux)
