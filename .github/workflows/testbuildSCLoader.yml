@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ fromJSON('{"macos-arm":"macos-latest","macos-intel":"macos-15-intel","windows":"windows-latest","linux":"ubuntu-latest"}')[inputs.platform] }}
+    runs-on: ${{ fromJSON('{"macos-arm":"macos-latest","macos-intel":"macos-15-intel","windows":"windows-latest","linux":"ubuntu-22.04"}')[inputs.platform] }}
     env:
       APPIMAGE_EXTRACT_AND_RUN: 1
     steps:
@@ -51,7 +51,7 @@ jobs:
         if: inputs.platform == 'linux'
         run: |
           sudo apt update
-          sudo apt install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev xdg-utils libfuse2t64
+          sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
