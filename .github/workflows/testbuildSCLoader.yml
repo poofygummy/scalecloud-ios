@@ -20,9 +20,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Init ScaleCloudLoader submodule
-        run: git submodule update --init -- ScaleCloudLoader
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init -- ScaleCloudLoader
 
       - name: Set target triple
         id: target
