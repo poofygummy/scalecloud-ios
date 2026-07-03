@@ -85,6 +85,13 @@ jobs:
       - name: Build Tauri app (Linux)
         if: inputs.platform == 'linux'
         working-directory: ScaleCloudLoader
+        # NOTE: AppImage bundling is intentionally NOT used here.
+        # Tauri's AppImage tooling (linuxdeploy) requires FUSE (Filesystem in Userspace)
+        # to mount and package the squashfs image. GitHub Actions runners do not expose
+        # FUSE to unprivileged jobs, so --bundles appimage fails. This is a kernel
+        # capability constraint on the runner, not a Tauri bug.
+        # The plain ELF binary (release/iloader) is what we actually distribute.
+        # The deb is built as a convenient side-artifact only.
         run: bun run tauri build --target ${{ steps.target.outputs.triple }} --bundles deb
 
       - name: Upload artifact (macOS)
