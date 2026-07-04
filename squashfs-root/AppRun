@@ -9,4 +9,5 @@ this_dir="$(readlink -f "$(dirname "$0")")"
 
 source "$this_dir"/apprun-hooks/"linuxdeploy-plugin-gtk.sh"
 
+export APPIMAGE_EXTRACT_AND_RUN=1
 exec "$this_dir"/AppRun.wrapped "$@"
