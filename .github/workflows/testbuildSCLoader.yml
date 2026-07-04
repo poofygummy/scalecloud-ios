@@ -65,7 +65,7 @@ jobs:
           ext=""
           if [ "${{ inputs.platform }}" = "windows" ]; then ext=".exe"; fi
           for bin in idevicedebug ideviceimagemounter ideviceinfo; do
-            file="src-tauri/binaries/${bin}-${{ steps.target.outputs.triple }}${ext}"
+            file="src-tauri/${bin}-${{ steps.target.outputs.triple }}${ext}"
             if [ ! -f "$file" ]; then
               echo "ERROR: $file missing"
               exit 1
@@ -111,9 +111,9 @@ jobs:
           name: iloader-windows
           path: |
             ScaleCloudLoader/src-tauri/target/${{ steps.target.outputs.triple }}/release/iloader.exe
-            ScaleCloudLoader/src-tauri/binaries/idevicedebug-${{ steps.target.outputs.triple }}.exe
-            ScaleCloudLoader/src-tauri/binaries/ideviceimagemounter-${{ steps.target.outputs.triple }}.exe
-            ScaleCloudLoader/src-tauri/binaries/ideviceinfo-${{ steps.target.outputs.triple }}.exe
+            ScaleCloudLoader/src-tauri/idevicedebug-${{ steps.target.outputs.triple }}.exe
+            ScaleCloudLoader/src-tauri/ideviceimagemounter-${{ steps.target.outputs.triple }}.exe
+            ScaleCloudLoader/src-tauri/ideviceinfo-${{ steps.target.outputs.triple }}.exe
           retention-days: 7
 
       - name: Upload artifact (Linux)
