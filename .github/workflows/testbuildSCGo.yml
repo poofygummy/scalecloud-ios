@@ -33,11 +33,13 @@ jobs:
           mkdir -p prebuilt
           gomobile bind -target=ios/arm64 -iosversion=14.0 -o prebuilt/ScaleCloudGo.xcframework .
 
-      - name: Fix CFBundleIdentifier in Info.plist
+      - name: Fix Info.plist (CFBundleIdentifier + MinimumOSVersion)
         run: |
           PLIST=ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ios-arm64/ScaleCloudGo.framework/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudGo" "$PLIST"
-          echo "Bundle ID is now: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
+          /usr/libexec/PlistBuddy -c "Set :MinimumOSVersion 15.6" "$PLIST"
+          echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
+          echo "MinimumOSVersion: $(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$PLIST")"
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
