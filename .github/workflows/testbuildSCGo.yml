@@ -36,6 +36,8 @@ jobs:
       - name: Fix Info.plist (CFBundleIdentifier + MinimumOSVersion)
         run: |
           PLIST=ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ios-arm64/ScaleCloudGo.framework/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string com.scalecloud.ScaleCloudGo" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :MinimumOSVersion string 15.0" "$PLIST" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudGo" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :MinimumOSVersion 15.0" "$PLIST"
           echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
