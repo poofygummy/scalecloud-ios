@@ -13,6 +13,7 @@ jobs:
           xcode-version: '26.5'
       - uses: actions/checkout@v4
         with:
+          token: ${{ secrets.SUBMODULES_PAT }}
           lfs: false
       - name: Init required submodules
         run: git submodule update --init -- ScaleCloudGo ScaleCloudKit ScaleCloudRenew
