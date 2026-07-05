@@ -72,18 +72,22 @@ jobs:
               CODE_SIGNING_REQUIRED=NO
           else
             echo "Building main app only (no extensions)"
-            xcodebuild archive \
+            # Build without archive — -target avoids pulling in extension dependencies
+            xcodebuild build \
               -project ScaleCloudApp.xcodeproj \
               -target ScaleCloudApp \
               -destination 'generic/platform=iOS' \
-              -archivePath build/App.xcarchive \
               -derivedDataPath build/DerivedData \
               -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
               -skipPackagePluginValidation \
               -skipMacroValidation \
               CODE_SIGNING_ALLOWED=NO \
               CODE_SIGN_IDENTITY="" \
-              CODE_SIGNING_REQUIRED=NO
+              CODE_SIGNING_REQUIRED=NO \
+              CONFIGURATION_BUILD_DIR="$(pwd)/build/app_output"
+            # Manually assemble the archive structure expected by the Export IPA step
+            mkdir -p build/App.xcarchive/Products/Applications
+            cp -R build/app_output/ScaleCloudApp.app build/App.xcarchive/Products/Applications/
           fi
 
       - name: Export IPA
