@@ -55,15 +55,19 @@ jobs:
           echo "Found framework at: $FW"
           cp -R "$FW" prebuilt/
 
-          # Verify Info.plist is present and bundle ID is correct
+          # Inject Info.plist (xcodebuild doesn't generate one for this project)
           PLIST=prebuilt/ScaleCloudKit.framework/Info.plist
-          if [ ! -f "$PLIST" ]; then
-            echo "ERROR: Info.plist not found in framework"
-            find prebuilt -type f | sort
-            exit 1
-          fi
+          /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string com.scalecloud.ScaleCloudKit" \
+            -c "Add :CFBundleName string ScaleCloudKit" \
+            -c "Add :CFBundleExecutable string ScaleCloudKit" \
+            -c "Add :CFBundlePackageType string FMWK" \
+            -c "Add :CFBundleShortVersionString string 1.0" \
+            -c "Add :CFBundleVersion string 1" \
+            -c "Add :MinimumOSVersion string 14.0" \
+            -c "Add :CFBundleSupportedPlatforms array" \
+            -c "Add :CFBundleSupportedPlatforms:0 string iPhoneOS" \
+            "$PLIST"
           echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudKit" "$PLIST"
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
