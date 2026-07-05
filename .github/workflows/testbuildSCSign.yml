@@ -61,6 +61,7 @@ jobs:
             -derivedDataPath /tmp/DerivedData \
             -clonedSourcePackagesDirPath /tmp/DerivedData/SourcePackages \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            PRODUCT_BUNDLE_IDENTIFIER=com.scalecloud.ScaleCloudSign \
             FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/Dependencies $WS/ScaleCloudKit/prebuilt" \
             OTHER_SWIFT_FLAGS="-no-verify-emitted-module-interface"
 
@@ -96,6 +97,12 @@ jobs:
 
           echo "=== Final framework contents ==="
           find prebuilt/ScaleCloudSign.framework -type f | sort
+
+      - name: Fix CFBundleIdentifier in Info.plist
+        run: |
+          PLIST=ScaleCloudSign/prebuilt/ScaleCloudSign.framework/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudSign" "$PLIST"
+          echo "Bundle ID is now: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
