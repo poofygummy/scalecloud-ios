@@ -55,6 +55,16 @@ jobs:
           echo "Found framework at: $FW"
           cp -R "$FW" prebuilt/
 
+          # Verify Info.plist is present and bundle ID is correct
+          PLIST=prebuilt/ScaleCloudKit.framework/Info.plist
+          if [ ! -f "$PLIST" ]; then
+            echo "ERROR: Info.plist not found in framework"
+            find prebuilt -type f | sort
+            exit 1
+          fi
+          echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudKit" "$PLIST"
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
