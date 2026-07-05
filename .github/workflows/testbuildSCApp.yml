@@ -2,7 +2,19 @@ name: Build ScaleCloudApp
 
 on:
   workflow_dispatch:
+    inputs:
+      build_extensions:
+        description: 'Build app extensions (Share, Widget, File Provider, etc.) — requires 8 free Apple ID slots. Default false = 1 slot only.'
+        required: false
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      build_extensions:
+        description: 'Build app extensions'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -44,18 +56,35 @@ jobs:
       - name: Build
         run: |
           cd ScaleCloudApp
-          xcodebuild archive \
-            -project ScaleCloudApp.xcodeproj \
-            -scheme ScaleCloudApp \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/App.xcarchive \
-            -derivedDataPath build/DerivedData \
-            -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
-            -skipPackagePluginValidation \
-            -skipMacroValidation \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
+          if [ "${{ inputs.build_extensions }}" = "true" ] || [ "${{ github.event.inputs.build_extensions }}" = "true" ]; then
+            echo "Building main app + all extensions"
+            xcodebuild archive \
+              -project ScaleCloudApp.xcodeproj \
+              -scheme ScaleCloudApp \
+              -destination 'generic/platform=iOS' \
+              -archivePath build/App.xcarchive \
+              -derivedDataPath build/DerivedData \
+              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
+              -skipPackagePluginValidation \
+              -skipMacroValidation \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO
+          else
+            echo "Building main app only (no extensions)"
+            xcodebuild archive \
+              -project ScaleCloudApp.xcodeproj \
+              -target ScaleCloudApp \
+              -destination 'generic/platform=iOS' \
+              -archivePath build/App.xcarchive \
+              -derivedDataPath build/DerivedData \
+              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
+              -skipPackagePluginValidation \
+              -skipMacroValidation \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO
+          fi
 
       - name: Export IPA
         run: |
