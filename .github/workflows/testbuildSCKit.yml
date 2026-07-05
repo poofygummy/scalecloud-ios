@@ -42,6 +42,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            DYLIB_INSTALL_NAME_BASE=@rpath \
             FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudGo/prebuilt"
           
           # Copy framework from build products
