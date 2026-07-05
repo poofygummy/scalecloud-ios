@@ -2,6 +2,7 @@ name: Build ScaleCloudSign
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build_xcframework:
