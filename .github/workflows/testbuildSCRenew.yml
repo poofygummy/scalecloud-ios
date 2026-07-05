@@ -89,6 +89,8 @@ jobs:
           xcodebuild -create-xcframework \
             -framework ScaleCloudRenew/prebuilt/ScaleCloudRenew.framework \
             -output ScaleCloudRenew/prebuilt/ScaleCloudRenew.xcframework
+          # Remove intermediate .framework — only .xcframework is needed by the app
+          rm -rf ScaleCloudRenew/prebuilt/ScaleCloudRenew.framework
 
       - name: Stage artifact
         run: |
