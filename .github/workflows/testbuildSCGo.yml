@@ -31,7 +31,7 @@ jobs:
         working-directory: ScaleCloudGo
         run: |
           mkdir -p prebuilt
-          gomobile bind -target=ios/arm64 -iosversion=14.0 -o prebuilt/ScaleCloudGo.xcframework .
+          gomobile bind -target=ios/arm64 -iosversion=14.0 -prefix com.scalecloud -o prebuilt/ScaleCloudGo.xcframework .
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
