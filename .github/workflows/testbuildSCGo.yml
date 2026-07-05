@@ -31,7 +31,13 @@ jobs:
         working-directory: ScaleCloudGo
         run: |
           mkdir -p prebuilt
-          gomobile bind -target=ios/arm64 -iosversion=14.0 -prefix com.scalecloud -o prebuilt/ScaleCloudGo.xcframework .
+          gomobile bind -target=ios/arm64 -iosversion=14.0 -o prebuilt/ScaleCloudGo.xcframework .
+
+      - name: Fix CFBundleIdentifier in Info.plist
+        run: |
+          PLIST=ScaleCloudGo/prebuilt/ScaleCloudGo.xcframework/ios-arm64/ScaleCloudGo.framework/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudGo" "$PLIST"
+          echo "Bundle ID is now: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
 
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
