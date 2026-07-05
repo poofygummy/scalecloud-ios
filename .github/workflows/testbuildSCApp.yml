@@ -53,42 +53,50 @@ jobs:
       - name: Download GoogleService-Info.plist
         run: wget "https://raw.githubusercontent.com/firebase/quickstart-ios/master/mock-GoogleService-Info.plist" -O ScaleCloudApp/GoogleService-Info.plist
 
+      - name: Patch pbxproj to remove extensions (if build_extensions != true)
+        if: ${{ inputs.build_extensions != true && github.event.inputs.build_extensions != 'true' }}
+        run: |
+          python3 - <<'EOF'
+          import re
+
+          path = "ScaleCloudApp/ScaleCloudApp.xcodeproj/project.pbxproj"
+          with open(path, "r") as f:
+              content = f.read()
+
+          # Remove the 7 appex file references from the Embed Foundation Extensions files list
+          appex_ids = [
+              "F771E3EB20E2392E00AFB62D",  # File Provider Extension.appex
+              "F749E4E91DC1FB38009BA2FD",  # Share.appex
+              "F70716ED2987F81500E72C1D",  # File Provider Extension UI.appex
+              "2C33C48623E2C475005F963B",  # Notification Service Extension.appex
+              "F7C9739928F17131002C43E2",  # WidgetDashboardIntentHandler.appex
+              "F7346E1C28B0EF5E006CE2D2",  # Widget.appex
+              "F7C55C882FB5AEF7004A974F",  # Action Assistant.appex
+          ]
+          for uid in appex_ids:
+              content = re.sub(r'\t\t\t\t' + uid + r' /\*.*?\*/,\n', '', content)
+
+          with open(path, "w") as f:
+              f.write(content)
+
+          print("Patched: extension embed entries removed from pbxproj")
+          EOF
+
       - name: Build
         run: |
           cd ScaleCloudApp
-          if [ "${{ inputs.build_extensions }}" = "true" ] || [ "${{ github.event.inputs.build_extensions }}" = "true" ]; then
-            echo "Building main app + all extensions"
-            xcodebuild archive \
-              -project ScaleCloudApp.xcodeproj \
-              -scheme ScaleCloudApp \
-              -destination 'generic/platform=iOS' \
-              -archivePath build/App.xcarchive \
-              -derivedDataPath build/DerivedData \
-              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
-              -skipPackagePluginValidation \
-              -skipMacroValidation \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGN_IDENTITY="" \
-              CODE_SIGNING_REQUIRED=NO
-          else
-            echo "Building main app only (no extensions)"
-            # Build without archive — -target avoids pulling in extension dependencies
-            xcodebuild build \
-              -project ScaleCloudApp.xcodeproj \
-              -target ScaleCloudApp \
-              -destination 'generic/platform=iOS' \
-              -derivedDataPath build/DerivedData \
-              -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
-              -skipPackagePluginValidation \
-              -skipMacroValidation \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGN_IDENTITY="" \
-              CODE_SIGNING_REQUIRED=NO \
-              CONFIGURATION_BUILD_DIR="$(pwd)/build/app_output"
-            # Manually assemble the archive structure expected by the Export IPA step
-            mkdir -p build/App.xcarchive/Products/Applications
-            cp -R build/app_output/ScaleCloudApp.app build/App.xcarchive/Products/Applications/
-          fi
+          xcodebuild archive \
+            -project ScaleCloudApp.xcodeproj \
+            -scheme ScaleCloudApp \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/App.xcarchive \
+            -derivedDataPath build/DerivedData \
+            -clonedSourcePackagesDirPath build/DerivedData/SourcePackages \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Export IPA
         run: |
