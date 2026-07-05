@@ -80,12 +80,16 @@ jobs:
             "$PLIST"
           echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
 
+      - name: Stage artifact
+        run: |
+          mkdir -p /tmp/artifact/prebuilt
+          cp -R ScaleCloudKit/prebuilt/ /tmp/artifact/prebuilt/
+          cp -R ScaleCloudKit/ScaleCloudKit.xcodeproj /tmp/artifact/ScaleCloudKit.xcodeproj
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudKit-prebuilt
-          path: |
-            ScaleCloudKit/prebuilt/
-            ScaleCloudKit/ScaleCloudKit.xcodeproj/
+          path: /tmp/artifact/
           retention-days: 7
           

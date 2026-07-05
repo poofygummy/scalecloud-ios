@@ -89,11 +89,15 @@ jobs:
             -framework ScaleCloudRenew/prebuilt/ScaleCloudRenew.framework \
             -output ScaleCloudRenew/prebuilt/ScaleCloudRenew.xcframework
 
+      - name: Stage artifact
+        run: |
+          mkdir -p /tmp/artifact/prebuilt
+          cp -R ScaleCloudRenew/prebuilt/ /tmp/artifact/prebuilt/
+          cp -R ScaleCloudRenew/ScaleCloudRenew.xcodeproj /tmp/artifact/ScaleCloudRenew.xcodeproj
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudRenew-prebuilt
-          path: |
-            ScaleCloudRenew/prebuilt/
-            ScaleCloudRenew/ScaleCloudRenew.xcodeproj/
+          path: /tmp/artifact/
           retention-days: 7

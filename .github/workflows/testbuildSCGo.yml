@@ -44,10 +44,15 @@ jobs:
           echo "Bundle ID: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
           echo "MinimumOSVersion: $(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$PLIST")"
 
+      - name: Stage artifact
+        run: |
+          mkdir -p /tmp/artifact/prebuilt
+          cp -R ScaleCloudGo/prebuilt/ /tmp/artifact/prebuilt/
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudGo-prebuilt
-          path: ScaleCloudGo/prebuilt/
+          path: /tmp/artifact/
           retention-days: 7
 

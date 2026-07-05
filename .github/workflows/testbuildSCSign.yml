@@ -105,9 +105,14 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.scalecloud.ScaleCloudSign" "$PLIST"
           echo "Bundle ID is now: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
 
+      - name: Stage artifact
+        run: |
+          mkdir -p /tmp/artifact/prebuilt
+          cp -R ScaleCloudSign/prebuilt/ /tmp/artifact/prebuilt/
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
           name: ScaleCloudSign-prebuilt
-          path: ScaleCloudSign/prebuilt/
+          path: /tmp/artifact/
           retention-days: 7
