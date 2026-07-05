@@ -14,13 +14,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: false
+      - name: Init required submodules
+        run: git submodule update --init -- ScaleCloudGo ScaleCloudKit ScaleCloudRenew
+
       - name: Clean previous prebuilt
         run: |
           rm -rf ScaleCloudRenew/prebuilt/ScaleCloudRenew.framework
           rm -rf ScaleCloudRenew/prebuilt/ScaleCloudRenew.xcframework
-
-      - name: Init required submodules
-        run: git submodule update --init -- ScaleCloudGo ScaleCloudKit ScaleCloudRenew
 
       - name: Init ScaleCloudSign submodule (recursive for ldid)
         run: git submodule update --init --recursive -- ScaleCloudSign
