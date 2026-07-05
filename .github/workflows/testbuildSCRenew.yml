@@ -77,12 +77,6 @@ jobs:
           echo "Found framework at: $FW"
           cp -R "$FW" prebuilt/
 
-          # Flatten Resources/ dir — isideload treats subdirs as nested bundles and chokes on missing Info.plist
-          if [ -d prebuilt/ScaleCloudRenew.framework/Resources ]; then
-            mv prebuilt/ScaleCloudRenew.framework/Resources/* prebuilt/ScaleCloudRenew.framework/ 2>/dev/null || true
-            rmdir prebuilt/ScaleCloudRenew.framework/Resources
-          fi
-
       - name: Fix CFBundleIdentifier in Info.plist
         run: |
           PLIST=ScaleCloudRenew/prebuilt/ScaleCloudRenew.framework/Info.plist
