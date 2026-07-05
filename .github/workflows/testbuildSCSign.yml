@@ -110,6 +110,17 @@ jobs:
           mkdir -p /tmp/artifact/prebuilt
           cp -R ScaleCloudSign/prebuilt/ /tmp/artifact/prebuilt/
 
+      - name: Push prebuilt to subrepo
+        run: |
+          cd ScaleCloudSign
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.SUBMODULES_PAT }}@github.com/poofygummy/ScaleCloudSign.git
+          git add prebuilt/
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Update prebuilt [ci skip]"
+          git push
+
       - name: Upload prebuilt
         uses: actions/upload-artifact@v4
         with:
