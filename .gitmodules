@@ -4,7 +4,7 @@
 [submodule "ScaleCloudSign"]
 	path = ScaleCloudSign
 	url = https://github.com/poofygummy/ScaleCloudSign.git
-	branch = master
+	branch = main
 [submodule "ScaleCloudApp"]
 	path = ScaleCloudApp
 	url = https://github.com/poofygummy/ScaleCloudApp.git
