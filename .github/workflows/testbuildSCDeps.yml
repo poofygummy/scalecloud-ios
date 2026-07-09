@@ -23,15 +23,12 @@ jobs:
       - name: Clean previous prebuilt
         run: rm -rf ScaleCloudDeps/prebuilt/*.xcframework
 
-      - name: Resolve packages and show schemes
+      - name: Resolve packages
         run: |
           cd ScaleCloudDeps
-          # swift package resolve fetches all dependencies and creates
-          # .swiftpm/xcode/package.xcworkspace which xcodebuild can use.
           swift package resolve
-          echo "=== Schemes available ==="
-          xcodebuild -list \
-            -workspace .swiftpm/xcode/package.xcworkspace 2>&1
+          echo "=== Checkouts ==="
+          ls .build/checkouts/
 
       - name: Build each upstream package directly
         run: |
@@ -41,20 +38,35 @@ jobs:
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
-            echo "=== Building upstream $DEP ==="
+            echo "=== Building $DEP ==="
+
+            # Find the checked-out source for this dep
+            CHECKOUT=$(find .build/checkouts -maxdepth 1 -type d -iname "${DEP}*" | head -1)
+            if [ -z "$CHECKOUT" ]; then
+              echo "ERROR: no checkout found for $DEP"
+              ls .build/checkouts/
+              exit 1
+            fi
+            echo "Checkout: $CHECKOUT"
+
+            # xcodebuild can build a Package.swift directory directly (Xcode 13+)
+            # by running from inside the package directory with just -scheme.
+            # Use -clonedSourcePackagesDirPath so it reuses our existing checkouts.
+            pushd "$CHECKOUT"
             xcodebuild build \
               -scheme "$DEP" \
-              -workspace .swiftpm/xcode/package.xcworkspace \
               -destination 'generic/platform=iOS' \
               -sdk iphoneos \
-              -derivedDataPath build \
+              -clonedSourcePackagesDirPath "$(pwd)/../" \
+              -derivedDataPath "$(pwd)/build" \
               BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
               SKIP_INSTALL=NO
+            popd
 
-            echo "=== All frameworks after $DEP ==="
-            find build/Build/Products -type d -name "*.framework" | sort
+            echo "=== Frameworks produced for $DEP ==="
+            find "$CHECKOUT/build/Build/Products" -type d -name "*.framework" | sort
 
-            FW=$(find build/Build/Products -type d -name "${DEP}.framework" | head -1)
+            FW=$(find "$CHECKOUT/build/Build/Products" -type d -name "${DEP}.framework" | head -1)
             if [ -z "$FW" ]; then
               echo "ERROR: ${DEP}.framework not found"
               exit 1
