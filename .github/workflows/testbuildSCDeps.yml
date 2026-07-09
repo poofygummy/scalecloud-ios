@@ -26,29 +26,25 @@ jobs:
       - name: Resolve packages and show schemes
         run: |
           cd ScaleCloudDeps
-          # Resolve packages; this populates the DerivedData workspace with
-          # one scheme per upstream package product.
-          xcodebuild \
-            -resolvePackageDependencies \
-            -package-path . \
-            -derivedDataPath build
+          # swift package resolve fetches all dependencies and creates
+          # .swiftpm/xcode/package.xcworkspace which xcodebuild can use.
+          swift package resolve
           echo "=== Schemes available ==="
-          xcodebuild -list -package-path . 2>&1
+          xcodebuild -list \
+            -workspace .swiftpm/xcode/package.xcworkspace 2>&1
 
       - name: Build each upstream package directly
         run: |
           cd ScaleCloudDeps
           mkdir -p prebuilt
 
-          # Build the upstream package schemes directly (not the SCD* wrappers).
-          # These exist as auto-generated schemes in the resolved package workspace.
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
             echo "=== Building upstream $DEP ==="
             xcodebuild build \
               -scheme "$DEP" \
-              -package-path . \
+              -workspace .swiftpm/xcode/package.xcworkspace \
               -destination 'generic/platform=iOS' \
               -sdk iphoneos \
               -derivedDataPath build \
