@@ -1,0 +1,97 @@
+name: Build ScaleCloudDeps
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.5'
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULES_PAT }}
+          lfs: false
+
+      - name: Init ScaleCloudDeps submodule
+        run: git submodule update --init -- ScaleCloudDeps
+
+      - name: Clean previous prebuilt
+        run: rm -rf ScaleCloudDeps/prebuilt/*.xcframework
+
+      - name: Install xcodegen
+        run: |
+          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.43.0/xcodegen.zip -o xcodegen.zip
+          unzip xcodegen.zip
+          sudo mv xcodegen/bin/xcodegen /usr/local/bin/xcodegen
+          cd ScaleCloudDeps
+          xcodegen generate
+
+      - name: Build all dependency frameworks
+        run: |
+          cd ScaleCloudDeps
+          mkdir -p prebuilt
+
+          DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
+
+          for DEP in $DEPS; do
+            echo "=== Building $DEP ==="
+            xcodebuild build \
+              -scheme "$DEP" \
+              -destination 'generic/platform=iOS' \
+              -sdk iphoneos \
+              -derivedDataPath build \
+              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+              SKIP_INSTALL=NO
+
+            # Find the built framework
+            FW=$(find build/Build/Products -type d -name "${DEP}.framework" | head -1)
+            if [ -z "$FW" ]; then
+              echo "ERROR: ${DEP}.framework not found in build products"
+              find build/Build/Products -name "*.framework" | head -20
+              exit 1
+            fi
+            echo "Found: $FW"
+
+            # Wrap into xcframework
+            xcodebuild -create-xcframework \
+              -framework "$FW" \
+              -output "prebuilt/${DEP}.xcframework"
+
+            echo "=== Done: prebuilt/${DEP}.xcframework ==="
+          done
+
+      - name: List prebuilt output
+        run: ls -la ScaleCloudDeps/prebuilt/
+
+      - name: Push prebuilt to subrepo
+        run: |
+          cd ScaleCloudDeps
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.SUBMODULES_PAT }}@github.com/poofygummy/ScaleCloudDeps.git
+          git add prebuilt/
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Update prebuilt [ci skip]"
+          git push origin HEAD:main
+
+      - name: Update monorepo submodule pointer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.SUBMODULES_PAT }}@github.com/poofygummy/scalecloud-ios.git
+          git add ScaleCloudDeps
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Update ScaleCloudDeps submodule pointer [ci skip]"
+          git push origin HEAD:main
+
+      - name: Upload prebuilt artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScaleCloudDeps-prebuilt
+          path: ScaleCloudDeps/prebuilt/
+          retention-days: 7

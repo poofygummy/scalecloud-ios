@@ -33,3 +33,6 @@
 	path = ScaleCloudBundle
 	url = https://github.com/poofygummy/ScaleCloudBundle.git
 	branch = main
+[submodule "ScaleCloudDeps"]
+	path = ScaleCloudDeps
+	url = https://github.com/poofygummy/ScaleCloudDeps.git
