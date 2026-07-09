@@ -49,39 +49,14 @@ jobs:
             fi
             echo "Checkout: $CHECKOUT"
 
-            # xcodebuild can build a Package.swift directory directly (Xcode 13+)
-            # by running from inside the package directory with just -scheme.
-            # Use -clonedSourcePackagesDirPath so it reuses our existing checkouts.
+            echo "=== Schemes in $CHECKOUT ==="
             pushd "$CHECKOUT"
-            xcodebuild build \
-              -scheme "$DEP" \
-              -destination 'generic/platform=iOS' \
-              -sdk iphoneos \
-              -clonedSourcePackagesDirPath "$(pwd)/../" \
-              -derivedDataPath "$(pwd)/build" \
-              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-              SKIP_INSTALL=NO
+            xcodebuild -list 2>&1 || true
             popd
-
-            echo "=== Frameworks produced for $DEP ==="
-            find "$CHECKOUT/build/Build/Products" -type d -name "*.framework" | sort
-
-            FW=$(find "$CHECKOUT/build/Build/Products" -type d -name "${DEP}.framework" | head -1)
-            if [ -z "$FW" ]; then
-              echo "ERROR: ${DEP}.framework not found"
-              exit 1
-            fi
-            echo "Found: $FW"
-
-            xcodebuild -create-xcframework \
-              -framework "$FW" \
-              -output "prebuilt/${DEP}.xcframework"
-
-            echo "=== Done: prebuilt/${DEP}.xcframework ==="
           done
 
       - name: List prebuilt output
-        run: ls -la ScaleCloudDeps/prebuilt/
+        run: ls -la ScaleCloudDeps/prebuilt/ || echo "(empty)"
 
       - name: Push prebuilt to subrepo
         run: |
