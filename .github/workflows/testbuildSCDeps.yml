@@ -23,31 +23,13 @@ jobs:
       - name: Clean previous prebuilt
         run: rm -rf ScaleCloudDeps/prebuilt/*.xcframework
 
-      - name: Install xcodegen
-        run: |
-          curl -L https://github.com/yonaskolb/XcodeGen/releases/download/2.43.0/xcodegen.zip -o xcodegen.zip
-          unzip xcodegen.zip
-          sudo mv xcodegen/bin/xcodegen /usr/local/bin/xcodegen
-          cd ScaleCloudDeps
-          xcodegen generate
-
       - name: Build all dependency frameworks
         run: |
           cd ScaleCloudDeps
           mkdir -p prebuilt
 
-          # First resolve packages by building the stub host target once.
-          # This populates build/SourcePackages and creates per-package schemes.
-          xcodebuild build \
-            -scheme SCDepsHost \
-            -destination 'generic/platform=iOS' \
-            -sdk iphoneos \
-            -derivedDataPath build \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            SKIP_INSTALL=NO || true
-
-          echo "=== Available schemes after package resolution ==="
-          xcodebuild -list -project ScaleCloudDeps.xcodeproj 2>&1 | grep -A 50 'Schemes:'
+          echo "=== Available schemes ==="
+          xcodebuild -list 2>&1
 
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
@@ -61,7 +43,7 @@ jobs:
               BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
               SKIP_INSTALL=NO
 
-            # SPM packages build into a per-arch subfolder; find the framework
+            # Find the built framework
             FW=$(find build/Build/Products -type d -name "${DEP}.framework" | head -1)
             if [ -z "$FW" ]; then
               echo "ERROR: ${DEP}.framework not found in build products"
