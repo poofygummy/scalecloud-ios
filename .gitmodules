@@ -36,3 +36,4 @@
 [submodule "ScaleCloudDeps"]
 	path = ScaleCloudDeps
 	url = https://github.com/poofygummy/ScaleCloudDeps.git
+	branch = main
