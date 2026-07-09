@@ -36,6 +36,19 @@ jobs:
           cd ScaleCloudDeps
           mkdir -p prebuilt
 
+          # First resolve packages by building the stub host target once.
+          # This populates build/SourcePackages and creates per-package schemes.
+          xcodebuild build \
+            -scheme SCDepsHost \
+            -destination 'generic/platform=iOS' \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO || true
+
+          echo "=== Available schemes after package resolution ==="
+          xcodebuild -list -project ScaleCloudDeps.xcodeproj 2>&1 | grep -A 50 'Schemes:'
+
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
@@ -48,7 +61,7 @@ jobs:
               BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
               SKIP_INSTALL=NO
 
-            # Find the built framework
+            # SPM packages build into a per-arch subfolder; find the framework
             FW=$(find build/Build/Products -type d -name "${DEP}.framework" | head -1)
             if [ -z "$FW" ]; then
               echo "ERROR: ${DEP}.framework not found in build products"
