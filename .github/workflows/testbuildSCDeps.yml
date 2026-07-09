@@ -23,36 +23,48 @@ jobs:
       - name: Clean previous prebuilt
         run: rm -rf ScaleCloudDeps/prebuilt/*.xcframework
 
-      - name: Build all dependency frameworks
+      - name: Resolve packages and show schemes
+        run: |
+          cd ScaleCloudDeps
+          # Resolve packages; this populates the DerivedData workspace with
+          # one scheme per upstream package product.
+          xcodebuild \
+            -resolvePackageDependencies \
+            -package-path . \
+            -derivedDataPath build
+          echo "=== Schemes available ==="
+          xcodebuild -list -package-path . 2>&1
+
+      - name: Build each upstream package directly
         run: |
           cd ScaleCloudDeps
           mkdir -p prebuilt
 
-          echo "=== Available schemes ==="
-          xcodebuild -list 2>&1
-
+          # Build the upstream package schemes directly (not the SCD* wrappers).
+          # These exist as auto-generated schemes in the resolved package workspace.
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
-            echo "=== Building $DEP ==="
+            echo "=== Building upstream $DEP ==="
             xcodebuild build \
               -scheme "$DEP" \
+              -package-path . \
               -destination 'generic/platform=iOS' \
               -sdk iphoneos \
               -derivedDataPath build \
               BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
               SKIP_INSTALL=NO
 
-            # Find the built framework
+            echo "=== All frameworks after $DEP ==="
+            find build/Build/Products -type d -name "*.framework" | sort
+
             FW=$(find build/Build/Products -type d -name "${DEP}.framework" | head -1)
             if [ -z "$FW" ]; then
-              echo "ERROR: ${DEP}.framework not found in build products"
-              find build/Build/Products -name "*.framework" | head -20
+              echo "ERROR: ${DEP}.framework not found"
               exit 1
             fi
             echo "Found: $FW"
 
-            # Wrap into xcframework
             xcodebuild -create-xcframework \
               -framework "$FW" \
               -output "prebuilt/${DEP}.xcframework"
