@@ -103,7 +103,7 @@ jobs:
             -sdk iphoneos \
             -derivedDataPath "$(pwd)/build-semver" \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            SWIFT_EMIT_MODULE_INTERFACE=NO \
+            SWIFT_ENABLE_LIBRARY_EVOLUTION=NO \
             SKIP_INSTALL=NO
 
           echo "=== Frameworks produced ==="
