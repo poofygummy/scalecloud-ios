@@ -51,6 +51,15 @@ jobs:
             esac
           }
 
+          # Some packages produce an invalid .swiftinterface due to compiler bugs
+          # (e.g. module name == type name). Skip interface validation for those.
+          get_extra_flags() {
+            case "$1" in
+              SemanticVersion) echo "OTHER_SWIFT_FLAGS=-Xfrontend -no-verify-emitted-module-interface" ;;
+              *) echo "" ;;
+            esac
+          }
+
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
@@ -67,13 +76,17 @@ jobs:
             SCHEME=$(get_scheme "$DEP")
             echo "Scheme: $SCHEME"
 
+            EXTRA_FLAGS=$(get_extra_flags "$DEP")
+
             pushd "$CHECKOUT"
             xcodebuild build \
               -scheme "$SCHEME" \
               -destination 'generic/platform=iOS' \
               -sdk iphoneos \
               -derivedDataPath "$(pwd)/build" \
-              SKIP_INSTALL=NO
+              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+              SKIP_INSTALL=NO \
+              $EXTRA_FLAGS
             popd
 
             echo "=== Frameworks produced ==="
