@@ -60,6 +60,30 @@ jobs:
             esac
           }
 
+          # Helper to run xcodebuild with optional extra swift flags
+          run_xcodebuild() {
+            local scheme="$1"
+            local extra="$2"
+            if [ -n "$extra" ]; then
+              xcodebuild build \
+                -scheme "$scheme" \
+                -destination 'generic/platform=iOS' \
+                -sdk iphoneos \
+                -derivedDataPath "$(pwd)/build" \
+                BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+                SKIP_INSTALL=NO \
+                OTHER_SWIFT_FLAGS="-Xfrontend -no-verify-emitted-module-interface"
+            else
+              xcodebuild build \
+                -scheme "$scheme" \
+                -destination 'generic/platform=iOS' \
+                -sdk iphoneos \
+                -derivedDataPath "$(pwd)/build" \
+                BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+                SKIP_INSTALL=NO
+            fi
+          }
+
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
@@ -79,14 +103,7 @@ jobs:
             EXTRA_FLAGS=$(get_extra_flags "$DEP")
 
             pushd "$CHECKOUT"
-            xcodebuild build \
-              -scheme "$SCHEME" \
-              -destination 'generic/platform=iOS' \
-              -sdk iphoneos \
-              -derivedDataPath "$(pwd)/build" \
-              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-              SKIP_INSTALL=NO \
-              $EXTRA_FLAGS
+            run_xcodebuild "$SCHEME" "$EXTRA_FLAGS"
             popd
 
             echo "=== Frameworks produced ==="
