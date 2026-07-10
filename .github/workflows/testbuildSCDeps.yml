@@ -123,15 +123,26 @@ jobs:
           FW="/tmp/SemanticVersion.framework"
           rm -rf "$FW"
           cp -r "$SCD_FW" "$FW"
+          echo "=== Contents of copied framework ==="
+          find "$FW" | sort
           # Rename the binary inside
           mv "$FW/SCDSemanticVersion" "$FW/SemanticVersion" 2>/dev/null || true
           # Fix the module name in the swiftmodule if present
           if [ -d "$FW/Modules/SCDSemanticVersion.swiftmodule" ]; then
             mv "$FW/Modules/SCDSemanticVersion.swiftmodule" "$FW/Modules/SemanticVersion.swiftmodule"
           fi
+          # Also look for SemanticVersion.swiftmodule built as a dependency
+          DEP_SM=$(find "$(pwd)/build-semver" -type d -name "SemanticVersion.swiftmodule" | head -1)
+          echo "Dependency swiftmodule: $DEP_SM"
+          if [ -n "$DEP_SM" ] && [ ! -d "$FW/Modules/SemanticVersion.swiftmodule" ]; then
+            mkdir -p "$FW/Modules"
+            cp -r "$DEP_SM" "$FW/Modules/SemanticVersion.swiftmodule"
+          fi
           # Update Info.plist bundle name/executable
           plutil -replace CFBundleExecutable -string SemanticVersion "$FW/Info.plist" || true
           plutil -replace CFBundleName -string SemanticVersion "$FW/Info.plist" || true
+          echo "=== Final framework contents ==="
+          find "$FW" | sort
 
           xcodebuild -create-xcframework \
             -framework "$FW" \
