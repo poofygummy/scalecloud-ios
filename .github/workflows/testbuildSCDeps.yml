@@ -35,12 +35,22 @@ jobs:
           cd ScaleCloudDeps
           mkdir -p prebuilt
 
+          # Map dep name -> exact scheme name found in each checkout
+          declare -A SCHEMES
+          SCHEMES[Alamofire]="Alamofire iOS"
+          SCHEMES[SwiftyJSON]="SwiftyJSON iOS"
+          SCHEMES[SwiftyXMLParser]="SwiftyXMLParser"
+          SCHEMES[KeychainAccess]="KeychainAccess"
+          SCHEMES[Starscream]="Starscream"
+          SCHEMES[ZIPFoundation]="ZIPFoundation"
+          SCHEMES[Nuke]="Nuke"
+          SCHEMES[SemanticVersion]="SemanticVersion"
+
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
           for DEP in $DEPS; do
             echo "=== Building $DEP ==="
 
-            # Find the checked-out source for this dep
             CHECKOUT=$(find .build/checkouts -maxdepth 1 -type d -iname "${DEP}*" | head -1)
             if [ -z "$CHECKOUT" ]; then
               echo "ERROR: no checkout found for $DEP"
@@ -49,14 +59,38 @@ jobs:
             fi
             echo "Checkout: $CHECKOUT"
 
-            echo "=== Schemes in $CHECKOUT ==="
+            SCHEME="${SCHEMES[$DEP]}"
+            echo "Scheme: $SCHEME"
+
             pushd "$CHECKOUT"
-            xcodebuild -list 2>&1 || true
+            xcodebuild build \
+              -scheme "$SCHEME" \
+              -destination 'generic/platform=iOS' \
+              -sdk iphoneos \
+              -derivedDataPath "$(pwd)/build" \
+              BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+              SKIP_INSTALL=NO
             popd
+
+            echo "=== Frameworks produced ==="
+            find "$CHECKOUT/build/Build/Products" -type d -name "*.framework" | sort
+
+            FW=$(find "$CHECKOUT/build/Build/Products" -type d -name "${DEP}.framework" | head -1)
+            if [ -z "$FW" ]; then
+              echo "ERROR: ${DEP}.framework not found"
+              exit 1
+            fi
+            echo "Found: $FW"
+
+            xcodebuild -create-xcframework \
+              -framework "$FW" \
+              -output "prebuilt/${DEP}.xcframework"
+
+            echo "=== Done: prebuilt/${DEP}.xcframework ==="
           done
 
       - name: List prebuilt output
-        run: ls -la ScaleCloudDeps/prebuilt/ || echo "(empty)"
+        run: ls -la ScaleCloudDeps/prebuilt/
 
       - name: Push prebuilt to subrepo
         run: |
