@@ -109,12 +109,29 @@ jobs:
           echo "=== Frameworks produced ==="
           find "$(pwd)/build-semver/Build/Products" -type d -name "*.framework" | sort
 
-          FW=$(find "$(pwd)/build-semver/Build/Products" -type d -name "SemanticVersion.framework" | head -1)
-          if [ -z "$FW" ]; then
-            echo "ERROR: SemanticVersion.framework not found"
+          # SCDSemanticVersion is the wrapper; SemanticVersion is linked statically into it.
+          # Rename the wrapper framework to SemanticVersion so consumers import SemanticVersion.
+          SCD_FW=$(find "$(pwd)/build-semver/Build/Products" -type d -name "SCDSemanticVersion.framework" | head -1)
+          if [ -z "$SCD_FW" ]; then
+            echo "ERROR: SCDSemanticVersion.framework not found"
+            find "$(pwd)/build-semver/Build/Products" -type d -name "*.framework" | sort
             exit 1
           fi
-          echo "Found: $FW"
+          echo "Found wrapper: $SCD_FW"
+
+          # Copy and rename to SemanticVersion.framework
+          FW="/tmp/SemanticVersion.framework"
+          rm -rf "$FW"
+          cp -r "$SCD_FW" "$FW"
+          # Rename the binary inside
+          mv "$FW/SCDSemanticVersion" "$FW/SemanticVersion" 2>/dev/null || true
+          # Fix the module name in the swiftmodule if present
+          if [ -d "$FW/Modules/SCDSemanticVersion.swiftmodule" ]; then
+            mv "$FW/Modules/SCDSemanticVersion.swiftmodule" "$FW/Modules/SemanticVersion.swiftmodule"
+          fi
+          # Update Info.plist bundle name/executable
+          plutil -replace CFBundleExecutable -string SemanticVersion "$FW/Info.plist" || true
+          plutil -replace CFBundleName -string SemanticVersion "$FW/Info.plist" || true
 
           xcodebuild -create-xcframework \
             -framework "$FW" \
