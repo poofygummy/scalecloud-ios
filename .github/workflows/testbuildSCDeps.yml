@@ -94,51 +94,14 @@ jobs:
             echo "=== Done: prebuilt/${DEP}.xcframework ==="
           done
 
-          # SemanticVersion has no xcodeproj — build via SPM from this package,
-          # then manually wrap the .o + .swiftmodule into a framework bundle.
-          echo "=== Building SemanticVersion (SPM) ==="
-          swift build \
-            -c release \
-            --triple arm64-apple-ios14.0 \
-            --target SemanticVersion \
-            --scratch-path .build/spm-semver
-
-          SEMVER_O=$(find .build/spm-semver -name "SemanticVersion.o" | head -1)
-          SEMVER_SM=$(find .build/spm-semver -name "SemanticVersion.swiftmodule" -type d | head -1)
-          echo "SemanticVersion.o: $SEMVER_O"
-          echo "SemanticVersion.swiftmodule: $SEMVER_SM"
-
-          # Build a static framework bundle manually
-          FW_DIR="/tmp/SemanticVersion.framework"
-          rm -rf "$FW_DIR"
-          mkdir -p "$FW_DIR/Modules"
-
-          # Static archive from the .o
-          ar rcs "$FW_DIR/SemanticVersion" "$SEMVER_O"
-
-          # Copy swiftmodule
-          cp -r "$SEMVER_SM" "$FW_DIR/Modules/SemanticVersion.swiftmodule"
-
-          # Minimal Info.plist
-          cat > "$FW_DIR/Info.plist" << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0"><dict>
-            <key>CFBundleExecutable</key><string>SemanticVersion</string>
-            <key>CFBundleIdentifier</key><string>com.scalecloudeps.SemanticVersion</string>
-            <key>CFBundleName</key><string>SemanticVersion</string>
-            <key>CFBundlePackageType</key><string>FMWK</string>
-            <key>CFBundleShortVersionString</key><string>0.3.8</string>
-            <key>CFBundleVersion</key><string>1</string>
-            <key>MinimumOSVersion</key><string>14.0</string>
-          </dict></plist>
-          EOF
-
-          xcodebuild -create-xcframework \
-            -framework "$FW_DIR" \
-            -output "prebuilt/SemanticVersion.xcframework"
-
-          echo "=== Done: prebuilt/SemanticVersion.xcframework ==="
+          # SemanticVersion has no xcodeproj — list available schemes for diagnostics
+          echo "=== SemanticVersion: listing schemes ==="
+          SEMVER_CHECKOUT=$(find .build/checkouts -maxdepth 1 -type d -iname "SemanticVersion*" | head -1)
+          pushd "$SEMVER_CHECKOUT"
+          xcodebuild -list 2>&1 || true
+          echo "=== Contents ==="
+          ls -la
+          popd
 
       - name: List prebuilt output
         run: ls -la ScaleCloudDeps/prebuilt/
