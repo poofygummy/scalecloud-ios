@@ -99,8 +99,7 @@ jobs:
           echo "=== Building SemanticVersion (SPM) ==="
           swift build \
             -c release \
-            --sdk "$(xcrun --sdk iphoneos --show-sdk-path)" \
-            --destination 'generic/platform=iOS' \
+            --triple arm64-apple-ios14.0 \
             --target SemanticVersion \
             --scratch-path .build/spm-semver
 
