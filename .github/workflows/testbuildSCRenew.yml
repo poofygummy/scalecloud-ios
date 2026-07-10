@@ -16,7 +16,7 @@ jobs:
           token: ${{ secrets.SUBMODULES_PAT }}
           lfs: false
       - name: Init required submodules
-        run: git submodule update --init -- ScaleCloudGo ScaleCloudKit ScaleCloudRenew
+        run: git submodule update --init -- ScaleCloudGo ScaleCloudKit ScaleCloudRenew ScaleCloudDeps
 
       - name: Clean previous prebuilt
         run: |
@@ -38,6 +38,10 @@ jobs:
           fi
           if [ ! -d "ScaleCloudSign/prebuilt" ]; then
             echo "ERROR: ScaleCloudSign/prebuilt/ missing. Run ScaleCloudSign workflow first."
+            exit 1
+          fi
+          if [ ! -d "ScaleCloudDeps/prebuilt" ]; then
+            echo "ERROR: ScaleCloudDeps/prebuilt/ missing. Run testbuildSCDeps first."
             exit 1
           fi
 
@@ -64,7 +68,7 @@ jobs:
             -derivedDataPath build \
             DYLIB_INSTALL_NAME_BASE=@rpath \
             PRODUCT_BUNDLE_IDENTIFIER=com.scalecloud.ScaleCloudRenew \
-            FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudRenew/Sources/RustBridge/lib $WS/ScaleCloudSign/Dependencies/OpenSSL.xcframework/ios-arm64" \
+            FRAMEWORK_SEARCH_PATHS="$WS/ScaleCloudSign/prebuilt $WS/ScaleCloudGo/prebuilt $WS/ScaleCloudKit/prebuilt $WS/ScaleCloudDeps/prebuilt $WS/ScaleCloudRenew/Sources/RustBridge/lib $WS/ScaleCloudSign/Dependencies/OpenSSL.xcframework/ios-arm64" \
             OTHER_SWIFT_FLAGS="-suppress-warnings -Xcc -fpermissive -Xcc -fmodule-map-file=$WS/ScaleCloudSign/Dependencies/corecrypto/include/module.modulemap -Xcc -fmodule-map-file=$WS/ScaleCloudSign/ScaleCloudSign/include/module.modulemap -Xcc -I$WS/ScaleCloudSign/Dependencies/corecrypto/include -Xcc -I$WS/ScaleCloudSign/ScaleCloudSign/include"
           
           # Copy framework from build products
