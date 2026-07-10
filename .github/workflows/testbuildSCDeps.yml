@@ -127,6 +127,8 @@ jobs:
           find "$FW" | sort
           # Rename the binary inside
           mv "$FW/SCDSemanticVersion" "$FW/SemanticVersion" 2>/dev/null || true
+          # Fix the dylib install name so @rpath resolves as SemanticVersion, not SCDSemanticVersion
+          install_name_tool -id @rpath/SemanticVersion.framework/SemanticVersion "$FW/SemanticVersion"
           # Fix the module name in the swiftmodule if present
           if [ -d "$FW/Modules/SCDSemanticVersion.swiftmodule" ]; then
             mv "$FW/Modules/SCDSemanticVersion.swiftmodule" "$FW/Modules/SemanticVersion.swiftmodule"
