@@ -31,20 +31,25 @@ jobs:
           ls .build/checkouts/
 
       - name: Build each upstream package directly
+        shell: bash
         run: |
           cd ScaleCloudDeps
           mkdir -p prebuilt
 
           # Map dep name -> exact scheme name found in each checkout
-          declare -A SCHEMES
-          SCHEMES[Alamofire]="Alamofire iOS"
-          SCHEMES[SwiftyJSON]="SwiftyJSON iOS"
-          SCHEMES[SwiftyXMLParser]="SwiftyXMLParser"
-          SCHEMES[KeychainAccess]="KeychainAccess"
-          SCHEMES[Starscream]="Starscream"
-          SCHEMES[ZIPFoundation]="ZIPFoundation"
-          SCHEMES[Nuke]="Nuke"
-          SCHEMES[SemanticVersion]="SemanticVersion"
+          get_scheme() {
+            case "$1" in
+              Alamofire)       echo "Alamofire iOS" ;;
+              SwiftyJSON)      echo "SwiftyJSON iOS" ;;
+              SwiftyXMLParser) echo "SwiftyXMLParser" ;;
+              KeychainAccess)  echo "KeychainAccess" ;;
+              Starscream)      echo "Starscream" ;;
+              ZIPFoundation)   echo "ZIPFoundation" ;;
+              Nuke)            echo "Nuke" ;;
+              SemanticVersion) echo "SemanticVersion" ;;
+              *) echo "UNKNOWN" ;;
+            esac
+          }
 
           DEPS="Alamofire SwiftyJSON SwiftyXMLParser KeychainAccess Starscream ZIPFoundation Nuke SemanticVersion"
 
@@ -59,7 +64,7 @@ jobs:
             fi
             echo "Checkout: $CHECKOUT"
 
-            SCHEME="${SCHEMES[$DEP]}"
+            SCHEME=$(get_scheme "$DEP")
             echo "Scheme: $SCHEME"
 
             pushd "$CHECKOUT"
