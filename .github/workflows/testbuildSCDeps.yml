@@ -51,28 +51,29 @@ jobs:
             esac
           }
 
-          # Some packages produce an invalid .swiftinterface due to compiler bugs
-          # (e.g. module name == type name). Skip interface validation for those.
-          get_extra_flags() {
+          # Some packages have a type name identical to the module name, which
+          # causes the SwiftVerifyEmittedModuleInterface phase to fail.
+          # For those, disable library evolution (no .swiftinterface generated/verified).
+          needs_no_evolution() {
             case "$1" in
-              SemanticVersion) echo "OTHER_SWIFT_FLAGS=-Xfrontend -no-verify-emitted-module-interface" ;;
-              *) echo "" ;;
+              SemanticVersion) return 0 ;;
+              *) return 1 ;;
             esac
           }
 
-          # Helper to run xcodebuild with optional extra swift flags
+          # Helper to run xcodebuild with correct flags per package
           run_xcodebuild() {
             local scheme="$1"
-            local extra="$2"
-            if [ -n "$extra" ]; then
+            local dep="$2"
+            if needs_no_evolution "$dep"; then
               xcodebuild build \
                 -scheme "$scheme" \
                 -destination 'generic/platform=iOS' \
                 -sdk iphoneos \
                 -derivedDataPath "$(pwd)/build" \
                 BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-                SKIP_INSTALL=NO \
-                OTHER_SWIFT_FLAGS="-Xfrontend -no-verify-emitted-module-interface"
+                SWIFT_ENABLE_LIBRARY_EVOLUTION=NO \
+                SKIP_INSTALL=NO
             else
               xcodebuild build \
                 -scheme "$scheme" \
@@ -100,10 +101,8 @@ jobs:
             SCHEME=$(get_scheme "$DEP")
             echo "Scheme: $SCHEME"
 
-            EXTRA_FLAGS=$(get_extra_flags "$DEP")
-
             pushd "$CHECKOUT"
-            run_xcodebuild "$SCHEME" "$EXTRA_FLAGS"
+            run_xcodebuild "$SCHEME" "$DEP"
             popd
 
             echo "=== Frameworks produced ==="
