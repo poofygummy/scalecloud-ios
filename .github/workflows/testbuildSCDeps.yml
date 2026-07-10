@@ -94,14 +94,33 @@ jobs:
             echo "=== Done: prebuilt/${DEP}.xcframework ==="
           done
 
-          # SemanticVersion has no xcodeproj — list available schemes for diagnostics
-          echo "=== SemanticVersion: listing schemes ==="
-          SEMVER_CHECKOUT=$(find .build/checkouts -maxdepth 1 -type d -iname "SemanticVersion*" | head -1)
-          pushd "$SEMVER_CHECKOUT"
-          xcodebuild -list 2>&1 || true
-          echo "=== Contents ==="
-          ls -la
-          popd
+          # SemanticVersion: its own scheme has no platform configured (SPM-only package),
+          # so build it via the ScaleCloudDeps package which has iOS configured.
+          echo "=== Building SemanticVersion (via ScaleCloudDeps scheme) ==="
+          xcodebuild build \
+            -scheme SCDSemanticVersion \
+            -destination 'generic/platform=iOS' \
+            -sdk iphoneos \
+            -derivedDataPath "$(pwd)/build-semver" \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SWIFT_EMIT_MODULE_INTERFACE=NO \
+            SKIP_INSTALL=NO
+
+          echo "=== Frameworks produced ==="
+          find "$(pwd)/build-semver/Build/Products" -type d -name "*.framework" | sort
+
+          FW=$(find "$(pwd)/build-semver/Build/Products" -type d -name "SemanticVersion.framework" | head -1)
+          if [ -z "$FW" ]; then
+            echo "ERROR: SemanticVersion.framework not found"
+            exit 1
+          fi
+          echo "Found: $FW"
+
+          xcodebuild -create-xcframework \
+            -framework "$FW" \
+            -output "prebuilt/SemanticVersion.xcframework"
+
+          echo "=== Done: prebuilt/SemanticVersion.xcframework ==="
 
       - name: List prebuilt output
         run: ls -la ScaleCloudDeps/prebuilt/
