@@ -19,3 +19,9 @@ Always verify hunches.
 ## Project Overview
 local workspace is linux. no xcode available. use of workflows with macos runners is needed for xcode
 
+## Git / Disk
+- This repo is cloned **shallow** (`--depth=1 --shallow-submodules`) to save disk space
+- `fetch.depth=1` is set in `.git/config` for the main repo and all submodules, so `git pull` stays shallow
+- If re-cloning: `git clone --depth=1 --shallow-submodules --recurse-submodules <url>`
+- Do NOT run `git gc --aggressive` on a full disk - it writes a full new pack file before deleting the old one
+
