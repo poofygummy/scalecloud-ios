@@ -30,7 +30,7 @@ jobs:
           lfs: true
 
       - name: Init required submodules
-        run: git submodule update --init -- ScaleCloudApp ScaleCloudGo ScaleCloudKit ScaleCloudSign ScaleCloudRenew ScaleCloudBanner
+        run: git submodule update --init -- ScaleCloudApp ScaleCloudGo ScaleCloudKit ScaleCloudSign ScaleCloudRenew ScaleCloudBanner ScaleCloudDeps
 
       - name: Clean previous prebuilt
         run: rm -rf ScaleCloudApp/prebuilt
