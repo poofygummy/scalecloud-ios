@@ -1,12 +1,12 @@
-# SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+# SPDX-FileCopyrightText: 2024 Next-cloud GmbH and Next-cloud contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 contact_links:
     - name: 🚨 Report a security or privacy issue
       url: https://hackerone.com/nextcloud
-      about: Report security and privacy related issues privately to the Nextcloud team, so we can coordinate the fix and release without potentially exposing all Nextcloud servers and users in the meantime.
+      about: Report security and privacy related issues privately to the Next-cloud team, so we can coordinate the fix and release without potentially exposing all Next-cloud servers and users in the meantime.
     - name: ❓ Community Support and Help
       url: https://help.nextcloud.com/
       about: Configuration, webserver/proxy or performance issues and other questions
-    - name: 💼 Nextcloud Enterprise
+    - name: 💼 Next-cloud Enterprise
       url: https://portal.nextcloud.com/
-      about: If you are a Nextcloud Enterprise customer, or need Professional support, so it can be resolved directly by our dedicated engineers more quickly
+      about: If you are a Next-cloud Enterprise customer, or need Professional support, so it can be resolved directly by our dedicated engineers more quickly
