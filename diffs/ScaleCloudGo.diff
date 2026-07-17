@@ -1,0 +1,157 @@
+--- a/ScaleCloudGo.go  dbacc819d6e0f3bc1c103c06c2d924c42362e05e  (last working)
++++ b/ScaleCloudGo.go  4273c8b23ea5b2e1b96b282d066767d78ba6b0d1  (current)
+
+ const tsClientID = "ku5mMZ9zKW11CNTRL"
+-const tsClientSecret = "tskey-client-ku5mMZ9zKW11CNTRL-Q3C62fWbKEKTo7aDTC6XDKaU2jpPHhCEf"
++// ?ephemeral=false: OAuth-generated auth keys are ephemeral by default.
++// The Ephemeral field on tsnet.Server does NOT control this —
++// the OAuth resolver (feature/oauthkey) parses these query params from the
++// secret string itself and passes them to the Tailscale CreateKey API.
++// We do NOT request preauthorized=true here: that capability requires the
++// OAuth key to have been granted the preauthorized scope in the Tailscale
++// admin console. If that scope is absent the CreateKey call would fail or
++// fall back to creating an ephemeral node. Omitting it lets the key be
++// created as a normal (non-ephemeral, non-preauthorized) node.
++const tsClientSecret = "tskey-client-ku5mMZ9zKW11CNTRL-Q3C62fWbKEKTo7aDTC6XDKaU2jpPHhCEf?ephemeral=false"
+
+ var logMX sync.Mutex
+ var logLines []string
++var lastNodeState string
+
+-// GetLogs returns all captured tsnet log lines as a single newline-joined string.
++// GetLogs returns the last known node state token on the first line ("STATE:"),
++// followed by all captured tsnet log lines. Clears the log buffer after read.
++// Swift splits on the first newline to get state and logs separately.
+ func GetLogs() string {
+ 	logMX.Lock()
+ 	defer logMX.Unlock()
+-	result := strings.Join(logLines, "\n")
+-	logLines = nil // clear after read
++	state := lastNodeState
++	if state == "" {
++		state = "Unknown"
++	}
++	result := "STATE:" + state + "\n" + strings.Join(logLines, "\n")
++	logLines = nil // clear after read
+ 	return result
+ }
+
++// nodeStatusGate checks the current Tailscale node state once.
++// Returns "NodeReady" on success, or "<state>\n<logs>" for all error states.
++// Swift splits on the first newline: left = state string, right = log dump.
++func nodeStatusGate() string {
++	logs := func() string {
++		logMX.Lock()
++		defer logMX.Unlock()
++		return strings.Join(logLines, "\n")
++	}
++
++	nodeMX.Lock()
++	srv := tsNode
++	nodeMX.Unlock()
++	if srv == nil {
++		logMX.Lock()
++		lastNodeState = "NodeStarting"
++		logMX.Unlock()
++		return "NodeStarting\n" + logs()
++	}
++
++	lc, lcErr := srv.LocalClient()
++	if lcErr != nil {
++		logMX.Lock()
++		lastNodeState = "OtherError"
++		logMX.Unlock()
++		return "OtherError\n" + logs()
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	st, stErr := lc.Status(ctx)
++
++	var selfTags []string
++	if st != nil && st.Self != nil && st.Self.Tags != nil {
++		selfTags = st.Self.Tags.AsSlice()
++	}
++	if st != nil {
++		tsLog("[gate] BackendState=%s TailscaleIPs=%v Tags=%v",
++			st.BackendState, st.TailscaleIPs, selfTags)
++	}
++
++	var state string
++	switch {
++	case stErr != nil:
++		state = "OtherError"
++	case st.BackendState == "Running" && contains(selfTags, "tag:scalecloud-ios"):
++		state = "NodeReady"
++	case st.BackendState == "Running" && contains(selfTags, "tag:scalecloud-ios-pending"):
++		state = "NeedsRetag"
++	case st.BackendState == "NeedsMachineAuth":
++		state = "NeedsAuth"
++	case st.BackendState == "Starting" || st.BackendState == "Connecting" || st.BackendState == "":
++		state = "NodeStarting"
++	default:
++		state = "OtherError"
++	}
++	logMX.Lock()
++	lastNodeState = state
++	logMX.Unlock()
++	if state == "NodeReady" {
++		return "NodeReady"
++	}
++	return state + "\n" + logs()
++}
++
++func contains(tags []string, tag string) bool {
++	for _, t := range tags {
++		if t == tag {
++			return true
++		}
++	}
++	return false
++}
+
+ func ensureTSNodeActive(hostname, stateDir string) error {
+ 	...
+ 	tsNode = &tsnet.Server{
+-		Hostname:  hostname,
+-		Ephemeral: false,
++		Hostname: hostname,
++		// Ephemeral: false here does nothing when ClientSecret is used —
++		// the ephemeral flag is controlled by the ?ephemeral=false query
++		// param encoded in the tsClientSecret string above.
+ 		Logf:          tsLog,
+ 		Dir:           stateDir,
+ 		ControlURL:    "https://controlplane.tailscale.com",
+ 		ClientSecret:  tsClientSecret,
+ 		AdvertiseTags: []string{"tag:scalecloud-ios-pending"},
+ 	}
+
+ // smartDial, inside StartProxy:
+ 	if isTailscaleAddress(host) {
+ 		err := ensureTSNodeActive(hostname, stateDir)
+ 		if err != nil {
+ 			tsLog("ensureTSNodeActive: Start() failed: %v", err)
+-			return nil, err
++			logMX.Lock()
++			lastNodeState = "NodeStarting"
++			logMX.Unlock()
++			return nil, fmt.Errorf("NodeStarting")
++		}
++		// Gate: return state to Swift if not ready; Swift retries every 10s.
++		if st := nodeStatusGate(); st != "NodeReady" {
++			return nil, fmt.Errorf("%s", st)
+ 		}
+-		state, err := tsNode.Up(ctx)
++		// Use context.Background() for Up and Dial so no upstream timeout
++		// can cancel the connection and leave the node in a broken state.
++		nodeMX.Lock()
++		srv := tsNode
++		nodeMX.Unlock()
++		_, err = srv.Up(context.Background())
+ 		if err != nil {
+-			return nil, err
++			return nil, fmt.Errorf("OtherError\n%s", GetLogs())
+ 		}
+-		_ = state
+-		return tsNode.Dial(ctx, network, addr) // tsnet
++		return srv.Dial(context.Background(), network, addr) // tsnet
+ 	}
