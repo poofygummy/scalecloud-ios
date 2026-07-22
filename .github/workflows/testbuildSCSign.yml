@@ -138,3 +138,11 @@ jobs:
           name: ScaleCloudSign-prebuilt
           path: /tmp/artifact/
           retention-days: 7
+
+      - name: Trigger next build (ScaleCloudRenew)
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.SUBMODULES_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/poofygummy/scalecloud-ios/actions/workflows/testbuildSCRenew.yml/dispatches \
+            -d '{"ref":"main"}'

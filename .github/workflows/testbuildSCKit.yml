@@ -119,3 +119,10 @@ jobs:
           path: /tmp/artifact/
           retention-days: 7
           
+      - name: Trigger next build (ScaleCloudSign)
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.SUBMODULES_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/poofygummy/scalecloud-ios/actions/workflows/testbuildSCSign.yml/dispatches \
+            -d '{"ref":"main"}'
