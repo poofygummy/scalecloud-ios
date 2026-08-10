@@ -37,3 +37,6 @@
 	path = ScaleCloudDeps
 	url = https://github.com/poofygummy/ScaleCloudDeps.git
 	branch = main
+[submodule "anisette-v3-server"]
+	path = anisette-v3-server
+	url = https://github.com/poofygummy/anisette-v3-server.git
